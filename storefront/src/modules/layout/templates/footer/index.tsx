@@ -137,7 +137,7 @@ export default async function Footer() {
             </div>
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between items-center text-ui-fg-muted">
+        <div className="flex md:flex-row flex-col-reverse gap-5 w-full mb-16 justify-between items-center text-ui-fg-muted">
           <Text className="txt-compact-small">
             © {new Date().getFullYear()} CHECKERED COLLECTIBLES — Owned and operated by Shubhankar Trivedi.
           </Text>

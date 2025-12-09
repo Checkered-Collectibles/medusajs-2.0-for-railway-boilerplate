@@ -95,21 +95,20 @@ const ShippingInfoTab = () => {
         <div className="flex items-start gap-x-2">
           <Refresh />
           <div>
-            <span className="font-semibold">Simple exchanges</span>
+            <span className="font-semibold">Exchanges</span>
             <p className="max-w-sm">
-              Is the fit not quite right? No worries - we&apos;ll exchange your
-              product for a new one.
+              We only offer exchanges if the product arrives damaged during delivery.
+              A video recording of the parcel being opened is required as proof.
             </p>
           </div>
         </div>
         <div className="flex items-start gap-x-2">
           <Back />
           <div>
-            <span className="font-semibold">Easy returns</span>
+            <span className="font-semibold">Returns / Refunds</span>
             <p className="max-w-sm">
-              Just return your product and we&apos;ll refund your money. No
-              questions asked – we&apos;ll do our best to make sure your return
-              is hassle-free.
+              We do not accept returns once the order has shipped.
+              Refunds are issued only if you contact us to cancel the order before it has been shipped.
             </p>
           </div>
         </div>
