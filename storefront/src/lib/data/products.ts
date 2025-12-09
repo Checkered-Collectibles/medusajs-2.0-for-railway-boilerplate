@@ -17,7 +17,9 @@ export const getProductsById = cache(async function ({
       {
         id: ids,
         region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity",
+        // include price, inventory quantity, and tags
+        fields:
+          "*variants.calculated_price,+variants.inventory_quantity,tags",
       },
       { next: { tags: ["products"] } }
     )
@@ -33,7 +35,9 @@ export const getProductByHandle = cache(async function (
       {
         handle,
         region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity",
+        // include price, inventory quantity, and tags
+        fields:
+          "*variants.calculated_price,+variants.inventory_quantity,tags",
       },
       { next: { tags: ["products"] } }
     )
@@ -54,7 +58,7 @@ export const getProductsList = cache(async function ({
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
 }> {
   const limit = queryParams?.limit || 12
-  const validPageParam = Math.max(pageParam, 1);
+  const validPageParam = Math.max(pageParam, 1)
   const offset = (validPageParam - 1) * limit
   const region = await getRegion(countryCode)
 
@@ -64,13 +68,15 @@ export const getProductsList = cache(async function ({
       nextPage: null,
     }
   }
+
   return sdk.store.product
     .list(
       {
         limit,
         offset,
         region_id: region.id,
-        fields: "*variants.calculated_price",
+        // include price and tags
+        fields: "*variants.calculated_price,tags",
         ...queryParams,
       },
       { next: { tags: ["products"] } }
@@ -83,7 +89,7 @@ export const getProductsList = cache(async function ({
           products,
           count,
         },
-        nextPage: nextPage,
+        nextPage,
         queryParams,
       }
     })
