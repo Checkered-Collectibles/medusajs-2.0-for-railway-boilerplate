@@ -4,6 +4,8 @@ import { Text, clx } from "@medusajs/ui"
 
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import MedusaCTA from "@modules/layout/components/medusa-cta"
+import Image from "next/image"
+import LogoImage from "@images/logo.png";
 
 export default async function Footer() {
   const { collections } = await getCollectionsList(0, 6)
@@ -13,13 +15,15 @@ export default async function Footer() {
     <footer className="border-t border-ui-border-base w-full">
       <div className="content-container flex flex-col w-full">
         <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
-          <div>
+          <div className="space-y-5">
             <LocalizedClientLink
               href="/"
               className="txt-compact-xlarge-plus text-ui-fg-subtle hover:text-ui-fg-base uppercase"
             >
-              Medusa Store
+              <Image src={LogoImage} width={200} alt="Checkered Collectibles" />
             </LocalizedClientLink>
+            <Text className="">We are an end to the scalpers.<br />Join the revolution.</Text>
+            <Text className="">212601 - Fatehpur, Uttar Pradesh, India</Text>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
             {product_categories && product_categories?.length > 0 && (
@@ -107,47 +111,54 @@ export default async function Footer() {
               </div>
             )}
             <div className="flex flex-col gap-y-2">
-              <span className="txt-small-plus txt-ui-fg-base">Medusa</span>
+              <span className="txt-small-plus txt-ui-fg-base">Connect with us</span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
                   <a
-                    href="https://github.com/medusajs"
+                    href="https://instagram.com"
                     target="_blank"
                     rel="noreferrer"
                     className="hover:text-ui-fg-base"
                   >
-                    GitHub
+                    Instagram
                   </a>
                 </li>
                 <li>
                   <a
-                    href="https://docs.medusajs.com"
+                    href="https://instagram.com"
                     target="_blank"
                     rel="noreferrer"
                     className="hover:text-ui-fg-base"
                   >
-                    Documentation
-                  </a>
-                </li>
-                <li>
-                  <a
-                    href="https://github.com/medusajs/nextjs-starter-medusa"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="hover:text-ui-fg-base"
-                  >
-                    Source code
+                    Whatsapp
                   </a>
                 </li>
               </ul>
             </div>
           </div>
         </div>
-        <div className="flex w-full mb-16 justify-between text-ui-fg-muted">
+        <div className="flex w-full mb-16 justify-between items-center text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Medusa Store. All rights reserved.
+            © {new Date().getFullYear()} CHECKERED COLLECTIBLES — Owned and operated by Shubhankar Trivedi.
           </Text>
-          <MedusaCTA />
+          <div className="flex gap-3">
+            <a href="mailto:hello@checkered.in" className=""><Text className="text-xs underline hover:no-underline">
+              Contact Us
+            </Text></a>
+            <LocalizedClientLink href="/terms-and-conditions" className=""><Text className="text-xs underline hover:no-underline">
+              Terms & Conditions
+            </Text></LocalizedClientLink>
+            <LocalizedClientLink href="/privacy-policy" className=""><Text className="text-xs underline hover:no-underline">
+              Privacy Policy
+            </Text></LocalizedClientLink>
+            <LocalizedClientLink href="/shipping-policy" className=""><Text className="text-xs underline hover:no-underline">
+              Shipping Policy
+            </Text></LocalizedClientLink>
+            <LocalizedClientLink href="/cancellation-and-refund-policy" className=""><Text className="text-xs underline hover:no-underline">
+              Cancellation and Refunds
+            </Text></LocalizedClientLink>
+          </div>
+          {/* <MedusaCTA /> */}
         </div>
       </div>
     </footer>
