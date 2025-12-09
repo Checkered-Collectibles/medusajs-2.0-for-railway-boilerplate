@@ -14,6 +14,10 @@ export const paymentInfoMap: Record<
     title: "Credit card",
     icon: <CreditCard />,
   },
+  "pp_medusa-payments_default": {
+    title: "Credit card",
+    icon: <CreditCard />,
+  },
   "pp_stripe-ideal_stripe": {
     title: "iDeal",
     icon: <Ideal />,
@@ -37,13 +41,16 @@ export const paymentInfoMap: Record<
   // Add more payment providers here
 }
 
-export const isRazorPay = (providerId?: string) => {
+// This only checks if it is native stripe or medusa payments for card payments, it ignores the other stripe-based providers
+export const isStripeLike = (providerId?: string) => {
+  return (
+    providerId?.startsWith("pp_stripe_") || providerId?.startsWith("pp_medusa-")
+  )
+}
+export const isRazorpay = (providerId?: string) => {
   return providerId?.startsWith("pp_razorpay")
 }
-// This only checks if it is native stripe for card payments, it ignores the other stripe-based providers
-export const isStripe = (providerId?: string) => {
-  return providerId?.startsWith("pp_stripe_")
-}
+
 export const isPaypal = (providerId?: string) => {
   return providerId?.startsWith("pp_paypal")
 }
