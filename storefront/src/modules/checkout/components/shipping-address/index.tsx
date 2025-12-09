@@ -200,6 +200,7 @@ const ShippingAddress = ({
           value={formData["shipping_address.phone"]}
           onChange={handleChange}
           data-testid="shipping-phone-input"
+          required
         />
       </div>
     </>

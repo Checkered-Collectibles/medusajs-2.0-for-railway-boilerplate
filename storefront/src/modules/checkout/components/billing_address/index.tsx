@@ -112,6 +112,7 @@ const BillingAddress = ({ cart }: { cart: HttpTypes.StoreCart | null }) => {
           value={formData["billing_address.phone"]}
           onChange={handleChange}
           data-testid="billing-phone-input"
+          required
         />
       </div>
     </>

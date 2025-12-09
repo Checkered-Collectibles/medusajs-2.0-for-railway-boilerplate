@@ -127,6 +127,7 @@ const AddAddress = ({ region }: { region: HttpTypes.StoreRegion }) => {
                 name="phone"
                 autoComplete="phone"
                 data-testid="phone-input"
+                required
               />
             </div>
             {formState.error && (
