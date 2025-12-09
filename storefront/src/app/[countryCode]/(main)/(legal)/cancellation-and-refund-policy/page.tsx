@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
     title: "Cancellation & Refund Policy | Checkered Collectibles",
-    description:
-        "Cancellation, refund, and damaged product exchange policy for orders placed on checkered.in.",
 };
 
 const CancellationAndRefundPolicyPage = () => {
