@@ -24,6 +24,9 @@ importers:
       '@hookform/error-message':
         specifier: ^2.0.0
         version: 2.0.1(react-dom@18.3.1(react@18.3.1))(react-hook-form@7.54.2(react@18.3.1))(react@18.3.1)
+      '@medusajs/icons':
+        specifier: ^2.12.1
+        version: 2.12.1(react@18.3.1)
       '@medusajs/js-sdk':
         specifier: preview
         version: 2.1.4-preview-20241227180154(awilix@8.0.1)
@@ -84,6 +87,9 @@ importers:
       react-intersection-observer:
         specifier: ^9.3.4
         version: 9.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      react-razorpay:
+        specifier: ^3.0.1
+        version: 3.0.1(react@18.3.1)
       server-only:
         specifier: ^0.0.1
         version: 0.0.1
@@ -571,6 +577,11 @@ packages:
     resolution: {integrity: sha512-WvgSe9TVNfhR6BH0r4bzCl/na3zQb/s/iqNlYHvj81JTK9j8w5sasoRmQmYPkt0rK/RtZ5/DHry4tSvu62jAcA==}
     peerDependencies:
       react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0 || ^19.0.0-rc
+
+  '@medusajs/icons@2.12.1':
+    resolution: {integrity: sha512-IRMygarmD7GqcOzbaVqXvVk2kxwqFyfVrOSwj5B2AB4CGWSE0metgpTKHDhRq7Ch7E1Kky0FzUvskTcQtV7JVg==}
+    peerDependencies:
+      react: ^18.3.1
 
   '@medusajs/js-sdk@2.1.4-preview-20241227180154':
     resolution: {integrity: sha512-VTJoJOgZLYk3EU3foRTVaiuTcCSS98lQ4/DTpONJffERuwnt+bL2XC+nNHDQodYoHCPh2b0Vxg1+o3fgc20/0A==}
@@ -3312,6 +3323,11 @@ packages:
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
+  react-razorpay@3.0.1:
+    resolution: {integrity: sha512-43P6VB20quinlUDN3dUdg0XlMtoClzfvhgpPWnGrLwLE6Pr570fXdA4kC+92Wqof48A/x96TXRpLnrQ/J1eXyw==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+
   react-remove-scroll-bar@2.3.8:
     resolution: {integrity: sha512-9r+yi9+mgU33AKcj6IbT9oRCO78WriSj6t/cF8DWBZJ9aOGPOTEDvdUDz1FwKim7QXWwmHqtdHnRJfhAxEG46Q==}
     engines: {node: '>=10'}
@@ -4245,6 +4261,10 @@ snapshots:
   '@medusajs/client-types@0.2.12-preview-20240505115807': {}
 
   '@medusajs/icons@2.1.4-preview-20241227180154(react@18.3.1)':
+    dependencies:
+      react: 18.3.1
+
+  '@medusajs/icons@2.12.1(react@18.3.1)':
     dependencies:
       react: 18.3.1
 
@@ -7639,6 +7659,10 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   react-is@16.13.1: {}
+
+  react-razorpay@3.0.1(react@18.3.1):
+    dependencies:
+      react: 18.3.1
 
   react-remove-scroll-bar@2.3.8(@types/react@18.3.18)(react@18.3.1):
     dependencies:

@@ -30,9 +30,16 @@ export const paymentInfoMap: Record<
     title: "Manual Payment",
     icon: <CreditCard />,
   },
+  pp_razorpay_razorpay: {
+    title: "Razorpay",
+    icon: <CreditCard />,
+  },
   // Add more payment providers here
 }
 
+export const isRazorPay = (providerId?: string) => {
+  return providerId?.startsWith("pp_razorpay")
+}
 // This only checks if it is native stripe for card payments, it ignores the other stripe-based providers
 export const isStripe = (providerId?: string) => {
   return providerId?.startsWith("pp_stripe_")

@@ -35,6 +35,7 @@
   "dependencies": {
     "@headlessui/react": "^1.6.1",
     "@hookform/error-message": "^2.0.0",
+    "@medusajs/icons": "^2.12.1",
     "@medusajs/js-sdk": "preview",
     "@medusajs/types": "preview",
     "@medusajs/ui": "preview",
@@ -55,6 +56,7 @@
     "react-dom": "^18.2.0",
     "react-instantsearch-hooks-web": "^6.29.0",
     "react-intersection-observer": "^9.3.4",
+    "react-razorpay": "^3.0.1",
     "server-only": "^0.0.1",
     "tailwindcss-radix": "^2.8.0",
     "webpack": "^5"
