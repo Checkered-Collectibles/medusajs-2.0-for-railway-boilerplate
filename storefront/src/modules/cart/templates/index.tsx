@@ -19,17 +19,24 @@ import InteractiveLink from "@modules/common/components/interactive-link"
 const CartTemplate = async ({
   cart,
   customer,
-  countryCode
+  countryCode,
 }: {
   cart: HttpTypes.StoreCart | null
   customer: HttpTypes.StoreCustomer | null
   countryCode: string
 }) => {
   const region = await getRegion(countryCode)
-  const { canCheckout, restrictionMessage, missingFantasy } = evaluateHotWheelsRule(cart)
-  const fantasyProducts = !canCheckout
-    ? await getFantasyProducts(countryCode)
-    : [];
+  const { canCheckout, restrictionMessage, missingFantasy } =
+    evaluateHotWheelsRule(cart)
+
+  let fantasyProducts: HttpTypes.StoreProduct[] = []
+  let fantasyCategoryHandle: string | undefined
+
+  if (!canCheckout) {
+    const res = await getFantasyProducts(countryCode)
+    fantasyProducts = res.products
+    fantasyCategoryHandle = res.categoryHandle
+  }
 
   if (!region) {
     return null
@@ -55,25 +62,37 @@ const CartTemplate = async ({
               )}
 
               <ItemsTemplate items={cart.items} />
+
               {!canCheckout && fantasyProducts.length > 0 && (
                 <div className="mt-12">
                   <div className="flex gap-5 justify-between items-center">
-                    <div className="">
+                    <div>
                       <h3 className="text-xl font-semibold mb-4">
                         Add Fantasy Cars to Checkout
                       </h3>
                       <p className="text-sm text-red-600 mb-6">
-                        You need {missingFantasy} more Fantasy car(s) to continue.
+                        You need {missingFantasy} more Fantasy car(s) to
+                        continue.
                       </p>
                     </div>
-                    <InteractiveLink href={`/collections/`}>
+                    <InteractiveLink
+                      href={
+                        fantasyCategoryHandle
+                          ? `/categories/${fantasyCategoryHandle}`
+                          : "/categories"
+                      }
+                    >
                       View all
                     </InteractiveLink>
                   </div>
+
                   <ul className="grid grid-cols-2 small:grid-cols-3 gap-6">
                     {fantasyProducts.map((product) => (
                       <li key={product.id}>
-                        <ProductPreviewInstant product={product} countryCode={countryCode} />
+                        <ProductPreviewInstant
+                          product={product}
+                          countryCode={countryCode}
+                        />
                       </li>
                     ))}
                   </ul>

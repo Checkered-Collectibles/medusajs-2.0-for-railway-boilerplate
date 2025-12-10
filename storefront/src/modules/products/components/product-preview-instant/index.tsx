@@ -28,7 +28,7 @@ export default async function ProductPreviewInstant({
         regionId: region.id,
     })
 
-    if (!pricedProduct) {
+    if (!pricedProduct || !product.variants) {
         return null
     }
 
@@ -62,7 +62,7 @@ export default async function ProductPreviewInstant({
             <div className="flex-shrink-0 mt-3 w-full">
                 <QuickAddToCartButton
                     productId={product.id}
-                    variantId={defaultVariant?.id}
+                    variant={product.variants[0]}
                     disabled={!defaultVariant}
                     countryCode={countryCode}
                 />

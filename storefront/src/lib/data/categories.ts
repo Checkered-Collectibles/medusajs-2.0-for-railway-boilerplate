@@ -30,3 +30,16 @@ export const getCategoryByHandle = cache(async function (
     { next: { tags: ["categories"] } }
   )
 })
+
+
+export const getCategoryById = cache(async function (
+  categoryId: string[]
+) {
+
+  return sdk.store.category.list(
+    // TODO: Look into fixing the type
+    // @ts-ignore
+    { id: categoryId },
+    { next: { tags: ["categories"] } }
+  )
+})
