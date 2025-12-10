@@ -47,9 +47,7 @@ async function getRegionMap() {
 }
 
 /**
- * Fetches regions from Medusa and sets the region cookie.
- * @param request
- * @param response
+ * Fetches regions from Medusa and determines the country code.
  */
 async function getCountryCode(
   request: NextRequest,
@@ -96,13 +94,13 @@ export async function middleware(request: NextRequest) {
   const cartIdCookie = request.cookies.get("_medusa_cart_id")
 
   const regionMap = await getRegionMap()
-
   const countryCode = regionMap && (await getCountryCode(request, regionMap))
 
-  const urlHasCountryCode =
-    countryCode && request.nextUrl.pathname.split("/")[1].includes(countryCode)
+  const urlSegment = request.nextUrl.pathname.split("/")[1]?.toLowerCase()
+  const urlHasCountryCode = countryCode && urlSegment === countryCode
 
-  // check if one of the country codes is in the url
+  // If URL already has a valid country code and onboarding/cart are fine,
+  // just continue normally.
   if (
     urlHasCountryCode &&
     (!isOnboarding || onboardingCookie) &&
@@ -114,33 +112,43 @@ export async function middleware(request: NextRequest) {
   const redirectPath =
     request.nextUrl.pathname === "/" ? "" : request.nextUrl.pathname
 
-  const queryString = request.nextUrl.search ? request.nextUrl.search : ""
+  let response: NextResponse
 
-  let redirectUrl = request.nextUrl.href
-
-  let response = NextResponse.redirect(redirectUrl, 307)
-
-  // If no country code is set, we redirect to the relevant region.
+  // --- MAIN CHANGE: rewrite instead of redirect for country code handling ---
+  // If no country code is set in the URL but we resolved one,
+  // we rewrite internally to /{countryCode}{path}, but the browser
+  // continues to show the original URL without the country code.
   if (!urlHasCountryCode && countryCode) {
-    redirectUrl = `${request.nextUrl.origin}/${countryCode}${redirectPath}${queryString}`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
+    const rewriteUrl = request.nextUrl.clone()
+    rewriteUrl.pathname = `/${countryCode}${redirectPath}`
+
+    response = NextResponse.rewrite(rewriteUrl)
+  } else {
+    // Default: no special handling, just continue
+    response = NextResponse.next()
   }
 
   // If a cart_id is in the params, we set it as a cookie and redirect to the address step.
+  // This is a real redirect because we want the URL to show ?step=address.
   if (cartId && !checkoutStep) {
-    redirectUrl = `${redirectUrl}&step=address`
-    response = NextResponse.redirect(`${redirectUrl}`, 307)
+    const url = request.nextUrl.clone()
+    url.searchParams.set("step", "address")
+    response = NextResponse.redirect(url, 307)
     response.cookies.set("_medusa_cart_id", cartId, { maxAge: 60 * 60 * 24 })
   }
 
   // Set a cookie to indicate that we're onboarding. This is used to show the onboarding flow.
   if (isOnboarding) {
-    response.cookies.set("_medusa_onboarding", "true", { maxAge: 60 * 60 * 24 })
+    response.cookies.set("_medusa_onboarding", "true", {
+      maxAge: 60 * 60 * 24,
+    })
   }
 
   return response
 }
 
 export const config = {
-  matcher: ["/((?!api|_next/static|favicon.ico|.*\\.png|.*\\.jpg|.*\\.gif|.*\\.svg).*)"], // prevents redirecting on static files
+  matcher: [
+    "/((?!api|_next/static|favicon.ico|.*\\.png|.*\\.jpg|.*\\.gif|.*\\.svg).*)",
+  ], // prevents redirecting on static files
 }
