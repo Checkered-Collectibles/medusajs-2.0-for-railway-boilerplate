@@ -25,13 +25,12 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
           <div>
             <h3 className="text-xl-semi mb-4">Got questions?</h3>
             <span className="txt-medium">
-              You can find frequently asked questions and answers on our
-              help center page.
+              You can email us anytime if you have any questions.
             </span>
           </div>
           <div>
-            <UnderlineLink href="/help">
-              Help Center
+            <UnderlineLink href="mailto:hello@checkered.in">
+              Email Us
             </UnderlineLink>
           </div>
         </div>
