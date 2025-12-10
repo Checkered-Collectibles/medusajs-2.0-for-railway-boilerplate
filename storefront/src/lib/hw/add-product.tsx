@@ -14,6 +14,7 @@ export async function getFantasyProducts(countryCode: string) {
         category_id: [FANTASY_CATEGORY_ID], // IMPORTANT: tag filter uses tag_id[]
         is_giftcard: false,
         limit: 6, // up to you
+        // order: "-updated "
     }
 
     const { response } = await getProductsList({
