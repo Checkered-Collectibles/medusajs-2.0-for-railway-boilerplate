@@ -59,7 +59,7 @@ export default async function ProductPreviewInstant({
                     </div>
                 </div>
             </LocalizedClientLink>
-            <div className="shrink-0 mt-3 w-full">
+            <div className="flex-shrink-0 mt-3 w-full">
                 <QuickAddToCartButton
                     productId={product.id}
                     variant={product.variants[0]}

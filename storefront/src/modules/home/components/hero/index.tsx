@@ -6,7 +6,7 @@ import HWImage from "@images/hw.png";
 
 const Hero = () => {
   return (
-    <div className="h-[60vh] md:min-h-192 min-h-120 w-full border-ui-border-base border-b relative bg-ui-bg-subtle">
+    <div className="h-[60vh] md:min-h-[48rem] min-h-[30rem] w-full border-ui-border-base border-b relative bg-ui-bg-subtle">
       <div className="absolute inset-0 z-10 flex flex-col justify-start items-center text-center md:py-32 py-24 gap-6">
         <span>
           <Heading
