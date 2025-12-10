@@ -10,11 +10,11 @@ import Spinner from "@modules/common/icons/spinner"
 import { setAddresses } from "@lib/data/cart"
 import compareAddresses from "@lib/util/compare-addresses"
 import { HttpTypes } from "@medusajs/types"
-import { useFormState } from "react-dom"
 import BillingAddress from "../billing_address"
 import ErrorMessage from "../error-message"
 import ShippingAddress from "../shipping-address"
 import { SubmitButton } from "../submit-button"
+import { useActionState } from "react"
 
 const Addresses = ({
   cart,
@@ -39,7 +39,7 @@ const Addresses = ({
     router.push(pathname + "?step=address")
   }
 
-  const [message, formAction] = useFormState(setAddresses, null)
+  const [message, formAction] = useActionState(setAddresses, null)
 
   return (
     <div className="bg-white">

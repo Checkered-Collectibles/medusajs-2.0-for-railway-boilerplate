@@ -1,5 +1,5 @@
 import { Metadata } from "next"
-import { notFound } from "next/navigation"
+import { notFound, redirect } from "next/navigation"
 
 import Wrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -7,6 +7,7 @@ import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { enrichLineItems, retrieveCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { getCustomer } from "@lib/data/customer"
+import { evaluateHotWheelsRule } from "@lib/hw/rule"
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -19,7 +20,7 @@ const fetchCart = async () => {
   }
 
   if (cart?.items?.length) {
-    const enrichedItems = await enrichLineItems(cart?.items, cart?.region_id!)
+    const enrichedItems = await enrichLineItems(cart.items, cart.region_id!)
     cart.items = enrichedItems as HttpTypes.StoreCartLineItem[]
   }
 
@@ -29,6 +30,14 @@ const fetchCart = async () => {
 export default async function Checkout() {
   const cart = await fetchCart()
   const customer = await getCustomer()
+
+  // 🔐 Enforce Hot Wheels rule server-side for /checkout
+  const { canCheckout } = evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
+
+  if (!canCheckout) {
+    // User tried to go directly to /checkout with invalid cart
+    redirect("/cart")
+  }
 
   return (
     <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">

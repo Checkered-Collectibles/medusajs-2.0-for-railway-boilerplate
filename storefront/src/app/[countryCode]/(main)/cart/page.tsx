@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "Cart",
   description: "View your cart",
 }
+type Props = {
+  params: { countryCode: string; handle: string }
+}
 
 const fetchCart = async () => {
   const cart = await retrieveCart()
@@ -25,9 +28,10 @@ const fetchCart = async () => {
   return cart
 }
 
-export default async function Cart() {
+export default async function Cart({ params }: Props) {
+  const countryCode = params.countryCode;
   const cart = await fetchCart()
   const customer = await getCustomer()
 
-  return <CartTemplate cart={cart} customer={customer} />
+  return <CartTemplate cart={cart} customer={customer} countryCode={countryCode} />
 }
