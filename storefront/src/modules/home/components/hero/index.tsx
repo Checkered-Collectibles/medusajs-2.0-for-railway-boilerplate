@@ -13,20 +13,20 @@ const Hero = () => {
             level="h1"
             className="text-3xl leading-10 text-ui-fg-base font-normal flex gap-2 items-center justify-center"
           >
-            We sell <Image src={HWImage} width={160} alt="HW image" className="" />
+            Stop Overpaying for <Image src={HWImage} width={160} alt="Hot Wheels" className="" />
           </Heading>
           <Heading
             level="h2"
             className="text-3xl leading-10 text-ui-fg-subtle font-normal"
           >
-            Buy any car at ₹250
+            Genuine Hot Wheels cars, only ₹350
           </Heading>
         </span>
         <a
           href="/store"
         >
           <Button variant="primary">
-            Be the scalpers' nightmare {"->"}
+            Beat the scalpers – Shop Now {"->"}
           </Button>
         </a>
       </div>
