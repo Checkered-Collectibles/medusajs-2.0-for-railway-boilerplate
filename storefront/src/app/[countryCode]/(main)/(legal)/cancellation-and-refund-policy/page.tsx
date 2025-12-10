@@ -31,8 +31,10 @@ const CancellationAndRefundPolicyPage = () => {
                 </li>
                 <li>
                     To request a cancellation, please contact us as soon as possible at{" "}
-                    <strong>support@checkered.in</strong> or call{" "}
-                    <strong>6394524885</strong>, mentioning your order ID.
+                    <strong>hello@checkered.in</strong>,
+                    {/* or call{" "}
+                    <strong>6394524885</strong>, */}
+                    mentioning your order ID.
                 </li>
             </ul>
 
@@ -146,11 +148,11 @@ const CancellationAndRefundPolicyPage = () => {
             </p>
             <ul>
                 <li>
-                    <strong>Email:</strong> support@checkered.in
+                    <strong>Email:</strong> hello@checkered.in
                 </li>
-                <li>
+                {/* <li>
                     <strong>Phone:</strong> 6394524885
-                </li>
+                </li> */}
                 <li>
                     <strong>Location:</strong> Fatehpur, Uttar Pradesh, India
                 </li>

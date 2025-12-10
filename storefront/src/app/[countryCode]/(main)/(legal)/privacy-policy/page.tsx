@@ -124,8 +124,8 @@ const PrivacyPolicyPage = () => {
             <h2>11. Contact Us</h2>
             <p>If you have any questions about this Privacy Policy, please contact us:</p>
             <ul>
-                <li><strong>Email:</strong> support@checkered.in</li>
-                <li><strong>Phone:</strong> 6394524885</li>
+                <li><strong>Email:</strong> hello@checkered.in</li>
+                {/* <li><strong>Phone:</strong> 6394524885</li> */}
                 <li>
                     <strong>Location:</strong> Fatehpur, Uttar Pradesh, India
                 </li>

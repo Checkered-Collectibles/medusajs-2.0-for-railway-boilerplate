@@ -23,7 +23,7 @@ export default async function Footer() {
               <Image src={LogoImage} width={200} alt="Checkered Collectibles" />
             </LocalizedClientLink>
             <Text className="">We are an end to the scalpers.<br />Join the revolution.</Text>
-            <Text className="">212601 - Fatehpur, Uttar Pradesh, India</Text>
+            <Text className="">Fatehpur, Uttar Pradesh, India</Text>
           </div>
           <div className="text-small-regular gap-10 md:gap-x-16 grid grid-cols-2 sm:grid-cols-3">
             {product_categories && product_categories?.length > 0 && (
@@ -110,7 +110,7 @@ export default async function Footer() {
                 </ul>
               </div>
             )}
-            <div className="flex flex-col gap-y-2">
+            {/* <div className="flex flex-col gap-y-2">
               <span className="txt-small-plus txt-ui-fg-base">Connect with us</span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
@@ -134,12 +134,12 @@ export default async function Footer() {
                   </a>
                 </li>
               </ul>
-            </div>
+            </div> */}
           </div>
         </div>
         <div className="flex md:flex-row flex-col-reverse gap-5 w-full mb-16 justify-between items-center text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} CHECKERED COLLECTIBLES — Owned and operated by Shubhankar Trivedi.
+            © {new Date().getFullYear()} Checkered Collectibles — Owned and operated by Shubhankar Trivedi.
           </Text>
           <div className="flex gap-3">
             <a href="mailto:hello@checkered.in" className=""><Text className="text-xs underline hover:no-underline">

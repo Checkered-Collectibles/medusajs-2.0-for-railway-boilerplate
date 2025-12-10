@@ -181,8 +181,8 @@ export default function Terms() {
                 If you have any questions about these Terms &amp; Conditions, you can contact us at:
             </p>
             <ul>
-                <li><strong>Email:</strong> support@checkered.in</li>
-                <li><strong>Phone:</strong> 6394524885</li>
+                <li><strong>Email:</strong> hello@checkered.in</li>
+                {/* <li><strong>Phone:</strong> 6394524885</li> */}
                 <li>
                     <strong>Location:</strong> Fatehpur, Uttar Pradesh, India
                 </li>

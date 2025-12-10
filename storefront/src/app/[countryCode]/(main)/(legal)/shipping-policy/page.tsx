@@ -126,11 +126,11 @@ const ShippingPolicyPage = () => {
             </p>
             <ul>
                 <li>
-                    <strong>Email:</strong> support@checkered.in
+                    <strong>Email:</strong> hello@checkered.in
                 </li>
-                <li>
+                {/* <li>
                     <strong>Phone:</strong> 6394524885
-                </li>
+                </li> */}
                 <li>
                     <strong>Location:</strong> Fatehpur, Uttar Pradesh, India
                 </li>
