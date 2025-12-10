@@ -12,6 +12,8 @@ import { getFantasyProducts } from "@lib/hw/add-product"
 import ProductPreview from "@modules/products/components/product-preview"
 import { getRegion } from "@lib/data/regions"
 import ProductPreviewInstant from "@modules/products/components/product-preview-instant"
+import LocalizedClientLink from "@modules/common/components/localized-client-link"
+import InteractiveLink from "@modules/common/components/interactive-link"
 
 
 const CartTemplate = async ({
@@ -55,13 +57,19 @@ const CartTemplate = async ({
               <ItemsTemplate items={cart.items} />
               {!canCheckout && fantasyProducts.length > 0 && (
                 <div className="mt-12">
-                  <h3 className="text-xl font-semibold mb-4">
-                    Add Fantasy Cars to Checkout
-                  </h3>
-                  <p className="text-sm text-red-600 mb-6">
-                    You need {missingFantasy} more Fantasy car(s) to continue.
-                  </p>
-
+                  <div className="flex gap-5 justify-between items-center">
+                    <div className="">
+                      <h3 className="text-xl font-semibold mb-4">
+                        Add Fantasy Cars to Checkout
+                      </h3>
+                      <p className="text-sm text-red-600 mb-6">
+                        You need {missingFantasy} more Fantasy car(s) to continue.
+                      </p>
+                    </div>
+                    <InteractiveLink href={`/collections/`}>
+                      View all
+                    </InteractiveLink>
+                  </div>
                   <ul className="grid grid-cols-2 small:grid-cols-3 gap-6">
                     {fantasyProducts.map((product) => (
                       <li key={product.id}>

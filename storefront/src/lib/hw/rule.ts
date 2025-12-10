@@ -1,8 +1,8 @@
 // src/modules/cart/lib/hotwheels-rule.ts
 import { HttpTypes } from "@medusajs/types"
 
-export const LICENSED_TAG_ID = "ptag_01KC2HBR0N82R38FWK0B0SFEKQ"
-export const FANTASY_TAG_ID = "ptag_01KC3X7MZ45VZ98K6NX71A88D0"
+export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
+export const FANTASY_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8"
 
 export type HotWheelsRuleResult = {
     licensedCount: number
@@ -20,17 +20,16 @@ export function evaluateHotWheelsRule(
 
     if (cart?.items) {
         for (const item of cart.items) {
-            console.log("TAGS", item.product?.tags)
             const quantity = item.quantity || 0
             // make sure your cart API expands `items.product.categories`
-            const tags = (item as any).product?.tags ?? []
-            const tagsIds = tags.map((c: any) => c.id)
+            const categories = (item as any).product?.categories ?? []
+            const categoryIds = categories.map((c: any) => c.id)
 
-            if (tagsIds.includes(LICENSED_TAG_ID)) {
+            if (categoryIds.includes(LICENSED_CATEGORY_ID)) {
                 licensedCount += quantity
             }
 
-            if (tagsIds.includes(FANTASY_TAG_ID)) {
+            if (categoryIds.includes(FANTASY_CATEGORY_ID)) {
                 fantasyCount += quantity
             }
         }

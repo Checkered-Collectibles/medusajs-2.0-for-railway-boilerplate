@@ -2,7 +2,7 @@ import { getProductsList } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { HttpTypes } from "@medusajs/types"
 
-import { FANTASY_TAG_ID } from "./rule"
+import { FANTASY_CATEGORY_ID } from "./rule"
 
 export async function getFantasyProducts(countryCode: string) {
     // Retrieve region so prices are returned correctly
@@ -11,9 +11,9 @@ export async function getFantasyProducts(countryCode: string) {
 
     const queryParams: HttpTypes.StoreProductListParams = {
         region_id: region.id,
-        tag_id: [FANTASY_TAG_ID], // IMPORTANT: tag filter uses tag_id[]
+        category_id: [FANTASY_CATEGORY_ID], // IMPORTANT: tag filter uses tag_id[]
         is_giftcard: false,
-        limit: 12, // up to you
+        limit: 6, // up to you
     }
 
     const { response } = await getProductsList({
