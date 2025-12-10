@@ -57,7 +57,7 @@ const Summary = ({
       {/* Show rule warning just above the button */}
       {!canCheckout && restrictionMessage && (
         <p className="text-xs text-red-600">
-          {restrictionMessage}
+          {restrictionMessage && "To keep Hot Wheels fun and affordable, Licensed cars ride best with a Fantasy buddy! Add the missing Fantasy car(s) to continue 😊"}
         </p>
       )}
 

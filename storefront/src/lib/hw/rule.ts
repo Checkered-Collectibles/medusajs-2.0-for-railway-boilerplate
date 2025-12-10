@@ -40,7 +40,7 @@ export function evaluateHotWheelsRule(
 
     const restrictionMessage =
         missingFantasy > 0
-            ? `You have ${licensedCount} licensed car(s), but only ${fantasyCount} fantasy car(s). Please add ${missingFantasy} more "Hot Wheels Mainline Fantasy" car(s) to checkout.`
+            ? `To help us keep Hot Wheels prices affordable and continue what we do, each Licensed Hot Wheels car needs to be paired with a Fantasy car. You currently have ${licensedCount} Licensed car(s) and ${fantasyCount} Fantasy car(s). Please add ${missingFantasy} more Fantasy car(s) to continue checkout 😄`
             : null
 
     return {
