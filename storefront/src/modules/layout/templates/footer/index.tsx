@@ -14,7 +14,7 @@ export default async function Footer() {
   return (
     <footer className="border-t border-ui-border-base w-full">
       <div className="content-container flex flex-col w-full">
-        <div className="flex flex-col gap-y-6 xsmall:flex-row items-start justify-between py-40">
+        <div className="flex flex-col gap-6 xsmall:flex-row items-start justify-between py-40">
           <div className="space-y-5">
             <LocalizedClientLink
               href="/"
@@ -110,7 +110,7 @@ export default async function Footer() {
                 </ul>
               </div>
             )}
-            {/* <div className="flex flex-col gap-y-2">
+            <div className="flex flex-col gap-y-2">
               <span className="txt-small-plus txt-ui-fg-base">Connect with us</span>
               <ul className="grid grid-cols-1 gap-y-2 text-ui-fg-subtle txt-small">
                 <li>
@@ -134,14 +134,14 @@ export default async function Footer() {
                   </a>
                 </li>
               </ul>
-            </div> */}
+            </div>
           </div>
         </div>
         <div className="flex md:flex-row flex-col-reverse gap-5 w-full mb-16 justify-between items-center text-ui-fg-muted">
           <Text className="txt-compact-small">
             © {new Date().getFullYear()} Checkered Collectibles — Owned and operated by Shubhankar Trivedi.
           </Text>
-          <div className="flex gap-3">
+          <div className="flex flex-wrap gap-3">
             <a href="mailto:hello@checkered.in" className=""><Text className="text-xs underline hover:no-underline">
               Contact Us
             </Text></a>

@@ -8,18 +8,18 @@ const Hero = () => {
   return (
     <div className="h-[60vh] md:min-h-[48rem] min-h-[30rem] w-full border-ui-border-base border-b relative bg-ui-bg-subtle">
       <div className="absolute inset-0 z-10 flex flex-col justify-start items-center text-center md:py-32 py-24 gap-6">
-        <span>
+        <span className="px-5">
           <Heading
             level="h1"
-            className="text-3xl leading-10 text-ui-fg-base font-normal flex gap-2 items-center justify-center"
+            className="sm:text-3xl text-2xl leading-10 text-ui-fg-base font-normal flex flex-wrap gap-2 items-center justify-center"
           >
             Stop Overpaying for <Image src={HWImage} width={160} alt="Hot Wheels" className="" />
           </Heading>
           <Heading
             level="h2"
-            className="text-3xl leading-10 text-ui-fg-subtle font-normal"
+            className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal"
           >
-            Genuine Hot Wheels cars, only ₹350
+            Genuine Hot Wheels cars, <br className="sm:hidden" /> only ₹350
           </Heading>
         </span>
         <a
