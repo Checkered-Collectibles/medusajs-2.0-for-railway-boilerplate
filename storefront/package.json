@@ -52,11 +52,13 @@
     "pg": "^8.11.3",
     "qs": "^6.12.1",
     "react": "^18.2.0",
+    "react-confetti": "^6.4.0",
     "react-country-flag": "^3.0.2",
     "react-dom": "^18.2.0",
     "react-instantsearch-hooks-web": "^6.29.0",
     "react-intersection-observer": "^9.3.4",
     "react-razorpay": "^3.0.1",
+    "react-use": "^17.6.0",
     "server-only": "^0.0.1",
     "tailwindcss-radix": "^2.8.0",
     "webpack": "^5"
