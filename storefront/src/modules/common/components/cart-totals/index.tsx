@@ -21,12 +21,22 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
   const {
     currency_code,
     total,
-    subtotal,
+    subtotal, // no longer used for display
     tax_total,
     shipping_total,
     discount_total,
     gift_card_total,
   } = totals
+
+  const safe = (v?: number | null) => v ?? 0
+
+  // Recomputed subtotal: excl. shipping & taxes
+  const computedSubtotal =
+    safe(total) +
+    safe(discount_total) -
+    safe(shipping_total) -
+    safe(tax_total) +
+    safe(gift_card_total)
 
   return (
     <div>
@@ -35,10 +45,14 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
           <span className="flex gap-x-1 items-center">
             Subtotal (excl. shipping and taxes)
           </span>
-          <span data-testid="cart-subtotal" data-value={subtotal || 0}>
-            {convertToLocale({ amount: subtotal ?? 0, currency_code })}
+          <span
+            data-testid="cart-subtotal"
+            data-value={computedSubtotal}
+          >
+            {convertToLocale({ amount: computedSubtotal, currency_code })}
           </span>
         </div>
+
         {!!discount_total && (
           <div className="flex items-center justify-between">
             <span>Discount</span>
@@ -48,22 +62,34 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
               data-value={discount_total || 0}
             >
               -{" "}
-              {convertToLocale({ amount: discount_total ?? 0, currency_code })}
+              {convertToLocale({
+                amount: discount_total ?? 0,
+                currency_code,
+              })}
             </span>
           </div>
         )}
+
         <div className="flex items-center justify-between">
           <span>Shipping</span>
-          <span data-testid="cart-shipping" data-value={shipping_total || 0}>
-            {convertToLocale({ amount: shipping_total ?? 0, currency_code })}
+          <span
+            data-testid="cart-shipping"
+            data-value={shipping_total || 0}
+          >
+            {convertToLocale({
+              amount: shipping_total ?? 0,
+              currency_code,
+            })}
           </span>
         </div>
+
         <div className="flex justify-between">
           <span className="flex gap-x-1 items-center ">Taxes</span>
           <span data-testid="cart-taxes" data-value={tax_total || 0}>
             {convertToLocale({ amount: tax_total ?? 0, currency_code })}
           </span>
         </div>
+
         {!!gift_card_total && (
           <div className="flex items-center justify-between">
             <span>Gift card</span>
@@ -73,12 +99,17 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
               data-value={gift_card_total || 0}
             >
               -{" "}
-              {convertToLocale({ amount: gift_card_total ?? 0, currency_code })}
+              {convertToLocale({
+                amount: gift_card_total ?? 0,
+                currency_code,
+              })}
             </span>
           </div>
         )}
       </div>
+
       <div className="h-px w-full border-b border-gray-200 my-4" />
+
       <div className="flex items-center justify-between text-ui-fg-base mb-2 txt-medium ">
         <span>Total</span>
         <span
@@ -89,6 +120,7 @@ const CartTotals: React.FC<CartTotalsProps> = ({ totals }) => {
           {convertToLocale({ amount: total ?? 0, currency_code })}
         </span>
       </div>
+
       <div className="h-px w-full border-b border-gray-200 mt-4" />
     </div>
   )
