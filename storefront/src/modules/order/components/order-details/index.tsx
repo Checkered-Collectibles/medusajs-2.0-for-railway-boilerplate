@@ -1,3 +1,4 @@
+import { Check } from "@medusajs/icons"
 import { HttpTypes } from "@medusajs/types"
 import { Text } from "@medusajs/ui"
 
@@ -42,16 +43,17 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
               Order status:{" "}
               <span className="text-ui-fg-subtle " data-testid="order-status">
                 {/* TODO: Check where the statuses should come from */}
-                {/* {formatStatus(order.fulfillment_status)} */}
+                {formatStatus(order.fulfillment_status)}
               </span>
             </Text>
-            <Text>
+            <Text className="flex flex-wrap gap-1">
               Payment status:{" "}
               <span
-                className="text-ui-fg-subtle "
+                className="text-ui-fg-subtle flex gap-1 items-center"
                 sata-testid="order-payment-status"
               >
-                {/* {formatStatus(order.payment_status)} */}
+
+                {formatStatus(order.payment_status)}
               </span>
             </Text>
           </>
