@@ -45,24 +45,68 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { handle } = params
   const region = await getRegion(params.countryCode)
-
-  if (!region) {
-    notFound()
-  }
+  if (!region) notFound()
 
   const product = await getProductByHandle(handle, region.id)
+  if (!product) notFound()
 
-  if (!product) {
-    notFound()
-  }
+  const price = product.variants?.[0]?.calculated_price
+  const currency = price?.currency_code?.toUpperCase() ?? "inr"
+  const amount = price?.calculated_amount
+    ? (price.calculated_amount).toFixed(2)
+    : 250
+
+  const availability =
+    product.variants?.some(
+      (v) =>
+        !v.manage_inventory ||
+        v.allow_backorder ||
+        v.inventory_quantity !== 0
+    )
+      ? "InStock"
+      : "OutOfStock"
+  let category = "Hot Wheels";
+  if (product.categories) category = product.categories[0].name ?? "Hot Wheels";
+  const title = `${category} ${product.title} | Checkered Collectibles`
+  const description =
+    product.description ||
+    `${product.title} available online. Buy now with fast shipping.`
 
   return {
-    title: `${product.title} | Medusa Store`,
-    description: `${product.title}`,
+    title,
+    description,
+    keywords: [
+      product.title,
+      product.subtitle,
+      product.collection?.title,
+      product.type?.value,
+    ].filter(Boolean) as string[],
+
     openGraph: {
-      title: `${product.title} | Medusa Store`,
-      description: `${product.title}`,
+      type: "website",
+      title,
+      description,
+      images: product.images?.length
+        ? product.images.map((img) => ({
+          url: img.url,
+          alt: product.title,
+        }))
+        : product.thumbnail
+          ? [{ url: product.thumbnail, alt: product.title }]
+          : [],
+    },
+
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
       images: product.thumbnail ? [product.thumbnail] : [],
+    },
+
+    other: {
+      "product:price:amount": amount,
+      "product:price:currency": currency,
+      "product:availability": availability,
     },
   }
 }

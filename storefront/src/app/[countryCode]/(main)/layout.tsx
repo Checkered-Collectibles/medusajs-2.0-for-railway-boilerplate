@@ -7,6 +7,9 @@ import Banner from "@modules/layout/templates/banner"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  title: "Checkered Collectibles | Hot Wheels Without the Hype",
+  description:
+    "Authentic Hot Wheels and die-cast collectibles at honest prices. We’re putting collectibles back in the hands of fans — not scalpers.",
 }
 
 export default async function PageLayout(props: { children: React.ReactNode }) {

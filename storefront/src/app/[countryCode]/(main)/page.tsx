@@ -6,9 +6,9 @@ import { getCollectionsWithProducts } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Checkered Collectibles",
+  title: "Checkered Collectibles | Hot Wheels Without the Hype",
   description:
-    "We sell hot wheels and other collectibles for affordable prices. We are an end to the scalpers. Join the revolution.",
+    "Authentic Hot Wheels and die-cast collectibles at honest prices. We’re putting collectibles back in the hands of fans — not scalpers.",
 }
 
 export default async function Home({
