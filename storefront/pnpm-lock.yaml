@@ -72,6 +72,9 @@ importers:
       posthog-js:
         specifier: ^1.306.0
         version: 1.306.0
+      posthog-node:
+        specifier: ^5.17.2
+        version: 5.17.2
       qs:
         specifier: ^6.12.1
         version: 6.13.1
@@ -3280,6 +3283,10 @@ packages:
 
   posthog-js@1.306.0:
     resolution: {integrity: sha512-sjsy0El4HL6PgbyWiUF0CaKb2d1Q8okbSeT4eajan3QSvkWus6ygHQuW2l4lfvp6NLRQrIZKH/0sUanhASptUQ==}
+
+  posthog-node@5.17.2:
+    resolution: {integrity: sha512-lz3YJOr0Nmiz0yHASaINEDHqoV+0bC3eD8aZAG+Ky292dAnVYul+ga/dMX8KCBXg8hHfKdxw0SztYD5j6dgUqQ==}
+    engines: {node: '>=20'}
 
   preact@10.25.3:
     resolution: {integrity: sha512-dzQmIFtM970z+fP9ziQ3yG4e3ULIbwZzJ734vaMVUTaKQ2+Ru1Ou/gjshOYVHCcd1rpAelC6ngjvjDXph98unQ==}
@@ -7718,6 +7725,10 @@ snapshots:
       fflate: 0.4.8
       preact: 10.25.3
       web-vitals: 4.2.4
+
+  posthog-node@5.17.2:
+    dependencies:
+      '@posthog/core': 1.7.1
 
   preact@10.25.3: {}
 
