@@ -65,9 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     )
       ? "InStock"
       : "OutOfStock"
-  let category = "Hot Wheels";
-  if (product.categories) category = product.categories[0].name ?? "Hot Wheels";
-  const title = `${category} ${product.title} | Checkered Collectibles`
+  const title = `${product.title} | Checkered Collectibles`
   const description =
     product.description ||
     `${product.title} available online. Buy now with fast shipping.`
