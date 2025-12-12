@@ -142,9 +142,9 @@ export default async function Footer() {
             © {new Date().getFullYear()} Checkered Collectibles — Owned and operated by Shubhankar Trivedi.
           </Text>
           <div className="flex flex-wrap gap-3">
-            <a href="mailto:hello@checkered.in" className=""><Text className="text-xs underline hover:no-underline">
+            <LocalizedClientLink href="/contact" className=""><Text className="text-xs underline hover:no-underline">
               Contact Us
-            </Text></a>
+            </Text></LocalizedClientLink>
             <LocalizedClientLink href="/terms-and-conditions" className=""><Text className="text-xs underline hover:no-underline">
               Terms & Conditions
             </Text></LocalizedClientLink>
