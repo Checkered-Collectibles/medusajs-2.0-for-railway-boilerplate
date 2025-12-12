@@ -24,14 +24,10 @@ export default function QuickAddToCartButton({
 }: QuickAddToCartButtonProps) {
     const [isPending, startTransition] = useTransition()
 
-    // ----- STOCK CHECK LOGIC -----
-    const managesInventory = variant.manage_inventory ?? true
-    const quantity = variant.inventory_quantity ?? 0
-    const allowBackorder = (variant as any).allow_backorder ?? false
-
-    const isInStock = managesInventory
-        ? quantity > 0 || allowBackorder
-        : true // if not managing inventory, treat as always available
+    const isInStock =
+        !variant.manage_inventory ||
+        variant.allow_backorder ||
+        variant.inventory_quantity !== 0
 
     const handleAdd = () => {
         if (!variant.id || !isInStock) return
