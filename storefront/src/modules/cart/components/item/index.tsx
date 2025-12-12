@@ -35,7 +35,8 @@ const Item = ({ item, type = "full" }: ItemProps) => {
       quantity,
     })
       .catch((err) => {
-        setError(err.message)
+        // setError(err.message)
+        setError("Too much quantity")
       })
       .finally(() => {
         setUpdating(false)
