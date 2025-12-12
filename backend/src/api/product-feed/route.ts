@@ -18,5 +18,5 @@ export async function GET(
     })
 
     res.setHeader("Content-Type", "application/rss+xml; charset=utf-8")
-    res.status(200).send(result.xml)
+    res.status(200).send(result)
 }
