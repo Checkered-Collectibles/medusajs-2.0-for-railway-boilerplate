@@ -109,7 +109,7 @@ export const getProductFeedItemsStep = createStep(
                         id: variant.id,
                         title: product.title,
                         description: product.description ?? "",
-                        link: `${storefrontUrl || ""}/${input.country_code}/${product.handle}`,
+                        link: `${storefrontUrl || "https://checkered.in"}/${product.handle}`,
                         image_link: product.thumbnail ?? "",
                         additional_image_link: product.images?.map((image) => image.url)?.join(","),
                         availability: stockStatus,

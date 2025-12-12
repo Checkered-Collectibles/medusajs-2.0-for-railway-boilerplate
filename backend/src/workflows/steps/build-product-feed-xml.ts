@@ -22,7 +22,7 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:id>${escape(item.id)}</g:id>` +
                 `<title>${escape(item.title)}</title>` +
                 `<description>${escape(item.description)}</description>` +
-                `<link>https://checkered.in${escape(item.link)}</link>` +
+                `<link>${escape(item.link)}</link>` +
                 (item.image_link ? `<g:image_link>${escape(item.image_link)}</g:image_link>` : "") +
                 (item.additional_image_link ? `<g:additional_image_link>${escape(item.additional_image_link)}</g:additional_image_link>` : "") +
                 `<g:availability>${escape(item.availability)}</g:availability>` +
