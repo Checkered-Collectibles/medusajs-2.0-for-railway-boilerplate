@@ -51,6 +51,21 @@ const medusaConfig = {
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/analytics",
+      options: {
+        providers: [
+          {
+            resolve: "@medusajs/analytics-posthog",
+            id: "posthog",
+            options: {
+              posthogEventsKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
+              posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "@medusajs/medusa/payment",
       options: {
         providers: [

@@ -17,6 +17,9 @@ importers:
       '@medusajs/admin-shared':
         specifier: 2.12.1
         version: 2.12.1
+      '@medusajs/analytics-posthog':
+        specifier: ^2.12.2
+        version: 2.12.2(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(posthog-node@4.18.0)
       '@medusajs/cli':
         specifier: 2.12.1
         version: 2.12.1(@types/node@20.19.25)
@@ -1300,6 +1303,13 @@ packages:
     engines: {node: '>=20'}
     peerDependencies:
       '@medusajs/framework': 2.12.1
+      posthog-node: ^5.11.0
+
+  '@medusajs/analytics-posthog@2.12.2':
+    resolution: {integrity: sha512-72//0I0odqayGi8zkLBJj7jYCFGAtPxAJ9mMSvPRpd1MqjlqM70hm9kbX0p+8M108Wus7dalTQAkLxeLntwjAg==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@medusajs/framework': 2.12.2
       posthog-node: ^5.11.0
 
   '@medusajs/analytics@2.12.1':
@@ -9353,6 +9363,11 @@ snapshots:
       '@medusajs/framework': 2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25))
 
   '@medusajs/analytics-posthog@2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(posthog-node@4.18.0)':
+    dependencies:
+      '@medusajs/framework': 2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25))
+      posthog-node: 4.18.0
+
+  '@medusajs/analytics-posthog@2.12.2(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(posthog-node@4.18.0)':
     dependencies:
       '@medusajs/framework': 2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25))
       posthog-node: 4.18.0
