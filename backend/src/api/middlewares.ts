@@ -1,14 +1,17 @@
-// src/api/middlewares.ts
-import { defineMiddlewares } from "@medusajs/framework/http"
+import { defineMiddlewares, validateAndTransformQuery } from '@medusajs/framework/http';
+import { z } from "zod"
 
 export default defineMiddlewares({
     routes: [
         {
-            method: ["POST"],
-            matcher: "/admin/uploads",          // change to match your upload route
-            bodyParser: {
-                sizeLimit: "20mb",         // increase as needed
-            },
-        },
-    ],
+            matcher: "/product-feed",
+            methods: ["GET"],
+            middlewares: [
+                validateAndTransformQuery(z.object({
+                    currency_code: z.string(),
+                    country_code: z.string(),
+                }), {})
+            ]
+        }
+    ]
 })
