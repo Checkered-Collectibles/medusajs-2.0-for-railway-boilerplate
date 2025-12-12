@@ -7,18 +7,21 @@ type GenerateProductFeedWorkflowInput = {
     country_code: string
 }
 
-export const generateProductFeedWorkflow: ReturnType<typeof createWorkflow> =
-    createWorkflow(
-        "generate-product-feed",
-        (input: GenerateProductFeedWorkflowInput) => {
-            const { items: feedItems } = getProductFeedItemsStep(input)
+type GenerateProductFeedWorkflowOutput = {
+    xml: string
+}
 
-            const xml = buildProductFeedXmlStep({
-                items: feedItems,
-            })
+export const generateProductFeedWorkflow = createWorkflow(
+    "generate-product-feed",
+    (input: GenerateProductFeedWorkflowInput) => {
+        const { items: feedItems } = getProductFeedItemsStep(input)
 
-            return new WorkflowResponse({ xml })
-        }
-    )
+        const xml = buildProductFeedXmlStep({
+            items: feedItems,
+        })
+
+        return new WorkflowResponse<GenerateProductFeedWorkflowOutput>({ xml })
+    }
+)
 
 export default generateProductFeedWorkflow
