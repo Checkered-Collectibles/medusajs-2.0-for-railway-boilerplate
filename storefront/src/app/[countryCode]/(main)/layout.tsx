@@ -4,6 +4,7 @@ import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
 import { getBaseURL } from "@lib/util/env"
 import Banner from "@modules/layout/templates/banner"
+import WhatsappContact from "@modules/layout/templates/whatsapp"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -17,6 +18,7 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
     <>
       <Banner />
       <Nav />
+      <WhatsappContact />
       {props.children}
       <Footer />
     </>

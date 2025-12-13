@@ -125,12 +125,12 @@ export default async function Footer() {
                 </li>
                 <li>
                   <a
-                    href="https://instagram.com"
+                    href="https://chat.whatsapp.com/D09sAJ51EXX5MzuFOAmAAK?mode=hqrt2"
                     target="_blank"
                     rel="noreferrer"
                     className="hover:text-ui-fg-base"
                   >
-                    Whatsapp
+                    Whatsapp Group
                   </a>
                 </li>
               </ul>
