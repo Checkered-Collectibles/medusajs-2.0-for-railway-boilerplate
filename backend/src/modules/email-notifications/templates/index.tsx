@@ -46,6 +46,7 @@ export function generateEmailTemplate(
 
     case EmailTemplates.PASSWORD_RESET:
       if (!isPasswordResetData(data)) {
+        console.log(data)
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
           `Invalid data for template "${EmailTemplates.PASSWORD_RESET}"`

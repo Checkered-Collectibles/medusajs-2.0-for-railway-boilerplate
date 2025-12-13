@@ -67,6 +67,7 @@ export async function updatePassword(
 
     return { success: true }
   } catch (err: any) {
+    console.log(err)
     return {
       success: false,
       error: err?.message || "Failed to update password",

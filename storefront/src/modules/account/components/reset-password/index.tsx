@@ -28,7 +28,7 @@ const ResetPasswordForm = ({ email, token, countryCode }: Props) => {
   }, [state?.success, router, countryCode])
 
   return (
-    <div className="max-w-sm w-full flex flex-col items-center px-8 py-10">
+    <div className="max-w-sm w-full flex flex-col items-center px-8 py-16">
       <h1 className="text-large-semi uppercase mb-6">Set a new password</h1>
 
       <p className="text-center text-base-regular text-ui-fg-base mb-8">
@@ -78,7 +78,10 @@ const ResetPasswordForm = ({ email, token, countryCode }: Props) => {
           </p>
         )}
 
-        <SubmitButton className="w-full mt-6" data-testid="reset-submit-button">
+        <SubmitButton
+          className="w-full mt-6"
+          disabled={state?.success}
+        >
           Update password
         </SubmitButton>
       </form>

@@ -76,7 +76,7 @@ export const InviteUserEmail = ({
       <Text className="text-[#666666] text-[12px] leading-[24px]">
         If you were not expecting this invitation, you can ignore this email, as the
         invitation will expire in 24 hours. If you are concerned about your account's safety,
-        please reply to this email to get in touch with us.
+        please send email to hello@checkered.in to get in touch with us.
       </Text>
     </Base>
   )
