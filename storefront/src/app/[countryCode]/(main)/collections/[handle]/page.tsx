@@ -5,10 +5,11 @@ import {
   getCollectionByHandle,
   getCollectionsList,
 } from "@lib/data/collections"
-import { listRegions } from "@lib/data/regions"
+import { getRegion, listRegions } from "@lib/data/regions"
 import { StoreCollection, StoreRegion } from "@medusajs/types"
 import CollectionTemplate from "@modules/collections/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
+import { getProductsList } from "@lib/data/products"
 
 type Props = {
   params: { handle: string; countryCode: string }
@@ -53,17 +54,63 @@ export async function generateStaticParams() {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collection = await getCollectionByHandle(params.handle)
+  if (!collection) notFound()
 
-  if (!collection) {
-    notFound()
+  const region = await getRegion(params.countryCode)
+
+  const { response } = await getProductsList({
+    queryParams: {
+      collection_id: [collection.id],
+      region_id: region?.id,
+      limit: 6, // fetch more to get good images
+    } as any,
+    countryCode: params.countryCode,
+  })
+
+  // ✅ Collect multiple images from products
+  const images =
+    response?.products
+      ?.flatMap((product) => [
+        product.thumbnail,
+        ...(product.images?.map((img) => img.url) ?? []),
+      ])
+      .filter((url): url is string => Boolean(url))
+      .slice(0, 6) // OG supports multiple; keep it reasonable
+      .map((url) => ({
+        url,
+        width: 1200,
+        height: 630,
+        alt: `${collection.title} product image`,
+      })) ?? []
+
+  const title = `${collection.title} | Checkered Collectibles`
+  const description = `Shop ${collection.title} at Checkered Collectibles. Fast shipping, secure checkout, and collector-grade packaging.`
+
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const canonical = baseUrl
+    ? `${baseUrl}/${params.countryCode}/collections/${params.handle}`
+    : undefined
+
+  return {
+    title,
+    description,
+    alternates: canonical ? { canonical } : undefined,
+
+    openGraph: {
+      type: "website",
+      title,
+      description,
+      url: canonical,
+      images: images.length ? images : undefined,
+    },
+
+    twitter: {
+      card: images.length ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: images.map((img) => img.url),
+    },
   }
-
-  const metadata = {
-    title: `${collection.title} | Checkered Collectibles`,
-    description: `${collection.title} available online. Buy now with fast shipping.`,
-  } as Metadata
-
-  return metadata
 }
 
 export default async function CollectionPage({ params, searchParams }: Props) {
