@@ -72,6 +72,7 @@ export const getProductsList = cache(async function ({
         region_id: region.id,
         fields: "*variants.calculated_price",
         ...queryParams,
+        order: "-updated_at"
       },
       { next: { tags: ["products"] } }
     )
