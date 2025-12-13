@@ -3,10 +3,11 @@ import { getRegion } from "@lib/data/regions"
 import { HttpTypes } from "@medusajs/types"
 
 import { FANTASY_CATEGORY_ID } from "./rule"
-import { getCategoriesList, getCategoryById } from "@lib/data/categories"
+import { getCategoryById } from "@lib/data/categories"
 
 export async function getFantasyProducts(
-    countryCode: string
+    cart: HttpTypes.StoreCart | null,
+    countryCode: string,
 ): Promise<{
     products: HttpTypes.StoreProduct[]
     categoryHandle?: string
@@ -19,7 +20,6 @@ export async function getFantasyProducts(
         category_id: [FANTASY_CATEGORY_ID],
         is_giftcard: false,
         limit: 6,
-        // expand: "categories", // 👈 make sure categories are loaded
     }
 
     const { response } = await getProductsList({
@@ -29,12 +29,21 @@ export async function getFantasyProducts(
 
     const products = response.products || []
 
+    // ✅ Collect product IDs already in cart
+    const cartProductIds = new Set(
+        cart?.items?.map((item) => item.product_id).filter(Boolean)
+    )
+
+    // ✅ Filter out products already in cart
+    const filteredProducts = products.filter(
+        (product) => !cartProductIds.has(product.id)
+    )
 
     const category = await getCategoryById([FANTASY_CATEGORY_ID])
-    const categoryHandle = category.product_categories[0].handle;
+    const categoryHandle = category.product_categories[0]?.handle
 
     return {
-        products,
+        products: filteredProducts,
         categoryHandle,
     }
 }

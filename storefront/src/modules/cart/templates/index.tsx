@@ -33,7 +33,7 @@ const CartTemplate = async ({
   let fantasyCategoryHandle: string | undefined
 
   if (!canCheckout) {
-    const res = await getFantasyProducts(countryCode)
+    const res = await getFantasyProducts(cart, countryCode)
     fantasyProducts = res.products
     fantasyCategoryHandle = res.categoryHandle
   }
