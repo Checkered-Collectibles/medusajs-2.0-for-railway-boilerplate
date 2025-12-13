@@ -31,6 +31,7 @@ export default async function Checkout() {
   const cart = await fetchCart()
   const customer = await getCustomer()
 
+  if (!customer) redirect("/account")
   // 🔐 Enforce Hot Wheels rule server-side for /checkout
   const { canCheckout } = evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
 
