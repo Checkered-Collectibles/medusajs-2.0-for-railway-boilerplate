@@ -13,7 +13,7 @@ import Divider from "@modules/common/components/divider"
 import PaymentContainer from "@modules/checkout/components/payment-container"
 import { isStripe as isStripeFunc, paymentInfoMap } from "@lib/constants"
 import { StripeContext } from "@modules/checkout/components/payment-wrapper"
-import { initiatePaymentSession } from "@lib/data/cart"
+import { initiatePaymentSession, retrieveCart } from "@lib/data/cart"
 
 const Payment = ({
   cart,
@@ -85,6 +85,17 @@ const Payment = ({
   const handleSubmit = async () => {
     setIsLoading(true)
     try {
+
+      const freshCart = await retrieveCart()
+
+      const phone =
+        freshCart?.shipping_address?.phone || freshCart?.billing_address?.phone
+
+      if (!phone) {
+        setError("Phone number is required to continue with payment.")
+        return
+      }
+
       const shouldInputCard =
         isStripeFunc(selectedPaymentMethod) && !activeSession
 
@@ -95,12 +106,9 @@ const Payment = ({
       }
 
       if (!shouldInputCard) {
-        return router.push(
-          pathname + "?" + createQueryString("step", "review"),
-          {
-            scroll: false,
-          }
-        )
+        return router.push(pathname + "?" + createQueryString("step", "review"), {
+          scroll: false,
+        })
       }
     } catch (err: any) {
       setError(err.message)
@@ -157,7 +165,7 @@ const Payment = ({
                     return (
                       <PaymentContainer
                         paymentInfoMap={paymentInfoMap}
-                        paymentProviderId={paymentMethod.id}
+                        paymentProviderId={paymentMethod.provider_id ?? paymentMethod.id}
                         key={paymentMethod.id}
                         selectedPaymentOptionId={selectedPaymentMethod}
                       />

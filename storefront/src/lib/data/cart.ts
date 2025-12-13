@@ -219,6 +219,14 @@ export async function initiatePaymentSession(
     context?: Record<string, unknown>
   }
 ) {
+  const phone =
+    cart.shipping_address?.phone ||
+    cart.billing_address?.phone
+
+  if (!phone) {
+    throw new Error("Phone number is required to proceed with payment.")
+  }
+
   return sdk.store.payment
     .initiatePaymentSession(cart, data, {}, getAuthHeaders())
     .then((resp) => {
@@ -306,6 +314,13 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     if (!cartId) {
       throw new Error("No existing cart found when setting addresses")
     }
+    const shippingPhone = String(
+      formData.get("shipping_address.phone") || ""
+    ).trim()
+
+    if (!shippingPhone) {
+      throw new Error("Phone number is required")
+    }
 
     const data = {
       shipping_address: {
@@ -318,7 +333,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("shipping_address.city"),
         country_code: formData.get("shipping_address.country_code"),
         province: formData.get("shipping_address.province"),
-        phone: formData.get("shipping_address.phone"),
+        phone: String(formData.get("shipping_address.phone") || "").trim(),
       },
       email: formData.get("email"),
     } as any
@@ -337,7 +352,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("billing_address.city"),
         country_code: formData.get("billing_address.country_code"),
         province: formData.get("billing_address.province"),
-        phone: formData.get("billing_address.phone"),
+        phone: String(formData.get("shipping_address.phone") || "").trim(),
       }
     await updateCart(data)
   } catch (e: any) {
