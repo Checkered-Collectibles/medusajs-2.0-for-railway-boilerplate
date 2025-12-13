@@ -15,6 +15,65 @@ export const getCustomer = cache(async function () {
     .catch(() => null)
 })
 
+export async function resetPassword(_currentState: unknown, formData: FormData) {
+  const email = String(formData.get("email") || "").trim()
+
+  if (!email) {
+    return { success: false, error: "Email is required" }
+  }
+
+  try {
+    await sdk.auth.resetPassword("customer", "emailpass", {
+      identifier: email,
+    })
+
+    // Some Medusa setups return a string/redirect URL; we don't need it here.
+    return { success: true, error: null }
+  } catch (error: any) {
+    return { success: false, error: error?.toString?.() ?? "Failed to reset password" }
+  }
+}
+
+export async function updatePassword(
+  _currentState: unknown,
+  formData: FormData
+): Promise<{ success: boolean; error?: string }> {
+  const email = String(formData.get("email") || "").trim()
+  const password = String(formData.get("password") || "")
+  const token = String(formData.get("token") || "").trim()
+
+  if (!email) {
+    return { success: false, error: "Email is missing" }
+  }
+
+  if (!token) {
+    return { success: false, error: "Reset token is missing" }
+  }
+
+  if (!password || password.length < 6) {
+    return { success: false, error: "Password must be at least 6 characters" }
+  }
+
+  try {
+    await sdk.auth.updateProvider(
+      "customer",
+      "emailpass",
+      { email, password },
+      token
+    )
+
+    // Optional: refresh customer cache if user logs in later
+    revalidateTag("customer")
+
+    return { success: true }
+  } catch (err: any) {
+    return {
+      success: false,
+      error: err?.message || "Failed to update password",
+    }
+  }
+}
+
 export const updateCustomer = cache(async function (
   body: HttpTypes.StoreUpdateCustomer
 ) {
@@ -43,7 +102,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
     })
 
     const customHeaders = { authorization: `Bearer ${token}` }
-    
+
     const { customer: createdCustomer } = await sdk.store.customer.create(
       customerForm,
       {},
