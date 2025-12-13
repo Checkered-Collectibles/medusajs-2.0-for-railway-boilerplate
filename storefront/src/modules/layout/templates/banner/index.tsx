@@ -7,14 +7,14 @@ export default function Banner() {
     const isLive = Date.now() >= dropDate.getTime()
 
     return (
-        <section className="flex">
+        <section className="flex sm:text-md text-sm">
             <div className="bg-black w-full text-white p-2 text-center">
                 {isLive ? (
                     <a
                         href="/collections/n-case-2025-day-2"
                         className=""
                     >
-                        🔥 N CASE 2025 - Day 2 is live — Show Now {"->"}
+                        🔥 N CASE 2025 - Day 2 is live<br className="sm:hidden block" /> — Show Now {"->"}
                     </a>
                 ) : (
                     <div>
@@ -24,6 +24,7 @@ export default function Banner() {
                             size="lg"
                             className="px-0 inline"
                         />{" "}
+                        <br className="sm:hidden block" />
                         — Don’t miss it!
                     </div>
                 )}

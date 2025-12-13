@@ -47,12 +47,12 @@ const SideMenu = ({ regions }: { regions: HttpTypes.StoreRegion[] | null }) => {
                 leaveFrom="opacity-100 backdrop-blur-2xl"
                 leaveTo="opacity-0"
               >
-                <Popover.Panel className="flex flex-col absolute w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-30 inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
+                <Popover.Panel className="flex flex-col absolute top-3 w-full pr-4 sm:pr-0 sm:w-1/3 2xl:w-1/4 sm:min-w-min h-[calc(100vh-1rem)] z-30 inset-x-0 text-sm text-ui-fg-on-color m-2 backdrop-blur-2xl">
                   <div
                     data-testid="nav-menu-popup"
                     className="flex flex-col h-full bg-black rounded-3xl justify-between p-6 relative"
                   >
-                    <Image src={LogoNoText} width={300} alt="Checkered Collectibles" className="absolute w-[calc(100%-5rem)]" />
+                    <Image src={LogoNoText} width={300} alt="Checkered Collectibles" className="absolute w-[calc(100%-5rem)] max-w-[15rem]" />
                     <div className="flex justify-end" id="xmark">
                       <button data-testid="close-menu-button" onClick={close}>
                         <XMark />
