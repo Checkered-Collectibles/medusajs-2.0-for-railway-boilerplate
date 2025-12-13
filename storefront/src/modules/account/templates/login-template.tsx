@@ -11,7 +11,6 @@ export enum LOGIN_VIEW {
   SIGN_IN = "sign-in",
   REGISTER = "register",
   RESET_REQ = "reset-request",
-  RESET_PASS = "reset-pass"
 }
 
 const LoginTemplate = () => {
@@ -31,10 +30,6 @@ const LoginTemplate = () => {
 
       {currentView === LOGIN_VIEW.RESET_REQ && (
         <ResetRequest setCurrentView={setCurrentView} />
-      )}
-
-      {currentView === LOGIN_VIEW.RESET_PASS && (
-        <ResetPassword setCurrentView={setCurrentView} />
       )}
     </div>
   )
