@@ -9,6 +9,7 @@ import { redirect } from "next/navigation"
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies"
 import { getProductsById } from "./products"
 import { getRegion } from "./regions"
+import { addCustomerAddress } from "./customer"
 
 export async function retrieveCart() {
   const cartId = getCartId()
@@ -307,22 +308,15 @@ export async function submitPromotionForm(
 // TODO: Pass a POJO instead of a form entity here
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
-    if (!formData) {
-      throw new Error("No form data found when setting addresses")
-    }
+    if (!formData) throw new Error("No form data found when setting addresses")
+
     const cartId = getCartId()
-    if (!cartId) {
-      throw new Error("No existing cart found when setting addresses")
-    }
-    const shippingPhone = String(
-      formData.get("shipping_address.phone") || ""
-    ).trim()
+    if (!cartId) throw new Error("No existing cart found when setting addresses")
 
-    if (!shippingPhone) {
-      throw new Error("Phone number is required")
-    }
+    const shippingPhone = String(formData.get("shipping_address.phone") || "").trim()
+    if (!shippingPhone) throw new Error("Phone number is required")
 
-    const data = {
+    const data: any = {
       shipping_address: {
         first_name: formData.get("shipping_address.first_name"),
         last_name: formData.get("shipping_address.last_name"),
@@ -333,15 +327,17 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("shipping_address.city"),
         country_code: formData.get("shipping_address.country_code"),
         province: formData.get("shipping_address.province"),
-        phone: String(formData.get("shipping_address.phone") || "").trim(),
+        phone: shippingPhone,
       },
       email: formData.get("email"),
-    } as any
+    }
 
     const sameAsBilling = formData.get("same_as_billing")
-    if (sameAsBilling === "on") data.billing_address = data.shipping_address
+    if (sameAsBilling === "on") {
+      data.billing_address = data.shipping_address
+    } else {
+      const billingPhone = String(formData.get("billing_address.phone") || "").trim()
 
-    if (sameAsBilling !== "on")
       data.billing_address = {
         first_name: formData.get("billing_address.first_name"),
         last_name: formData.get("billing_address.last_name"),
@@ -352,16 +348,39 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("billing_address.city"),
         country_code: formData.get("billing_address.country_code"),
         province: formData.get("billing_address.province"),
-        phone: String(formData.get("shipping_address.phone") || "").trim(),
+        phone: billingPhone || shippingPhone,
       }
-    await updateCart(data)
+    }
+
+    const updatedCart = await updateCart(data)
+
+    // ✅ Save address to customer account ONLY if logged in
+    // (guests will not have a customer session, so this would 401)
+    if (updatedCart?.customer_id) {
+      const customerAddressForm = new FormData()
+      customerAddressForm.set("first_name", String(formData.get("shipping_address.first_name") || ""))
+      customerAddressForm.set("last_name", String(formData.get("shipping_address.last_name") || ""))
+      customerAddressForm.set("company", String(formData.get("shipping_address.company") || ""))
+      customerAddressForm.set("address_1", String(formData.get("shipping_address.address_1") || ""))
+      customerAddressForm.set("address_2", "")
+      customerAddressForm.set("city", String(formData.get("shipping_address.city") || ""))
+      customerAddressForm.set("postal_code", String(formData.get("shipping_address.postal_code") || ""))
+      customerAddressForm.set("province", String(formData.get("shipping_address.province") || ""))
+      customerAddressForm.set("country_code", String(formData.get("shipping_address.country_code") || ""))
+      customerAddressForm.set("phone", shippingPhone)
+
+      // don’t block checkout if saving address fails
+      try {
+        await addCustomerAddress(null, customerAddressForm)
+      } catch {
+        // ignore
+      }
+    }
   } catch (e: any) {
     return e.message
   }
 
-  redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
-  )
+  redirect(`/${formData.get("shipping_address.country_code")}/checkout?step=delivery`)
 }
 
 export async function placeOrder() {
