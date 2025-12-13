@@ -23,7 +23,7 @@ const ResetPasswordForm = ({ email, token, countryCode }: Props) => {
   // ✅ redirect after success
   useEffect(() => {
     if (state?.success) {
-      router.push(`/${countryCode}/account`)
+      router.push(`/account`)
     }
   }, [state?.success, router, countryCode])
 

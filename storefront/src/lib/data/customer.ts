@@ -42,36 +42,33 @@ export async function updatePassword(
   const password = String(formData.get("password") || "")
   const token = String(formData.get("token") || "").trim()
 
-  if (!email) {
-    return { success: false, error: "Email is missing" }
-  }
-
-  if (!token) {
-    return { success: false, error: "Reset token is missing" }
-  }
-
+  if (!email) return { success: false, error: "Email is missing" }
+  if (!token) return { success: false, error: "Reset token is missing" }
   if (!password || password.length < 6) {
     return { success: false, error: "Password must be at least 6 characters" }
   }
 
   try {
-    await sdk.auth.updateProvider(
-      "customer",
-      "emailpass",
-      { email, password },
-      token
-    )
+    // 1) Update password using reset token
+    await sdk.auth.updateProvider("customer", "emailpass", { email, password }, token)
 
-    // Optional: refresh customer cache if user logs in later
+    // 2) Immediately log the user in with the new password
+    const loginToken = await sdk.auth.login("customer", "emailpass", { email, password })
+
+    setAuthToken(typeof loginToken === "string" ? loginToken : loginToken.location)
+
     revalidateTag("customer")
 
+    // 3) Redirect to account page
+    // redirect("/account")
     return { success: true }
   } catch (err: any) {
-    console.log(err)
-    return {
-      success: false,
-      error: err?.message || "Failed to update password",
-    }
+    const message =
+      err?.status === 401
+        ? "This reset link is invalid or has expired. Please request a new one."
+        : err?.message || "Failed to update password"
+
+    return { success: false, error: message }
   }
 }
 
