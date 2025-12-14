@@ -15,6 +15,8 @@ export type FeedItem = {
     item_group_id: string
     condition?: string
     brand?: string
+    ean?: string
+    upc?: string
 }
 
 type StepInput = {
@@ -59,6 +61,10 @@ export const getProductFeedItemsStep = createStep(
                     "images.*",
                     "status",
                     "variants.*",
+                    "variants.ean",
+                    "variants.upc",
+                    "variants.sku",
+                    "variants.barcode",
                     "variants.calculated_price.*",
                     "sales_channels.*",
                     "sales_channels.stock_locations.*",
@@ -116,8 +122,14 @@ export const getProductFeedItemsStep = createStep(
                         price: formatPrice(originalPrice as number, currencyCode),
                         sale_price: salePrice ? formatPrice(salePrice as number, currencyCode) : undefined,
                         item_group_id: product.id,
-                        condition: "new", // TODO add condition if supported
-                        brand: "" // TODO add brands if supported
+                        condition: "new",
+                        brand: "",
+
+                        // ✅ EAN for India (13-digit GTIN)
+                        // @ts-ignore (if TS doesn't know variant shape)
+                        ean: (variant as any).ean ?? undefined,
+                        // optional
+                        upc: (variant as any).upc ?? undefined,
                     })
                 }
             }

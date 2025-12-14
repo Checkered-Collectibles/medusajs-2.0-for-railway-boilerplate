@@ -36,9 +36,7 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:condition>${escape(item.condition || "new")}</g:condition>` +
                 `<g:brand>${escape(item.brand || "Hot Wheels")}</g:brand>` +
 
-                `<g:google_product_category>` +
-                `Toys &amp; Games &gt; Toys &gt; Vehicles &gt; Toy Vehicles` +
-                `</g:google_product_category>` +
+                `<g:google_product_category>1253</g:google_product_category>` +
 
                 `<g:product_type>Diecast Cars</g:product_type>` +
                 `<g:age_group>children</g:age_group>` +
