@@ -89,6 +89,31 @@ export default function ProductActions({
     return false
   }, [selectedVariant])
 
+  const stockLabel = useMemo(() => {
+    if (!selectedVariant) return null
+
+    if (!selectedVariant.manage_inventory) {
+      return { text: "In stock", tone: "success" as const }
+    }
+
+    if (selectedVariant.allow_backorder) {
+      return { text: "Available on backorder", tone: "warning" as const }
+    }
+
+    const qty = selectedVariant.inventory_quantity || 0
+
+    if (qty > 0) {
+      // You can tweak threshold text
+      const lowStock = qty <= 3
+      return {
+        text: lowStock ? `Only ${qty} left` : `In stock (${qty} available)`,
+        tone: lowStock ? ("warning" as const) : ("success" as const),
+      }
+    }
+
+    return { text: "Out of stock", tone: "danger" as const }
+  }, [selectedVariant])
+
   const actionsRef = useRef<HTMLDivElement>(null)
 
   const inView = useIntersection(actionsRef, "0px")
@@ -132,8 +157,23 @@ export default function ProductActions({
             </div>
           )}
         </div>
-
-        <ProductPrice product={product} variant={selectedVariant} />
+        <div className="flex justify-between gap-3 items-center">
+          <ProductPrice product={product} variant={selectedVariant} />
+          {/* ✅ Stock display */}
+          {stockLabel && (
+            <div
+              className={[
+                "text-sm py-0.5 px-2 w-fit border border-black/10 rounded-full",
+                stockLabel.tone === "success" ? "text-green-700 bg-green-100" : "",
+                stockLabel.tone === "warning" ? "text-amber-700 bg-amber-100" : "",
+                stockLabel.tone === "danger" ? "text-red-700 bg-red-100" : "",
+              ].join(" ")}
+              data-testid="stock-indicator"
+            >
+              {stockLabel.text}
+            </div>
+          )}
+        </div>
 
         <Button
           onClick={handleAddToCart}
@@ -146,9 +186,33 @@ export default function ProductActions({
           {!selectedVariant
             ? "Select variant"
             : !inStock
-            ? "Out of stock"
-            : "Add to cart"}
+              ? "Out of stock"
+              : "Add to cart"}
         </Button>
+        {/* ✅ Trust & scarcity points */}
+        <div className="mt-3 flex flex-col gap-2 text-sm text-ui-fg-subtle">
+          <div className="flex items-center gap-2">
+            <span>✅</span>
+            <span>100% authentic Hot Wheels</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span>📦</span>
+            <span>Collector-safe packaging</span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span>🚚</span>
+            <span>Ships PAN-India</span>
+          </div>
+
+          {stockLabel?.tone === "warning" && (
+            <div className="flex items-center gap-2 text-amber-700 font-medium">
+              <span>⏳</span>
+              <span>Limited stock — restock not guaranteed</span>
+            </div>
+          )}
+        </div>
         <MobileActions
           product={product}
           variant={selectedVariant}

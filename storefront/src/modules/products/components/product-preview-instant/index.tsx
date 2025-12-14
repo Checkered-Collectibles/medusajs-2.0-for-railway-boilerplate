@@ -21,14 +21,14 @@ export default async function ProductPreviewInstant({
     isFeatured,
 }: HorizontalProductPreviewProps) {
     const region = await getRegion(countryCode)
-    if (!region) return null;
-    // Reuse the same pricing logic as your existing ProductPreview
+    if (!region) return null
+
     const [pricedProduct] = await getProductsById({
         ids: [product.id!],
         regionId: region.id,
     })
 
-    if (!pricedProduct || !product.variants) {
+    if (!pricedProduct || !pricedProduct.variants?.length) {
         return null
     }
 
@@ -36,14 +36,11 @@ export default async function ProductPreviewInstant({
         product: pricedProduct,
     })
 
-    const defaultVariant = pricedProduct.variants?.[0]
+    const defaultVariant = pricedProduct.variants[0] // ✅ correct variant
 
     return (
-        <div
-            className="group"
-            data-testid="product-wrapper"
-        >
-            <LocalizedClientLink href={`/products/${product.handle}`} data-testid="product-wrapper">
+        <div className="group" data-testid="product-wrapper">
+            <LocalizedClientLink href={`/products/${product.handle}`}>
                 <Thumbnail
                     thumbnail={product.thumbnail}
                     images={product.images}
@@ -59,10 +56,11 @@ export default async function ProductPreviewInstant({
                     </div>
                 </div>
             </LocalizedClientLink>
+
             <div className="flex-shrink-0 mt-3 w-full">
                 <QuickAddToCartButton
-                    productId={product.id}
-                    variant={product.variants[0]}
+                    productId={pricedProduct.id}
+                    variant={defaultVariant}      // ✅ FIXED
                     disabled={!defaultVariant}
                     countryCode={countryCode}
                 />

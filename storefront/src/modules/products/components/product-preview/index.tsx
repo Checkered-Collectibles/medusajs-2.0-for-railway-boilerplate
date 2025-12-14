@@ -12,7 +12,6 @@ import QuickAddToCartButton from "../product-preview-instant/add-to-cart"
 import logotypes from "@avto-dev/vehicle-logotypes/src/vehicle-logotypes.json"
 import { getBrandLogoFromTitle, logosMapToArray } from "@lib/hw/get-logo"
 
-
 // ✅ Convert once (module-level), not on every render
 const LOGOS_ARRAY = logosMapToArray(logotypes)
 
@@ -35,13 +34,25 @@ export default async function ProductPreview({
   const { cheapestPrice } = getProductPrice({ product: pricedProduct })
 
   const countryCode = region.countries?.[0]?.iso_2
-  if (!countryCode || !product.variants) return null
+  if (!countryCode) return null
 
-  // ✅ Find brand logo from title
-  const brand = getBrandLogoFromTitle(product.title, LOGOS_ARRAY)
+  // ✅ Use variants from pricedProduct (has stock fields)
+  const defaultVariant = pricedProduct.variants?.[0]
+  if (!defaultVariant) return null
+  const isInStock =
+    !defaultVariant.manage_inventory ||
+    defaultVariant.allow_backorder ||
+    (defaultVariant.inventory_quantity || 0) > 0
+  // ✅ Find brand logo from title (use pricedProduct title to be safe)
+  const brand = getBrandLogoFromTitle(pricedProduct.title, LOGOS_ARRAY)
 
   return (
-    <div className="flex flex-col gap-5 group/item justify-between h-full">
+    <div
+      className={[
+        "flex flex-col gap-5 group/item justify-between h-full transition",
+        !isInStock ? "grayscale" : "",
+      ].join(" ")}
+    >
       <LocalizedClientLink href={`/products/${product.handle}`} className="group relative">
         {/* ✅ Brand logo */}
         {brand?.uri && (
@@ -55,6 +66,7 @@ export default async function ProductPreview({
             />
           </div>
         )}
+
         <div data-testid="product-wrapper">
           <Thumbnail
             thumbnail={product.thumbnail}
@@ -79,9 +91,9 @@ export default async function ProductPreview({
 
       <div className="md:invisible md:group-hover/item:visible">
         <QuickAddToCartButton
-          productId={product.id}
+          productId={pricedProduct.id}
           countryCode={countryCode}
-          variant={product.variants[0]}
+          variant={defaultVariant}
         />
       </div>
     </div>
