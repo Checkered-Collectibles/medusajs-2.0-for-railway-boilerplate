@@ -36,7 +36,6 @@ export default function QuickAddToCartButton({
         if (variant?.manage_inventory && (variant?.inventory_quantity || 0) > 0) {
             return true
         }
-        console.log("VARIANT", variant.inventory_quantity)
         // Otherwise, we can't add to cart
         return false
     })()

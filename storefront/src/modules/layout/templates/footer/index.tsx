@@ -139,7 +139,7 @@ export default async function Footer() {
         </div>
         <div className="flex md:flex-row flex-col-reverse gap-5 w-full mb-16 justify-between items-center text-ui-fg-muted">
           <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Checkered Collectibles — Owned and operated by Shubhankar Trivedi.
+            © {new Date().getFullYear()} Checkered Collectibles
           </Text>
           <div className="flex flex-wrap gap-3">
             <LocalizedClientLink href="/contact" className=""><Text className="text-xs underline hover:no-underline">

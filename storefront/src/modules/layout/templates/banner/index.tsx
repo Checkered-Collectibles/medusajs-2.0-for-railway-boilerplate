@@ -14,7 +14,7 @@ export default function Banner() {
                         href="/collections/n-case-2025-licensed"
                         className=""
                     >
-                        🔥 N CASE 2025 - Licensed is live<br className="sm:hidden block" /> — Show Now {"->"}
+                        🔥 N CASE 2025 - Licensed is live<br className="sm:hidden block" /> — Shop Now {"->"}
                     </a>
                 ) : (
                     <div>
