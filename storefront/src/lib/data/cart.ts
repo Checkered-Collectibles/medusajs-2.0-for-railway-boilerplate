@@ -9,7 +9,7 @@ import { redirect } from "next/navigation"
 import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies"
 import { getProductsById } from "./products"
 import { getRegion } from "./regions"
-import { addCustomerAddress } from "./customer"
+import { addCustomerAddress, getCustomer } from "./customer"
 
 export async function retrieveCart() {
   const cartId = getCartId()
@@ -342,7 +342,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
       }
     await updateCart(data)
     const updatedCart = await updateCart(data)
-
+    const customer = await getCustomer();
     // ✅ Save address to customer account ONLY if logged in
     // (guests will not have a customer session, so this would 401)
     if (updatedCart?.customer_id) {
@@ -360,7 +360,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
       // don’t block checkout if saving address fails
       try {
-        // await addCustomerAddress(null, customerAddressForm)
+        if (customer?.addresses && customer?.addresses.length < 1) await addCustomerAddress(null, customerAddressForm)
       } catch {
         // ignore
       }
