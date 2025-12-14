@@ -102,6 +102,12 @@ const Payment = ({
       if (!activeSession) {
         await initiatePaymentSession(cart, {
           provider_id: selectedPaymentMethod,
+          context: {
+            cart_id: cart.id,               // ✅ REQUIRED
+            region_id: cart.region_id,
+            email: cart.email,
+            phone,
+          }
         })
       }
 

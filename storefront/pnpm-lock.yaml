@@ -18,6 +18,9 @@ importers:
 
   .:
     dependencies:
+      '@avto-dev/vehicle-logotypes':
+        specifier: ^2.11.1
+        version: 2.11.1
       '@headlessui/react':
         specifier: ^1.6.1
         version: 1.7.19(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -235,6 +238,10 @@ packages:
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
+    engines: {node: '>=6.0.0'}
+
+  '@avto-dev/vehicle-logotypes@2.11.1':
+    resolution: {integrity: sha512-YGh8hngndLT2Vc2syO6df+HTfgF8v3BlM4EtkdCCIgoJlt3nYFdoKeRo6cZZOko8BTWTxHoPSY/pBd4rrDt+dQ==}
     engines: {node: '>=6.0.0'}
 
   '@babel/code-frame@7.26.2':
@@ -4011,6 +4018,8 @@ snapshots:
     dependencies:
       '@jridgewell/gen-mapping': 0.3.8
       '@jridgewell/trace-mapping': 0.3.25
+
+  '@avto-dev/vehicle-logotypes@2.11.1': {}
 
   '@babel/code-frame@7.26.2':
     dependencies:
