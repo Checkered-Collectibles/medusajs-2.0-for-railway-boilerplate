@@ -4,8 +4,6 @@ import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { login } from "@lib/data/customer"
 import { useActionState } from "react"
-import Link from "next/link"
-import LoginGoogle from "@modules/account/templates/google"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -48,7 +46,6 @@ const Login = ({ setCurrentView }: Props) => {
           Sign in
         </SubmitButton>
       </form>
-      <LoginGoogle />
       <div className="flex justify-center gap-5">
         <div className="text-center text-ui-fg-base text-lg mt-6">
           Not a member?{" "}
