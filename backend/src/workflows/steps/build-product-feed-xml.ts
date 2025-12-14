@@ -17,6 +17,7 @@ export const buildProductFeedXmlStep = createStep(
                 .replace(/'/g, "&apos;")
 
         const itemsXml = input.items.map((item) => {
+            const gtin = item.ean || item.upc
             return (
                 `<item>` +
                 `<g:id>${escape(item.id)}</g:id>` +
@@ -43,8 +44,8 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:gender>unisex</g:gender>` +
                 `<g:material>diecast metal</g:material>` +
 
-                // (item.gtin ? `<g:gtin>${escape(item.gtin)}</g:gtin>` : "") +
-                // (item.mpn ? `<g:mpn>${escape(item.mpn)}</g:mpn>` : "") +
+                (gtin ? `<g:gtin>${escape(gtin)}</g:gtin>` : "") +
+                `<g:identifier_exists>${gtin ? "yes" : "no"}</g:identifier_exists>` +
 
                 `<g:identifier_exists>no</g:identifier_exists>` +
 
