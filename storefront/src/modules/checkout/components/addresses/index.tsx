@@ -32,7 +32,7 @@ const Addresses = ({
   const { state: sameAsBilling, toggle: toggleSameAsBilling } = useToggleState(
     cart?.shipping_address && cart?.billing_address
       ? compareAddresses(cart?.shipping_address, cart?.billing_address)
-      : true
+      : false
   )
 
   const handleEdit = () => {
