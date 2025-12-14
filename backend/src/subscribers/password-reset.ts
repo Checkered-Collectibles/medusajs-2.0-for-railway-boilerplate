@@ -43,7 +43,7 @@ export default async function passwordResetHandler({
             template: EmailTemplates.PASSWORD_RESET, // ✅ add this to your templates enum
             data: {
                 emailOptions: {
-                    replyTo: "info@example.com",
+                    replyTo: "hello@checkered.in",
                     subject: "Reset your password",
                 },
                 resetLink,
