@@ -48,7 +48,7 @@ const Login = ({ setCurrentView }: Props) => {
         </SubmitButton>
       </form>
       <div className="flex justify-center gap-5">
-        <div className="text-center text-ui-fg-base text-small-regular mt-6">
+        <div className="text-center text-ui-fg-base text-lg mt-6">
           Not a member?{" "}
           <button
             onClick={() => setCurrentView(LOGIN_VIEW.REGISTER)}
@@ -59,7 +59,7 @@ const Login = ({ setCurrentView }: Props) => {
           </button>
           .
         </div>
-        <div className="text-center text-ui-fg-base text-small-regular mt-6">
+        <div className="text-center text-ui-fg-base text-lg mt-6">
           Forgot password?{" "}
           <button
             onClick={() => setCurrentView(LOGIN_VIEW.RESET_REQ)}
