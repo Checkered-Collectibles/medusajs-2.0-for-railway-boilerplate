@@ -23,14 +23,37 @@ export const buildProductFeedXmlStep = createStep(
                 `<title>${escape(item.title)}</title>` +
                 `<description>${escape(item.description)}</description>` +
                 `<link>${escape(item.link)}</link>` +
+
                 (item.image_link ? `<g:image_link>${escape(item.image_link)}</g:image_link>` : "") +
-                (item.additional_image_link ? `<g:additional_image_link>${escape(item.additional_image_link)}</g:additional_image_link>` : "") +
+                (item.additional_image_link
+                    ? `<g:additional_image_link>${escape(item.additional_image_link)}</g:additional_image_link>`
+                    : "") +
+
                 `<g:availability>${escape(item.availability)}</g:availability>` +
                 `<g:price>${escape(item.price)}</g:price>` +
                 (item.sale_price ? `<g:sale_price>${escape(item.sale_price)}</g:sale_price>` : "") +
+
                 `<g:condition>${escape(item.condition || "new")}</g:condition>` +
-                `<g:brand>${escape(item.brand || "Medusa")}</g:brand>` +
-                `<g:item_group_id>${escape(item.item_group_id)}</g:item_group_id>` +
+                `<g:brand>${escape(item.brand || "Hot Wheels")}</g:brand>` +
+
+                `<g:google_product_category>` +
+                `Toys &amp; Games &gt; Toys &gt; Vehicles &gt; Toy Vehicles` +
+                `</g:google_product_category>` +
+
+                `<g:product_type>Diecast Cars</g:product_type>` +
+                `<g:age_group>children</g:age_group>` +
+                `<g:gender>unisex</g:gender>` +
+                `<g:material>diecast metal</g:material>` +
+
+                // (item.gtin ? `<g:gtin>${escape(item.gtin)}</g:gtin>` : "") +
+                // (item.mpn ? `<g:mpn>${escape(item.mpn)}</g:mpn>` : "") +
+
+                `<g:identifier_exists>no</g:identifier_exists>` +
+
+                (item.item_group_id
+                    ? `<g:item_group_id>${escape(item.item_group_id)}</g:item_group_id>`
+                    : "") +
+
                 `</item>`
             )
         }).join("")
@@ -40,7 +63,7 @@ export const buildProductFeedXmlStep = createStep(
             `<rss version="2.0" xmlns:g="http://base.google.com/ns/1.0">` +
             `<channel>` +
             `<title>Product Feed</title>` +
-            `<description>Product Feed for Social Platforms</description>` +
+            `<description>Product Feed for Google Merchant</description>` +
             itemsXml +
             `</channel>` +
             `</rss>`
