@@ -34,7 +34,7 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
               <Image
                 src={brand.uri}
                 alt={`${brand.name} logo`}
-                width={180}
+                width={80}
                 height={40}
                 className="h-11 w-auto object-contain"
                 priority={false}
