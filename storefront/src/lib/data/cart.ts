@@ -296,73 +296,98 @@ export async function submitPromotionForm(
     return e.message
   }
 }
-
-// TODO: Pass a POJO instead of a form entity here
+const getString = (formData: FormData, key: string): string =>
+  typeof formData.get(key) === "string" ? (formData.get(key) as string) : ""
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
-    if (!formData) {
-      throw new Error("No form data found when setting addresses")
-    }
+    if (!formData) throw new Error("No form data found when setting addresses")
+
     const cartId = getCartId()
-    if (!cartId) {
-      throw new Error("No existing cart found when setting addresses")
+    if (!cartId) throw new Error("No existing cart found when setting addresses")
+
+    const get = (key: string) => getString(formData, key)
+
+    const shippingPhone = get("shipping_address.phone").trim()
+    if (!shippingPhone) throw new Error("Phone number is required")
+
+    const shippingAddress = {
+      first_name: get("shipping_address.first_name"),
+      last_name: get("shipping_address.last_name"),
+      address_1: get("shipping_address.address_1"),
+      address_2: "",
+      company: get("shipping_address.company"),
+      postal_code: get("shipping_address.postal_code"),
+      city: get("shipping_address.city"),
+      country_code: get("shipping_address.country_code"),
+      province: get("shipping_address.province"),
+      phone: shippingPhone,
     }
 
-    const data = {
-      shipping_address: {
-        first_name: formData.get("shipping_address.first_name"),
-        last_name: formData.get("shipping_address.last_name"),
-        address_1: formData.get("shipping_address.address_1"),
-        address_2: "",
-        company: formData.get("shipping_address.company"),
-        postal_code: formData.get("shipping_address.postal_code"),
-        city: formData.get("shipping_address.city"),
-        country_code: formData.get("shipping_address.country_code"),
-        province: formData.get("shipping_address.province"),
-        phone: formData.get("shipping_address.phone"),
-      },
-      email: formData.get("email"),
-    } as any
-    const shippingPhone = String(formData.get("shipping_address.phone") || "").trim()
+    const data: any = {
+      shipping_address: shippingAddress,
+      email: get("email"),
+    }
+
     const sameAsBilling = formData.get("same_as_billing")
-    if (sameAsBilling === "on") data.billing_address = data.shipping_address
 
-    if (sameAsBilling !== "on")
+    if (sameAsBilling === "on") {
+      data.billing_address = { ...shippingAddress } // deep copy
+    } else {
+      const billingPhone =
+        get("billing_address.phone").trim() || shippingPhone
+
       data.billing_address = {
-        first_name: formData.get("billing_address.first_name"),
-        last_name: formData.get("billing_address.last_name"),
-        address_1: formData.get("billing_address.address_1"),
+        first_name: get("billing_address.first_name"),
+        last_name: get("billing_address.last_name"),
+        address_1: get("billing_address.address_1"),
         address_2: "",
-        company: formData.get("billing_address.company"),
-        postal_code: formData.get("billing_address.postal_code"),
-        city: formData.get("billing_address.city"),
-        country_code: formData.get("billing_address.country_code"),
-        province: formData.get("billing_address.province"),
-        phone: formData.get("billing_address.phone"),
+        company: get("billing_address.company"),
+        postal_code: get("billing_address.postal_code"),
+        city: get("billing_address.city"),
+        country_code: get("billing_address.country_code"),
+        province: get("billing_address.province"),
+        phone: billingPhone,
       }
-    await updateCart(data)
-    const updatedCart = await updateCart(data)
-    const customer = await getCustomer();
-    // ✅ Save address to customer account ONLY if logged in
-    // (guests will not have a customer session, so this would 401)
-    if (updatedCart?.customer_id) {
-      const customerAddressForm = new FormData()
-      customerAddressForm.set("first_name", String(formData.get("shipping_address.first_name") || ""))
-      customerAddressForm.set("last_name", String(formData.get("shipping_address.last_name") || ""))
-      customerAddressForm.set("company", String(formData.get("shipping_address.company") || ""))
-      customerAddressForm.set("address_1", String(formData.get("shipping_address.address_1") || ""))
-      customerAddressForm.set("address_2", "")
-      customerAddressForm.set("city", String(formData.get("shipping_address.city") || ""))
-      customerAddressForm.set("postal_code", String(formData.get("shipping_address.postal_code") || ""))
-      customerAddressForm.set("province", String(formData.get("shipping_address.province") || ""))
-      customerAddressForm.set("country_code", String(formData.get("shipping_address.country_code") || ""))
-      customerAddressForm.set("phone", shippingPhone)
+    }
 
-      // don’t block checkout if saving address fails
-      try {
-        if (customer?.addresses && customer?.addresses.length < 1) await addCustomerAddress(null, customerAddressForm)
-      } catch {
-        // ignore
+    // ✅ Update cart once
+    await updateCart(data)
+
+    const customer = await getCustomer()
+
+    if (customer?.id && customer.addresses) {
+      const normalize = (v: string) =>
+        v.toLowerCase().replace(/\s+/g, " ").trim()
+
+      const exists = customer.addresses.some((addr: any) =>
+        normalize(addr.address_1) === normalize(shippingAddress.address_1) &&
+        normalize(addr.postal_code) === normalize(shippingAddress.postal_code) &&
+        normalize(addr.city) === normalize(shippingAddress.city) &&
+        normalize(addr.country_code) === normalize(shippingAddress.country_code) &&
+        normalize(addr.phone) === normalize(shippingAddress.phone)
+      )
+
+      if (!exists) {
+        const customerAddressForm = new FormData()
+        customerAddressForm.set("first_name", shippingAddress.first_name)
+        customerAddressForm.set("last_name", shippingAddress.last_name)
+        customerAddressForm.set("company", shippingAddress.company || "")
+        customerAddressForm.set("address_1", shippingAddress.address_1)
+        customerAddressForm.set("address_2", "")
+        customerAddressForm.set("city", shippingAddress.city)
+        customerAddressForm.set("postal_code", shippingAddress.postal_code)
+        customerAddressForm.set("province", shippingAddress.province)
+        customerAddressForm.set(
+          "country_code",
+          shippingAddress.country_code
+        )
+        customerAddressForm.set("phone", shippingPhone)
+
+        try {
+          await addCustomerAddress(null, customerAddressForm)
+        } catch {
+          // do not block checkout
+        }
       }
     }
   } catch (e: any) {
@@ -370,9 +395,10 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   }
 
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/checkout?step=delivery`
   )
 }
+
 
 export async function placeOrder() {
   const cartId = getCartId()
