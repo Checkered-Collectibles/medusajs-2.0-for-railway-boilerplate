@@ -72,7 +72,7 @@ const Register = ({ setCurrentView }: Props) => {
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Checkered Collectibles&apos;{" "}
           <LocalizedClientLink
-            href="/privacy0policy"
+            href="/privacy-policy"
             className="underline"
           >
             Privacy Policy
