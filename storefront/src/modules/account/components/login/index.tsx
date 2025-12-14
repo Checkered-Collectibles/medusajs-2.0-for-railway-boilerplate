@@ -5,6 +5,7 @@ import { SubmitButton } from "@modules/checkout/components/submit-button"
 import { login } from "@lib/data/customer"
 import { useActionState } from "react"
 import Link from "next/link"
+import LoginGoogle from "@modules/account/templates/google"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -43,9 +44,12 @@ const Login = ({ setCurrentView }: Props) => {
           />
         </div>
         <ErrorMessage error={message} data-testid="login-error-message" />
-        <SubmitButton data-testid="sign-in-button" className="w-full mt-6">
-          Sign in
-        </SubmitButton>
+        <div className="flex gap-3">
+          <SubmitButton data-testid="sign-in-button" className="w-full mt-6">
+            Sign in
+          </SubmitButton>
+          <LoginGoogle />
+        </div>
       </form>
       <div className="flex justify-center gap-5">
         <div className="text-center text-ui-fg-base text-lg mt-6">
