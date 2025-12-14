@@ -50,12 +50,12 @@ export const RazorpayPaymentButton = ({
             amount: session.amount * 100 * 100,
             order_id: orderData.id,
             currency: cart.currency_code.toUpperCase() as CurrencyCode,
-            name: process.env.COMPANY_NAME ?? "your company name ",
+            name: process.env.COMPANY_NAME ?? "Checkered Collectibles",
             description: `Order number ${orderData.id}`,
             remember_customer: true,
 
 
-            image: "https://example.com/your_logo",
+            image: "https://checkered.in/logo.png",
             modal: {
                 backdropclose: true,
                 escape: true,
@@ -122,5 +122,4 @@ export const RazorpayPaymentButton = ({
         </>
     )
 }
-
 

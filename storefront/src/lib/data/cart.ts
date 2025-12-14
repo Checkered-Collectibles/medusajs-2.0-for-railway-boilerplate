@@ -215,21 +215,13 @@ export async function setShippingMethod({
 
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
-  data: {
+  input: {
     provider_id: string
-    context?: Record<string, unknown>
+    data?: Record<string, unknown>
   }
 ) {
-  const phone =
-    cart.shipping_address?.phone ||
-    cart.billing_address?.phone
-
-  if (!phone) {
-    throw new Error("Phone number is required to proceed with payment.")
-  }
-
   return sdk.store.payment
-    .initiatePaymentSession(cart, data, {}, getAuthHeaders())
+    .initiatePaymentSession(cart, input, {}, getAuthHeaders())
     .then((resp) => {
       revalidateTag("cart")
       return resp
@@ -308,15 +300,15 @@ export async function submitPromotionForm(
 // TODO: Pass a POJO instead of a form entity here
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
-    if (!formData) throw new Error("No form data found when setting addresses")
-
+    if (!formData) {
+      throw new Error("No form data found when setting addresses")
+    }
     const cartId = getCartId()
-    if (!cartId) throw new Error("No existing cart found when setting addresses")
+    if (!cartId) {
+      throw new Error("No existing cart found when setting addresses")
+    }
 
-    const shippingPhone = String(formData.get("shipping_address.phone") || "").trim()
-    if (!shippingPhone) throw new Error("Phone number is required")
-
-    const data: any = {
+    const data = {
       shipping_address: {
         first_name: formData.get("shipping_address.first_name"),
         last_name: formData.get("shipping_address.last_name"),
@@ -327,17 +319,15 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("shipping_address.city"),
         country_code: formData.get("shipping_address.country_code"),
         province: formData.get("shipping_address.province"),
-        phone: shippingPhone,
+        phone: formData.get("shipping_address.phone"),
       },
       email: formData.get("email"),
-    }
-
+    } as any
+    const shippingPhone = String(formData.get("shipping_address.phone") || "").trim()
     const sameAsBilling = formData.get("same_as_billing")
-    if (sameAsBilling === "on") {
-      data.billing_address = data.shipping_address
-    } else {
-      const billingPhone = String(formData.get("billing_address.phone") || "").trim()
+    if (sameAsBilling === "on") data.billing_address = data.shipping_address
 
+    if (sameAsBilling !== "on")
       data.billing_address = {
         first_name: formData.get("billing_address.first_name"),
         last_name: formData.get("billing_address.last_name"),
@@ -348,10 +338,9 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         city: formData.get("billing_address.city"),
         country_code: formData.get("billing_address.country_code"),
         province: formData.get("billing_address.province"),
-        phone: billingPhone || shippingPhone,
+        phone: formData.get("billing_address.phone"),
       }
-    }
-
+    await updateCart(data)
     const updatedCart = await updateCart(data)
 
     // ✅ Save address to customer account ONLY if logged in
@@ -371,7 +360,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
 
       // don’t block checkout if saving address fails
       try {
-        await addCustomerAddress(null, customerAddressForm)
+        // await addCustomerAddress(null, customerAddressForm)
       } catch {
         // ignore
       }
@@ -380,7 +369,9 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
     return e.message
   }
 
-  redirect(`/${formData.get("shipping_address.country_code")}/checkout?step=delivery`)
+  redirect(
+    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+  )
 }
 
 export async function placeOrder() {
@@ -401,7 +392,7 @@ export async function placeOrder() {
     const countryCode =
       cartRes.order.shipping_address?.country_code?.toLowerCase()
     removeCartId()
-    redirect(`/${countryCode}/order/confirmed/${cartRes?.order.id}`)
+    redirect(`/order/confirmed/${cartRes?.order.id}`)
   }
 
   return cartRes.cart
