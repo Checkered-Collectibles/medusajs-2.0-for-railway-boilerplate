@@ -125,6 +125,16 @@ export default async function Footer() {
                 </li>
                 <li>
                   <a
+                    href="https://www.youtube.com/@CheckeredCollectibles"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="hover:text-ui-fg-base"
+                  >
+                    YouTube
+                  </a>
+                </li>
+                <li>
+                  <a
                     href="https://chat.whatsapp.com/D09sAJ51EXX5MzuFOAmAAK?mode=hqrt2"
                     target="_blank"
                     rel="noreferrer"
