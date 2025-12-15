@@ -15,8 +15,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <GoogleTagManager gtmId="AW-17801513380" />
       <body className={`${inter.variable} font-sans`}>
         <main className="relative">{props.children}</main>
+        <GoogleAnalytics gaId="G-11D801QMB2" />
       </body>
-      <GoogleAnalytics gaId="G-11D801QMB2" />
     </html>
   )
 }
