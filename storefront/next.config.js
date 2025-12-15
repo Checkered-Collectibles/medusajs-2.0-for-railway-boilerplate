@@ -22,6 +22,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "images.checkered.in",
+      },
+      {
+        protocol: "https",
         hostname: "vl.imgix.net",
       },
       {
