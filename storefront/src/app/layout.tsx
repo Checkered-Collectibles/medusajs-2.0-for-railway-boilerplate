@@ -1,7 +1,8 @@
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import { inter } from "styles/fonts"
-import { GoogleTagManager } from '@next/third-parties/google';
+import { GoogleTagManager, GoogleAnalytics } from '@next/third-parties/google';
+
 import "styles/globals.css"
 
 export const metadata: Metadata = {
@@ -15,6 +16,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
       <body className={`${inter.variable} font-sans`}>
         <main className="relative">{props.children}</main>
       </body>
+      <GoogleAnalytics gaId="G-11D801QMB2" />
     </html>
   )
 }
