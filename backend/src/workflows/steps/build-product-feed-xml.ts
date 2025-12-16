@@ -18,15 +18,12 @@ export const buildProductFeedXmlStep = createStep(
 
         const itemsXml = input.items.map((item) => {
             const gtin = item.ean || item.upc
-            const mpn = item.id // use a real SKU if you have it
-            const hasGtin = Boolean(gtin)
-
             return (
                 `<item>` +
                 `<g:id>${escape(item.id)}</g:id>` +
-                `<g:title>${escape(item.title)}</g:title>` +
-                `<g:description>${escape(item.description)}</g:description>` +
-                `<g:link>${escape(item.link)}</g:link>` +
+                `<title>${escape(item.title)}</title>` +
+                `<description>${escape(item.description)}</description>` +
+                `<link>${escape(item.link)}</link>` +
 
                 (item.image_link ? `<g:image_link>${escape(item.image_link)}</g:image_link>` : "") +
                 (item.additional_image_link
@@ -40,20 +37,16 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:condition>${escape(item.condition || "new")}</g:condition>` +
                 `<g:brand>${escape(item.brand || "Hot Wheels")}</g:brand>` +
 
-                // Prefer category string unless you're 100% sure about the numeric ID
-                `<g:google_product_category>Toys & Games > Toys > Toy Vehicles</g:google_product_category>` +
-                `<g:product_type>Collectibles > Die-cast Vehicles > Hot Wheels</g:product_type>` +
+                `<g:google_product_category>1253</g:google_product_category>` +
 
+                `<g:product_type>Collectibles > Die-cast Vehicles > Hot Wheels</g:product_type>` +
                 `<g:age_group>adult</g:age_group>` +
                 `<g:gender>unisex</g:gender>` +
                 `<g:material>diecast metal</g:material>` +
                 `<g:adult>no</g:adult>` +
-
-                (hasGtin ? `<g:gtin>${escape(gtin!)}</g:gtin>` : "") +
-                (!hasGtin && mpn ? `<g:mpn>${escape(mpn)}</g:mpn>` : "") +
-
-                `<g:identifier_exists>${hasGtin || Boolean(mpn) ? "yes" : "no"}</g:identifier_exists>` +
-
+                (gtin ? `<g:gtin>${escape(gtin)}</g:gtin>` : "") +
+                `<g:identifier_exists>${gtin ? "yes" : "no"}</g:identifier_exists>` +
+                `<g:mpn>${escape(item.id)}</g:mpn>` +
                 (item.item_group_id
                     ? `<g:item_group_id>${escape(item.item_group_id)}</g:item_group_id>`
                     : "") +
