@@ -2,8 +2,7 @@ import type { MetadataRoute } from "next"
 import { getProductsList } from "@lib/data/products"
 
 const BASE_URL = "https://checkered.in"
-const DEFAULT_COUNTRY_CODE =
-    process.env.NEXT_PUBLIC_DEFAULT_REGION || "us"
+const DEFAULT_COUNTRY_CODE = "in";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const urls: MetadataRoute.Sitemap = []
