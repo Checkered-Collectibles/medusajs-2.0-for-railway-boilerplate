@@ -35,12 +35,14 @@ export function evaluateHotWheelsRule(
         }
     }
 
-    const missingFantasy = Math.max(0, licensedCount - fantasyCount)
+    // 🔑 New rule: 1 fantasy required for every 2 licensed cars
+    const requiredFantasy = Math.floor(licensedCount / 2)
+    const missingFantasy = Math.max(0, requiredFantasy - fantasyCount)
     const canCheckout = missingFantasy === 0
 
     const restrictionMessage =
         missingFantasy > 0
-            ? `To help us keep Hot Wheels prices affordable and continue what we do, each Licensed Hot Wheels car needs to be paired with a Fantasy car. You currently have ${licensedCount} Licensed car(s) and ${fantasyCount} Fantasy car(s). Please add ${missingFantasy} more Fantasy car(s) to continue checkout 😄`
+            ? `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"} (1 required per 2 Licensed cars).`
             : null
 
     return {
