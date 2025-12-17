@@ -3,6 +3,7 @@ import { AbstractNotificationProviderService, MedusaError } from '@medusajs/fram
 import { Resend, CreateEmailOptions } from 'resend'
 import { ReactNode } from 'react'
 import { generateEmailTemplate } from '../templates'
+import { buildTextFallback } from '../templates/text-fallback'
 
 type InjectedDependencies = {
   logger: Logger
@@ -80,15 +81,15 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
       cc: emailOptions.cc,
       bcc: emailOptions.bcc,
       tags: emailOptions.tags,
-      text: emailOptions.text,
+      text: emailOptions.text ?? buildTextFallback(notification.template, notification.data),
       attachments: Array.isArray(notification.attachments)
         ? notification.attachments.map((attachment) => ({
-            content: attachment.content,
-            filename: attachment.filename,
-            content_type: attachment.content_type,
-            disposition: attachment.disposition ?? 'attachment',
-            id: attachment.id ?? undefined
-          }))
+          content: attachment.content,
+          filename: attachment.filename,
+          content_type: attachment.content_type,
+          disposition: attachment.disposition ?? 'attachment',
+          id: attachment.id ?? undefined
+        }))
         : undefined,
       scheduledAt: emailOptions.scheduledAt
     }
