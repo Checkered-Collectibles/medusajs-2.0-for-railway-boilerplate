@@ -3,7 +3,16 @@ import Image from "next/image"
 import React from "react"
 
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
-
+const IMAGE_SIZES: Record<
+  NonNullable<ThumbnailProps["size"]>,
+  string
+> = {
+  small: "(max-width: 768px) 180px, 180px",
+  medium: "(max-width: 768px) 290px, 290px",
+  large: "(max-width: 1024px) 440px, 440px",
+  square: "(max-width: 768px) 80px, 80px",
+  full: "100vw",
+}
 type ThumbnailProps = {
   thumbnail?: string | null
   // TODO: Fix image typings
@@ -52,13 +61,13 @@ const ImageOrPlaceholder = ({
 }: Pick<ThumbnailProps, "size"> & { image?: string }) => {
   return image ? (
     <Image
+      fill
       src={image}
       alt="Thumbnail"
-      className="absolute inset-0 object-cover object-center"
+      className={`absolute inset-0 object-cover object-center w-full`}
       draggable={false}
       quality={50}
-      sizes="(max-width: 576px) 280px, (max-width: 768px) 360px, (max-width: 992px) 480px, 800px"
-      fill
+      sizes={IMAGE_SIZES[size ?? "small"]}
     />
   ) : (
     <div className="w-full h-full absolute inset-0 flex items-center justify-center">
