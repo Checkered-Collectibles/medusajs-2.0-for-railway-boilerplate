@@ -14,6 +14,7 @@ import ProductPrice from "../product-price"
 import { addToCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import ShippingCountdown from "@modules/checkout/templates/shipping-countdown"
+import Socials from "./socials"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -190,6 +191,7 @@ export default function ProductActions({
               ? "Out of stock"
               : "Add to cart"}
         </Button>
+        {!inStock && <Socials />}
         {inStock && <ShippingCountdown className="mt-2" />}
         {/* ✅ Trust & scarcity points */}
         <div className="mt-3 flex flex-col gap-2 text-sm text-ui-fg-subtle">
