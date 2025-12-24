@@ -42,6 +42,11 @@ const ProductInfo = ({ product }: ProductInfoProps) => {
               {brand.name} Licensed
             </div>
           )}
+          {product.metadata?.preorder == true &&
+            <div className="w-fit">
+              <div className="px-3 py-1 rounded-full bg-black text-white">Pre-order</div>
+            </div>
+          }
 
           <Heading
             level="h2"

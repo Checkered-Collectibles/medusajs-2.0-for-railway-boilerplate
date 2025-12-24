@@ -54,6 +54,11 @@ export default async function ProductPreview({
       ].join(" ")}
     >
       <LocalizedClientLink href={`/products/${product.handle}`} className="group relative">
+        {product.metadata?.preorder == true &&
+          <div className="absolute top-2 right-2 z-10">
+            <div className="px-3 py-1 rounded-full bg-black text-white">Pre-order</div>
+          </div>
+        }
         {/* ✅ Brand logo */}
         {brand?.uri && (
           <div title={`Official ${brand.name} Licensed Car`} className="absolute top-2 left-2 z-10">

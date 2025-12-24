@@ -67,10 +67,15 @@ const Item = ({ item, type = "full" }: ItemProps) => {
 
       <Table.Cell className="text-left">
         <Text
-          className="txt-medium-plus text-ui-fg-base"
+          className="txt-medium-plus text-ui-fg-base flex flex-wrap gap-2 items-center"
           data-testid="product-title"
         >
           {item.product_title}
+          {item.metadata?.preorder == true &&
+            <div className="w-fit">
+              <div className="px-3 py-1 rounded-full bg-black text-white text-xs">Pre-order</div>
+            </div>
+          }
         </Text>
         <LineItemOptions variant={item.variant} data-testid="product-variant" />
       </Table.Cell>
