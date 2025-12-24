@@ -25,7 +25,6 @@ export function evaluateHotWheelsRule(
     if (cart?.items) {
         for (const item of cart.items) {
             const quantity = item.quantity || 0
-            // make sure your cart API expands `items.product.categories`
             const categories = (item as any).product?.categories ?? []
             const categoryIds = categories.map((c: any) => c.id)
 
@@ -45,24 +44,20 @@ export function evaluateHotWheelsRule(
 
     const mainlineCount = licensedCount + fantasyCount
 
-    // 🔑 Rule 2: 2 Mainlines (Licensed or Fantasy) per 1 Premium
-    const requiredMainlinesForPremium = premiumCount * 2
+    // 🔑 UPDATED: 1 Mainline (Licensed or Fantasy) per Premium
+    const requiredMainlinesForPremium = premiumCount * 1
     const missingMainlinesForPremium = Math.max(
         0,
         requiredMainlinesForPremium - mainlineCount
     )
 
-    // 🔧 Allocate mainlines to Premium first, then apply the Fantasy rule
-    // Only "extra" licensed cars (beyond those needed for premiums) are subject
-    // to the 1 Fantasy per 2 Licensed rule.
-
+    // Allocate mainlines toward premium requirement
     let licensedExtra = licensedCount
     let fantasyExtra = fantasyCount
 
     if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
         const neededForPremium = Math.min(requiredMainlinesForPremium, mainlineCount)
 
-        // To help the customer, we "spend" licensed cars first on Premium requirement
         const licensedUsedForPremium = Math.min(licensedCount, neededForPremium)
         const remainingNeeded = neededForPremium - licensedUsedForPremium
         const fantasyUsedForPremium = Math.min(fantasyCount, remainingNeeded)
@@ -71,14 +66,13 @@ export function evaluateHotWheelsRule(
         fantasyExtra = fantasyCount - fantasyUsedForPremium
     }
 
-    // 🔑 Rule 1: 1 Fantasy required for every 2 *extra* Licensed cars
+    // 🔑 Rule: 1 Fantasy required for every 2 extra Licensed cars
     const requiredFantasy = Math.floor(licensedExtra / 2)
     const missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
 
     const canCheckout =
         missingFantasy === 0 && missingMainlinesForPremium === 0
 
-    let restrictionMessage: string | null = null
     const messages: string[] = []
 
     if (missingFantasy > 0) {
@@ -91,12 +85,8 @@ export function evaluateHotWheelsRule(
     if (missingMainlinesForPremium > 0) {
         messages.push(
             `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
-            } (2 Licensed/Fantasy mainlines required per Premium car).`
+            } (1 Licensed/Fantasy mainline required per Premium car).`
         )
-    }
-
-    if (messages.length > 0) {
-        restrictionMessage = messages.join(" ")
     }
 
     return {
@@ -106,6 +96,6 @@ export function evaluateHotWheelsRule(
         missingFantasy,
         missingMainlinesForPremium,
         canCheckout,
-        restrictionMessage,
+        restrictionMessage: messages.length ? messages.join(" ") : null,
     }
 }
