@@ -42,7 +42,7 @@ export default function HeroGraphic() {
                 className="hero-img drop-shadow-2xl scale-x-[-1]"
             />
             <div className="absolute bottom-2 left-2 flex flex-wrap items-end gap-3">
-                <div title="Hot Wheels Premium Euro Speed set coming soon" className="hero-img h-fit bg-white border shadow-md rounded-3xl p-2 flex flex-col items-center">
+                {/* <div title="Hot Wheels Premium Euro Speed set coming soon" className="hero-img h-fit bg-white border shadow-md rounded-3xl p-2 flex flex-col items-center">
                     <Image
                         src={EuroSpeed}
                         width={120}
@@ -52,7 +52,7 @@ export default function HeroGraphic() {
                         className=""
                     />
                     <p className="text-xs italic text-gray-500">Coming soon</p>
-                </div>
+                </div> */}
                 <div title="Hot Wheels Premium Exotic Envy set coming soon" className="hero-img h-fit bg-white border shadow-md rounded-3xl p-2 gap-1 flex flex-col items-center">
                     <Image
                         src={ExoticEnvy}
