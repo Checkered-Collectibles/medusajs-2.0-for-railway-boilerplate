@@ -78,7 +78,7 @@ export const getProductsList = cache(async function ({
 
   // ✅ Default to newest-first if no order is provided
   if (!baseQuery.order) {
-    baseQuery.order = "-created_at" // or "-created_at" if you prefer
+    baseQuery.order = "-updated_at" // or "-created_at" if you prefer
   }
 
   return sdk.store.product
