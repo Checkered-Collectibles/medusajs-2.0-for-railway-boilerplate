@@ -39,9 +39,11 @@ export const RazorpayPaymentButton = ({
 
     const handlePayment = useCallback(async () => {
         const onPaymentCancelled = async () => {
-            // optionally notify backend or log
+            //   await cancelOrder(session.provider_id).catch(() => {
+            //     setErrorMessage("PaymentCancelled")
+            //     setSubmitting(false)
+            //   })
         }
-
         const options: RazorpayOrderOptions = {
             callback_url: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/razorpay/hooks`,
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY ?? '',
@@ -78,24 +80,27 @@ export const RazorpayPaymentButton = ({
 
 
         };
+        console.log(JSON.stringify(options.amount))
+        //await waitForPaymentCompletion();
 
-        const razorpay = new Razorpay(options)
 
-        if (orderData.id) {
-            razorpay.open()
-        } else {
-            setErrorMessage("No Razorpay order id found")
-            return
-        }
-
-        razorpay.on("payment.failed", (response: any) => {
+        const razorpay = new Razorpay(options);
+        if (orderData.id)
+            razorpay.open();
+        razorpay.on("payment.failed", function (response: any) {
             setErrorMessage(JSON.stringify(response.error))
-        })
 
-        razorpay.on("payment.authorized" as any, async (response: any) => {
-            await placeOrder()
         })
-    }, [Razorpay, cart, orderData.id, session.amount, session.provider_id])
+        razorpay.on("payment.authorized" as any, function (response: any) {
+            const authorizedCart = placeOrder().then(authorizedCart => {
+                JSON.stringify(`authorized:` + authorizedCart)
+            })
+        })
+        // razorpay.on("payment.captured", function (response: any) {
+
+        // }
+        // )
+    }, [Razorpay, cart.billing_address?.first_name, cart.billing_address?.last_name, cart.currency_code, cart?.email, cart?.shipping_address?.phone, orderData.id, session.amount, session.provider_id]);
     console.log("orderData" + JSON.stringify(orderData))
     return (
         <>
