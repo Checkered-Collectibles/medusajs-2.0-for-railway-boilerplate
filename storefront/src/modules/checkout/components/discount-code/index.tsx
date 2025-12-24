@@ -1,6 +1,6 @@
 "use client"
 
-import { Badge, Heading, Input, Label, Text, Tooltip } from "@medusajs/ui"
+import { Badge, Heading, Input, Label, Text, Tooltip, TooltipProvider } from "@medusajs/ui"
 import React, { useActionState } from "react"
 
 import { applyPromotions, submitPromotionForm } from "@lib/data/cart"
@@ -74,7 +74,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
             <>
               <div className="flex w-full gap-x-2">
                 <Input
-                  className="size-full"
+                  className="size-full uppercase"
                   id="promotion-input"
                   name="code"
                   type="text"
@@ -128,7 +128,7 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                                 "percentage"
                                 ? `${promotion.application_method.value}%`
                                 : convertToLocale({
-                                  amount: promotion.application_method.value,
+                                  amount: parseInt(promotion.application_method.value),
                                   currency_code:
                                     promotion.application_method
                                       .currency_code,
@@ -136,11 +136,13 @@ const DiscountCode: React.FC<DiscountCodeProps> = ({ cart }) => {
                             </>
                           )}
                         )
-                        {/* {promotion.is_automatic && (
-                          <Tooltip content="This promotion is automatically applied">
-                            <InformationCircleSolid className="inline text-zinc-400" />
-                          </Tooltip>
-                        )} */}
+                        {promotion.is_automatic && (
+                          <TooltipProvider>
+                            <Tooltip content="This promotion is automatically applied" className="">
+                              <InformationCircleSolid className="inline text-zinc-400 mx-2" />
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
                       </span>
                     </Text>
                     {!promotion.is_automatic && (

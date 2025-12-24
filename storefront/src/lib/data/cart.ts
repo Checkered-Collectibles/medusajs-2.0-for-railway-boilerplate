@@ -230,16 +230,20 @@ export async function initiatePaymentSession(
 }
 
 export async function applyPromotions(codes: string[]) {
-  const cartId = getCartId()
-  if (!cartId) {
-    throw new Error("No existing cart found")
-  }
+  try {
+    const cartId = getCartId()
+    if (!cartId) {
+      throw new Error("No existing cart found")
+    }
 
-  await updateCart({ promo_codes: codes })
-    .then(() => {
-      revalidateTag("cart")
-    })
-    .catch(medusaError)
+    await updateCart({ promo_codes: codes })
+      .then(() => {
+        revalidateTag("cart")
+      })
+      .catch(medusaError)
+  } catch (e) {
+    return "Invalid Promo Code"
+  }
 }
 
 export async function applyGiftCard(code: string) {
