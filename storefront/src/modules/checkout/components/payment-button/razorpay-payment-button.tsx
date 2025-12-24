@@ -65,7 +65,7 @@ export const RazorpayPaymentButton = ({
             }
 
             const options: RazorpayOrderOptions = {
-                callback_url: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/razorpay`,
+                callback_url: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/razorpay/hooks`,
                 key: process.env.NEXT_PUBLIC_RAZORPAY_KEY ?? "",
                 amount: authorizedCart.order.total * 100,
                 order_id: orderData.id,
