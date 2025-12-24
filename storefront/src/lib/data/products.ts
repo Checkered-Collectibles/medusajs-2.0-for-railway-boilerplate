@@ -53,9 +53,6 @@ export const getProductsList = cache(async function ({
   nextPage: number | null
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
 }> {
-  const limit = queryParams?.limit || 12
-  const validPageParam = Math.max(pageParam, 1);
-  const offset = (validPageParam - 1) * limit
   const region = await getRegion(countryCode)
 
   if (!region) {
@@ -64,28 +61,38 @@ export const getProductsList = cache(async function ({
       nextPage: null,
     }
   }
+
+  // ✅ Ensure limit is a number (query params often come in as strings)
+  const limit = Number(queryParams?.limit ?? 12)
+  const validPageParam = Math.max(pageParam, 1)
+  const offset = (validPageParam - 1) * limit
+
+  // ✅ Build base query, let caller override order if they want
+  const baseQuery: HttpTypes.StoreProductListParams = {
+    limit,
+    offset,
+    region_id: region.id,
+    fields: "*variants.calculated_price,+metadata",
+    ...queryParams,
+  }
+
+  // ✅ Default to newest-first if no order is provided
+  if (!baseQuery.order) {
+    baseQuery.order = "-created_at" // or "-created_at" if you prefer
+  }
+
   return sdk.store.product
-    .list(
-      {
-        limit,
-        offset,
-        region_id: region.id,
-        fields: "*variants.calculated_price,+metadata",
-        ...queryParams,
-        order: "-updated_at"
-      },
-      { next: { tags: ["products"] } }
-    )
+    .list(baseQuery, { next: { tags: ["products"] } })
     .then(({ products, count }) => {
-      const nextPage = count > offset + limit ? pageParam + 1 : null
+      const nextPage = count > offset + limit ? validPageParam + 1 : null
 
       return {
         response: {
           products,
           count,
         },
-        nextPage: nextPage,
-        queryParams,
+        nextPage,
+        queryParams: baseQuery,
       }
     })
 })
