@@ -43,17 +43,37 @@ export function evaluateHotWheelsRule(
         }
     }
 
-    // 🔑 Rule 1: 1 Fantasy required for every 2 Licensed cars
-    const requiredFantasy = Math.floor(licensedCount / 2)
-    const missingFantasy = Math.max(0, requiredFantasy - fantasyCount)
+    const mainlineCount = licensedCount + fantasyCount
 
     // 🔑 Rule 2: 2 Mainlines (Licensed or Fantasy) per 1 Premium
-    const mainlineCount = licensedCount + fantasyCount
     const requiredMainlinesForPremium = premiumCount * 2
     const missingMainlinesForPremium = Math.max(
         0,
         requiredMainlinesForPremium - mainlineCount
     )
+
+    // 🔧 Allocate mainlines to Premium first, then apply the Fantasy rule
+    // Only "extra" licensed cars (beyond those needed for premiums) are subject
+    // to the 1 Fantasy per 2 Licensed rule.
+
+    let licensedExtra = licensedCount
+    let fantasyExtra = fantasyCount
+
+    if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
+        const neededForPremium = Math.min(requiredMainlinesForPremium, mainlineCount)
+
+        // To help the customer, we "spend" licensed cars first on Premium requirement
+        const licensedUsedForPremium = Math.min(licensedCount, neededForPremium)
+        const remainingNeeded = neededForPremium - licensedUsedForPremium
+        const fantasyUsedForPremium = Math.min(fantasyCount, remainingNeeded)
+
+        licensedExtra = licensedCount - licensedUsedForPremium
+        fantasyExtra = fantasyCount - fantasyUsedForPremium
+    }
+
+    // 🔑 Rule 1: 1 Fantasy required for every 2 *extra* Licensed cars
+    const requiredFantasy = Math.floor(licensedExtra / 2)
+    const missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
 
     const canCheckout =
         missingFantasy === 0 && missingMainlinesForPremium === 0
@@ -64,7 +84,7 @@ export function evaluateHotWheelsRule(
     if (missingFantasy > 0) {
         messages.push(
             `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
-            } (1 required per 2 Licensed cars).`
+            } (1 required per 2 extra Licensed cars).`
         )
     }
 
