@@ -12,6 +12,7 @@ import ProductActionsWrapper from "./product-actions-wrapper"
 import { HttpTypes } from "@medusajs/types"
 import { getAuthHeaders } from "@lib/data/cookies"
 import { cookies } from "next/headers"
+import WatchingCount from "./watcher"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -28,22 +29,6 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
     return notFound()
   }
 
-
-  const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "";
-  const res = await fetch(
-    `${BACKEND_URL}/public/product-watching/${product.id}`,
-    {
-      method: "POST",
-      cache: "no-store",
-    }
-  )
-  let watching = 0;
-  if (res.status == 200) {
-    const data = await res.json()
-    watching = data.watching ?? 0
-  }
-
-
   return (
     <>
       <div
@@ -57,11 +42,7 @@ const ProductTemplate: React.FC<ProductTemplateProps> = async ({
         <div className="block w-full relative">
           <ImageGallery images={product?.images || []} />
           <div className="absolute -top-3 left-3 bg-blue-50 text-blue-600 px-3 py-2 rounded-full border border-blue-100 animate-pulse">
-            {watching > 1
-              ? `${watching} watching now`
-              : watching === 1
-                ? "1 watching now"
-                : "You're first here"}
+            <WatchingCount productId={product.id} backendUrl={process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!} />
           </div>
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
