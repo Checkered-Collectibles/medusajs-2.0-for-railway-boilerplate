@@ -12,34 +12,51 @@ export default function WatchingCount({
     backendUrl,
 }: WatchingCountProps) {
     const [watching, setWatching] = useState<number>(0)
+    const [isLoading, setIsLoading] = useState(true)
 
     useEffect(() => {
         const key = `watched-${productId}`
         const lastView = localStorage.getItem(key)
         const now = Date.now()
         const DAY = 24 * 60 * 60 * 1000
+        const url = `${backendUrl}/public/product-watching/${productId}`
 
-        const getUrl = `${backendUrl}/public/product-watching/${productId}`
-
-        // If already viewed within 24 hours → only GET
-        if (lastView && now - Number(lastView) < DAY) {
-            fetch(getUrl)
+        const fetchCount = async (method: "GET" | "POST") => {
+            return fetch(url, { method })
                 .then((res) => res.json())
-                .then((data) => setWatching(data.watching ?? 0))
-            return
+                .then((data) => {
+                    setWatching(data.watching ?? 0)
+                })
+                .finally(() => {
+                    setIsLoading(false)
+                })
         }
 
-        // Otherwise → POST (register view) + update localStorage
-        fetch(getUrl, { method: "POST" })
-            .then((res) => res.json())
-            .then((data) => {
-                setWatching(data.watching ?? 0)
+        // 1) First call: register view (once per 24h) or just read
+        if (!lastView || now - Number(lastView) >= DAY) {
+            fetchCount("POST").then(() => {
                 localStorage.setItem(key, now.toString())
             })
+        } else {
+            fetchCount("GET")
+        }
+
+        // 2) Poll every 10 seconds (GET only)
+        const interval = setInterval(() => {
+            fetch(url)
+                .then((res) => res.json())
+                .then((data) => setWatching(data.watching ?? 0))
+                .catch(() => { })
+        }, 10_000)
+
+        return () => clearInterval(interval)
     }, [productId, backendUrl])
 
+    // Don’t show anything while loading
+    if (isLoading) return null
+
     return (
-        <p className="">
+        <p>
             {watching > 1
                 ? `${watching} watching now`
                 : watching === 1
