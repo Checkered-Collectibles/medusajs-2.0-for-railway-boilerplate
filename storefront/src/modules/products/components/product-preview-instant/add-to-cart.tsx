@@ -65,7 +65,7 @@ export default function QuickAddToCartButton({
             variant="secondary"
             onClick={handleAdd}
             disabled={finalDisabled}
-            className={`w-full`}
+            className={`w-full duration-0 ${!isInStock ? 'bg-white text-black' : 'md:group-hover/item:bg-black md:group-hover/item:text-white md:hover:opacity-80'}`}
             isLoading={isPending}
             data-testid="quick-add-to-cart"
         >
