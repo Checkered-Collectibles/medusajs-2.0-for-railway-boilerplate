@@ -10,6 +10,7 @@ import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-relat
 import { notFound } from "next/navigation"
 import ProductActionsWrapper from "./product-actions-wrapper"
 import { HttpTypes } from "@medusajs/types"
+import { getAuthHeaders } from "@lib/data/cookies"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -17,7 +18,7 @@ type ProductTemplateProps = {
   countryCode: string
 }
 
-const ProductTemplate: React.FC<ProductTemplateProps> = ({
+const ProductTemplate: React.FC<ProductTemplateProps> = async ({
   product,
   region,
   countryCode,
@@ -25,6 +26,21 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
   if (!product || !product.id) {
     return notFound()
   }
+
+
+  const BACKEND_URL = process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL || "";
+
+  const res = await fetch(
+    `${BACKEND_URL}/store/product-watching/${product.id}`,
+    {
+      method: "POST",
+      cache: "no-store",
+      headers: getAuthHeaders()
+    }
+  )
+
+  const data = await res.json()
+  const watching = data.watching ?? 0
 
   return (
     <>
@@ -38,6 +54,13 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         </div>
         <div className="block w-full relative">
           <ImageGallery images={product?.images || []} />
+          <div className="absolute -top-3 left-3 bg-blue-50 text-blue-600 px-3 py-2 rounded-full border border-blue-100 animate-pulse">
+            {watching > 1
+              ? `${watching} watching now`
+              : watching === 1
+                ? "1 watching now"
+                : "You're first here"}
+          </div>
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
           <ProductOnboardingCta />

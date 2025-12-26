@@ -11,7 +11,7 @@ type ProductInfoProps = {
   product: HttpTypes.StoreProduct
 }
 
-const ProductInfo = ({ product }: ProductInfoProps) => {
+const ProductInfo = async ({ product }: ProductInfoProps) => {
   const logosArray = logosMapToArray(logotypes)
   const brand = getBrandLogoFromTitle(product.title, logosArray)
 
