@@ -56,9 +56,10 @@ export default function Banner() {
                             />
                         </div>
                     ) : (
-                        <div className="text-xs sm:text-sm opacity-80">
-                            ❄️ Winter Sale Live – use code WINTER10
-                        </div>
+                        <></>
+                        // <div className="text-xs sm:text-sm opacity-80">
+                        //     ❄️ Winter Sale Live – use code WINTER10
+                        // </div>
                     )}
                 </div>
 
