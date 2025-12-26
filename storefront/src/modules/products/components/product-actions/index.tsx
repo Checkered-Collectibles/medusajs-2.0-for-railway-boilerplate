@@ -167,7 +167,7 @@ export default function ProductActions({
               className={[
                 "text-sm py-0.5 px-2 w-fit border border-black/10 rounded-full",
                 stockLabel.tone === "success" ? "text-green-700 bg-green-100" : "",
-                stockLabel.tone === "warning" ? "text-amber-700 bg-amber-100" : "",
+                stockLabel.tone === "warning" ? "text-red-700 bg-red-100" : "",
                 stockLabel.tone === "danger" ? "text-red-700 bg-red-100" : "",
               ].join(" ")}
               data-testid="stock-indicator"
