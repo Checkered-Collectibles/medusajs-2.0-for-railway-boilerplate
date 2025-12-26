@@ -238,7 +238,7 @@ const medusaConfig = {
                       "variant_sku",
                       "thumbnail",
                     ],
-                    filterableAttributes: ["id", "handle"],
+                    filterableAttributes: ["id", "handle", "status"],
                   },
                   primaryKey: "id",
                 },
