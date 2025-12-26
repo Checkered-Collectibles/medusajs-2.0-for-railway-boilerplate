@@ -48,7 +48,7 @@ export default function ProductPrice({
               {selectedPrice.original_price}
             </span>
           </p>
-          <span className="text-ui-fg-interactive">
+          <span className="text-red-600">
             -{selectedPrice.percentage_diff}%
           </span>
         </>
