@@ -22,6 +22,10 @@ const nextConfig = {
       },
       {
         protocol: "https",
+        hostname: "badges.razorpay.com",
+      },
+      {
+        protocol: "https",
         hostname: "images.checkered.in",
       },
       {

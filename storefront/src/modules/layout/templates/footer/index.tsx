@@ -6,6 +6,8 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import MedusaCTA from "@modules/layout/components/medusa-cta"
 import Image from "next/image"
 import LogoImage from "@images/logo.png";
+import Link from "next/link"
+import PaymentLogos from "./payments"
 
 export default async function Footer() {
   const { collections } = await getCollectionsList(0, 6)
@@ -148,9 +150,12 @@ export default async function Footer() {
           </div>
         </div>
         <div className="flex md:flex-row flex-col-reverse gap-5 w-full mb-16 justify-between items-center text-ui-fg-muted">
-          <Text className="txt-compact-small">
-            © {new Date().getFullYear()} Checkered Collectibles
-          </Text>
+          <div className="flex flex-wrap-reverse gap-5 items-center">
+            <Text className="txt-compact-small">
+              © {new Date().getFullYear()} Checkered Collectibles
+            </Text>
+            <PaymentLogos />
+          </div>
           <div className="flex flex-wrap gap-3">
             <LocalizedClientLink href="/contact" className=""><Text className="text-xs underline hover:no-underline">
               Contact Us
