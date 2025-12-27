@@ -58,9 +58,9 @@ export default function WatchingCount({
     return (
         <p>
             {watching > 1
-                ? `${watching} watching now`
+                ? `${watching} watching`
                 : watching === 1
-                    ? "1 watching now"
+                    ? "1 watching"
                     : "You're first here"}
         </p>
     )
