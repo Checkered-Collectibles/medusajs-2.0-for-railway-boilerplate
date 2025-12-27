@@ -20,14 +20,11 @@ type ProductTemplateProps = {
   countryCode: string
 }
 
-const ProductTemplate: React.FC<ProductTemplateProps> = async ({
+const ProductTemplate: React.FC<ProductTemplateProps> = ({
   product,
   region,
   countryCode,
 }) => {
-  if (!product || !product.id) {
-    return notFound()
-  }
 
   return (
     <>
