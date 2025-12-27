@@ -77,7 +77,7 @@ export class ResendNotificationService extends AbstractNotificationProviderServi
       react: emailContent,
       subject: emailOptions.subject ?? 'You have a new notification',
       headers: emailOptions.headers,
-      replyTo: emailOptions.replyTo,
+      replyTo: "hello@checkered.in",
       cc: emailOptions.cc,
       bcc: emailOptions.bcc,
       tags: emailOptions.tags,
