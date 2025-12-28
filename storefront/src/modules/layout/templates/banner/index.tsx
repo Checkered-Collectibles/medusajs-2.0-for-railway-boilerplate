@@ -15,7 +15,7 @@ export default function Banner() {
     const messages = isLive
         ? [
             "Euro Speed Premium set now in stock & discounted ⚡",
-            "10% off Licensed mainlines – use code WINTER10 ❄️ (next 5 orders)",
+            // "10% off Licensed mainlines – use code WINTER10 ❄️ (next 5 orders)",
             "Free Shipping on all orders ₹1500 & above 🚚✨",
         ]
         : [
