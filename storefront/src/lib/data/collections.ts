@@ -30,33 +30,31 @@ export const getCollectionsWithProducts = cache(
   async (countryCode: string): Promise<HttpTypes.StoreCollection[] | null> => {
     const { collections } = await getCollectionsList(0, 3)
 
-    if (!collections) {
+    if (!collections || collections.length === 0) {
       return null
     }
 
-    const collectionIds = collections
-      .map((collection) => collection.id)
-      .filter(Boolean) as string[]
+    const collectionsWithProducts = await Promise.all(
+      collections.map(async (collection) => {
+        const { response } = await getProductsList({
+          countryCode,
+          queryParams: {
+            // ensure we scope to this collection only
+            collection_id: [collection.id],
+            // max 6 products
+            limit: 6,
+            // make sort explicit, even though getProductsList defaults to this
+            order: "-updated_at",
+          },
+        })
 
-    const { response } = await getProductsList({
-      queryParams: { collection_id: collectionIds },
-      countryCode,
-    })
+        return {
+          ...collection,
+          products: response.products,
+        } as HttpTypes.StoreCollection
+      })
+    )
 
-    response.products.forEach((product) => {
-      const collection = collections.find(
-        (collection) => collection.id === product.collection_id
-      )
-
-      if (collection) {
-        if (!collection.products) {
-          collection.products = []
-        }
-
-        collection.products.push(product as any)
-      }
-    })
-
-    return collections as unknown as HttpTypes.StoreCollection[]
+    return collectionsWithProducts
   }
 )
