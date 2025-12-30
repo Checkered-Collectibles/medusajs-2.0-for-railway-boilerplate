@@ -31,7 +31,7 @@ const CartTemplate = async ({
     restrictionMessage,
     missingFantasy,
     missingMainlinesForPremium,
-  } = evaluateHotWheelsRule(cart)
+  } = await evaluateHotWheelsRule(cart)
 
   let fantasyProducts: HttpTypes.StoreProduct[] = []
   let fantasyCategoryHandle: string | undefined

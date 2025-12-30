@@ -1,4 +1,5 @@
 // src/modules/cart/lib/hotwheels-rule.ts
+import PostHogClient, { getServerSidePostHogDistinctId } from "@lib/posthog/server"
 import { HttpTypes } from "@medusajs/types"
 
 export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
@@ -15,9 +16,21 @@ export type HotWheelsRuleResult = {
     restrictionMessage: string | null
 }
 
-export function evaluateHotWheelsRule(
+export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
-): HotWheelsRuleResult {
+): Promise<HotWheelsRuleResult> {
+
+    const distinctId = await getServerSidePostHogDistinctId();
+    // Feature flags
+    const isMainlineRuleEnabled = await PostHogClient.isFeatureEnabled(
+        "hw-mainline-rule",
+        distinctId ?? ""
+    )
+    const isPremiumRuleEnabled = await PostHogClient.isFeatureEnabled(
+        "hw-premium-rule",
+        distinctId ?? ""
+    )
+
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
@@ -44,45 +57,58 @@ export function evaluateHotWheelsRule(
 
     const mainlineCount = licensedCount + fantasyCount
 
-    // 🔑 UPDATED: 1 Mainline (Licensed or Fantasy) per Premium
-    const requiredMainlinesForPremium = premiumCount * 1
-    const missingMainlinesForPremium = Math.max(
-        0,
-        requiredMainlinesForPremium - mainlineCount
-    )
-
-    // Allocate mainlines toward premium requirement
+    let missingMainlinesForPremium = 0
     let licensedExtra = licensedCount
     let fantasyExtra = fantasyCount
 
-    if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
-        const neededForPremium = Math.min(requiredMainlinesForPremium, mainlineCount)
+    // 🔑 PREMIUM RULE (flag: hw-premium-rule)
+    // 1 Mainline (Licensed or Fantasy) per Premium
+    if (isPremiumRuleEnabled && premiumCount > 0) {
+        const requiredMainlinesForPremium = premiumCount * 1
 
-        const licensedUsedForPremium = Math.min(licensedCount, neededForPremium)
-        const remainingNeeded = neededForPremium - licensedUsedForPremium
-        const fantasyUsedForPremium = Math.min(fantasyCount, remainingNeeded)
+        missingMainlinesForPremium = Math.max(
+            0,
+            requiredMainlinesForPremium - mainlineCount
+        )
 
-        licensedExtra = licensedCount - licensedUsedForPremium
-        fantasyExtra = fantasyCount - fantasyUsedForPremium
+        // Allocate mainlines toward premium requirement
+        if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
+            const neededForPremium = Math.min(
+                requiredMainlinesForPremium,
+                mainlineCount
+            )
+
+            const licensedUsedForPremium = Math.min(licensedCount, neededForPremium)
+            const remainingNeeded = neededForPremium - licensedUsedForPremium
+            const fantasyUsedForPremium = Math.min(fantasyCount, remainingNeeded)
+
+            licensedExtra = licensedCount - licensedUsedForPremium
+            fantasyExtra = fantasyCount - fantasyUsedForPremium
+        }
     }
 
-    // 🔑 Rule: 1 Fantasy required for every 2 extra Licensed cars
-    const requiredFantasy = Math.floor(licensedExtra / 2)
-    const missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
+    // 🔑 MAINLINE RULE (flag: hw-mainline-rule)
+    // 1 Fantasy required for every 2 extra Licensed cars
+    let missingFantasy = 0
+    if (isMainlineRuleEnabled) {
+        const requiredFantasy = Math.floor(licensedExtra / 2)
+        missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
+    }
 
     const canCheckout =
-        missingFantasy === 0 && missingMainlinesForPremium === 0
+        (!isMainlineRuleEnabled || missingFantasy === 0) &&
+        (!isPremiumRuleEnabled || missingMainlinesForPremium === 0)
 
     const messages: string[] = []
 
-    if (missingFantasy > 0) {
+    if (isMainlineRuleEnabled && missingFantasy > 0) {
         messages.push(
             `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
             } (1 required per 2 extra Licensed cars).`
         )
     }
 
-    if (missingMainlinesForPremium > 0) {
+    if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
         messages.push(
             `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
             } (1 Licensed/Fantasy mainline required per Premium car).`
