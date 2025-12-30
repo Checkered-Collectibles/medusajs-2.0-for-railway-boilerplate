@@ -33,7 +33,7 @@ export default async function Checkout() {
 
   if (!customer) redirect("/account?nextPath=/checkout?step=address")
   // 🔐 Enforce Hot Wheels rule server-side for /checkout
-  const { canCheckout } = evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
+  const { canCheckout } = await evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
 
   if (!canCheckout) {
     // User tried to go directly to /checkout with invalid cart
