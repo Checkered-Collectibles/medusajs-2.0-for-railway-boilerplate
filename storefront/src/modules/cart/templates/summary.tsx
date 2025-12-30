@@ -72,7 +72,25 @@ const Summary = ({
       ) : (
         checkoutButton
       )}
+      {(() => {
+        const threshold = 1499
+        const cartTotal = cart?.total || 0
+        const remaining = Math.max(0, threshold - cartTotal)
 
+        if (remaining === 0) {
+          return (
+            <div className="p-2 bg-emerald-100 text-emerald-700 rounded-xl text-sm border border-emerald-200 shadow text-center">
+              🎉 You’ve unlocked Free Shipping!
+            </div>
+          )
+        }
+
+        return (
+          <div className="p-2 bg-amber-50 text-amber-700 border-amber-200 rounded-xl text-sm border shadow text-center">
+            Add items worth ₹{remaining} more to get free shipping
+          </div>
+        )
+      })()}
       <ShippingCountdown className="mt-0" />
     </div>
   )
