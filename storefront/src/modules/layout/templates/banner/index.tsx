@@ -1,89 +1,52 @@
 "use client"
 
-import { useEffect, useRef } from "react"
-import gsap from "gsap"
+import Link from "next/link"
 import Countdown from "./countdown"
 
-const DROP_DATE_IST = "2025-12-11T14:00:00+05:30"
+const DROP_DATE_IST = "2025-12-30T23:00:00+05:30"
+const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
-    const isLive = Date.now() >= dropDate.getTime()
+    const saleEndDate = new Date(dropDate.getTime() + SALE_DURATION_MS)
 
-    const trackRef = useRef<HTMLDivElement | null>(null)
+    const now = Date.now()
+    const dropTs = dropDate.getTime()
+    const saleEndTs = saleEndDate.getTime()
 
-    const messages = isLive
-        ? [
-            "Euro Speed Premium set now in stock & discounted ⚡",
-            // "10% off Licensed mainlines – use code WINTER10 ❄️ (next 5 orders)",
-            "Free Shipping on all orders ₹1500 & above 🚚✨",
-        ]
-        : [
-            `Next collection drops soon – don’t miss it!`,
-            "Free Shipping on all orders ₹1500 & above 🚚✨",
-        ]
-
-    useEffect(() => {
-        if (!trackRef.current) return
-
-        const ctx = gsap.context(() => {
-            // reset position to avoid stacking animations on re-renders
-            gsap.set(trackRef.current, { xPercent: 0 })
-
-            gsap.to(trackRef.current, {
-                xPercent: -50, // because we duplicate content below
-                repeat: -1,
-                duration: 25,
-                ease: "linear",
-            })
-        }, trackRef)
-
-        return () => ctx.revert()
-    }, [])
+    const isPreDrop = now < dropTs
+    const isSaleLive = now >= dropTs && now < saleEndTs
+    const isPostSale = now >= saleEndTs
 
     return (
-        <section className="flex sm:text-md text-sm">
-            <div className="bg-black w-full text-white py-2 text-center overflow-hidden">
-                {/* Live vs countdown label on left (optional) */}
-                <div className="flex items-center gap-2 justify-center mb-1 sm:mb-0">
-                    {!isLive ? (
-                        <div className="text-xs sm:text-sm opacity-80">
-                            🚀 Next collection drops in{" "}
-                            <Countdown
-                                targetDate={dropDate}
-                                size="sm"
-                                className="px-1 inline"
-                            />
-                        </div>
-                    ) : (
-                        <></>
-                        // <div className="text-xs sm:text-sm opacity-80">
-                        //     ❄️ Winter Sale Live – use code WINTER10
-                        // </div>
-                    )}
+        <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
+            {isPreDrop && (
+                <div className="text-xs sm:text-sm opacity-80">
+                    🚀 Next collection drops in{" "}
+                    <Countdown
+                        targetDate={dropDate}
+                        size="sm"
+                        className="px-1 inline"
+                    />
                 </div>
+            )}
 
-                {/* Marquee track */}
-                <div className="relative w-full overflow-hidden">
-                    <div
-                        ref={trackRef}
-                        className="inline-flex whitespace-nowrap will-change-transform"
-                    >
-                        {/* first set */}
-                        {messages.map((msg, i) => (
-                            <span key={`msg-${i}`} className="mx-8">
-                                {msg}
-                            </span>
-                        ))}
-                        {/* duplicate set for seamless loop */}
-                        {messages.map((msg, i) => (
-                            <span key={`msg-dup-${i}`} className="mx-8">
-                                {msg}
-                            </span>
-                        ))}
-                    </div>
+            {isSaleLive && (
+                <Link href="/store" className="text-xs sm:text-sm opacity-80">
+                    ✨ 48-Hour Freedom Drop – offer ends in{" "}
+                    <Countdown
+                        targetDate={saleEndDate}
+                        size="sm"
+                        className="px-1 inline"
+                    />
+                </Link>
+            )}
+
+            {isPostSale && (
+                <div className="text-xs sm:text-sm opacity-80">
+                    Thank you for an awesome Freedom Drop! ❤️
                 </div>
-            </div>
+            )}
         </section>
     )
 }
