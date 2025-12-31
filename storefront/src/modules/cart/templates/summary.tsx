@@ -73,8 +73,8 @@ const Summary = ({
         checkoutButton
       )}
       {(() => {
-        const threshold = 1499
-        const cartTotal = cart?.total || 0
+        const threshold = 1500
+        const cartTotal = cart?.total - cart.shipping_subtotal || 0
         const remaining = Math.max(0, threshold - cartTotal)
 
         if (remaining === 0) {
