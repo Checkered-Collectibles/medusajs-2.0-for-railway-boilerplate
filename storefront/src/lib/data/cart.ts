@@ -30,9 +30,7 @@ export async function getOrSetCart(countryCode: string) {
   let cart = await retrieveCart()
   const region = await getRegion(countryCode)
 
-  if (!region) {
-    throw new Error(`Region not found for country code: ${countryCode}`)
-  }
+  if (!region) throw new Error(`Region not found for country code: ${countryCode}`)
 
   if (!cart) {
     const cartResp = await sdk.store.cart.create({ region_id: region.id })
@@ -40,15 +38,27 @@ export async function getOrSetCart(countryCode: string) {
     setCartId(cart.id)
     revalidateTag("cart")
   }
-
-  if (cart && cart?.region_id !== region.id) {
-    await sdk.store.cart.update(
-      cart.id,
-      { region_id: region.id },
-      {},
-      getAuthHeaders()
-    )
+  // keep region in sync
+  if (cart && cart.region_id !== region.id) {
+    await sdk.store.cart.update(cart.id, { region_id: region.id })
     revalidateTag("cart")
+    cart = await retrieveCart()
+  }
+
+  // Attach cart to logged-in customer so customer_id is set
+  if (cart && !cart.customer_id) {
+    const authHeaders = getAuthHeaders()
+    const isLoggedIn = authHeaders && Object.keys(authHeaders).length > 0
+
+    if (isLoggedIn) {
+      try {
+        await sdk.store.cart.transferCart(cart.id, {}, authHeaders)
+        revalidateTag("cart")
+        cart = await retrieveCart()
+      } catch {
+        // ignore; cart can remain guest if session isn't valid
+      }
+    }
   }
 
   return cart
