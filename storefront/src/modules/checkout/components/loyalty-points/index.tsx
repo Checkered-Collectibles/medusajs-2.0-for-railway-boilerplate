@@ -4,7 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 import { useEffect, useMemo, useState } from "react"
 import { getLoyaltyPoints } from "../../../../lib/data/customer"
 import { Button, Heading } from "@medusajs/ui"
-import { applyLoyaltyPointsOnCart } from "../../../../lib/data/cart"
+import { applyLoyaltyPointsOnCart, removeLoyaltyPointsOnCart } from "../../../../lib/data/cart"
 import Link from "next/link"
 
 type LoyaltyPointsProps = {
@@ -38,7 +38,7 @@ const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
         if (!isLoyaltyPointsPromoApplied) {
             await applyLoyaltyPointsOnCart()
         } else {
-            // TODO remove loyalty points
+            await removeLoyaltyPointsOnCart()
         }
     }
 
