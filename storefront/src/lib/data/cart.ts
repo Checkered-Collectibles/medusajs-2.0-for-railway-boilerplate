@@ -425,3 +425,23 @@ export async function updateRegion(countryCode: string, currentPath: string) {
 
   redirect(`/${countryCode}${currentPath}`)
 }
+
+export async function applyLoyaltyPointsOnCart() {
+  const cartId = await getCartId()
+  const headers = {
+    ...(await getAuthHeaders()),
+  }
+
+  return await sdk.client.fetch<{
+    cart: HttpTypes.StoreCart & {
+      promotions: HttpTypes.StorePromotion[]
+    }
+  }>(`/store/carts/${cartId}/loyalty-points`, {
+    method: "POST",
+    headers,
+  })
+    .then(async (result) => {
+      revalidateTag("cart")
+      return result
+    })
+}
