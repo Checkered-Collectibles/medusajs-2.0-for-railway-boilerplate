@@ -85,6 +85,13 @@ const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
                             >
                                 Coming soon
                             </Button>
+                            {/* <Button
+                                variant={"secondary"}
+                                className="w-1/2"
+                                disabled={true}
+                            >
+                                Coming soon
+                            </Button> */}
 
                             <span className="txt-medium text-ui-fg-subtle">
                                 Balance: <span className="text-ui-fg-base font-medium">{loyaltyPoints}</span> pts
