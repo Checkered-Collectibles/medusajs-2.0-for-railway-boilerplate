@@ -45,7 +45,7 @@ export const RazorpayPaymentButton = ({
             //   })
         }
         const options: RazorpayOrderOptions = {
-            callback_url: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/razorpay/hooks`,
+            // callback_url: `${process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL}/razorpay/hooks`,
             key: process.env.NEXT_PUBLIC_RAZORPAY_KEY ?? '',
             amount: session.amount * 100 * 100,
             order_id: orderData.id,
@@ -95,11 +95,11 @@ export const RazorpayPaymentButton = ({
             setErrorMessage(JSON.stringify(response.error))
 
         })
-        razorpay.on("payment.authorized" as any, function (response: any) {
-            const authorizedCart = placeOrder().then(authorizedCart => {
-                JSON.stringify(`authorized:` + authorizedCart)
-            })
-        })
+        // razorpay.on("payment.authorized" as any, function (response: any) {
+        //     const authorizedCart = placeOrder().then(authorizedCart => {
+        //         JSON.stringify(`authorized:` + authorizedCart)
+        //     })
+        // })
         // razorpay.on("payment.captured", function (response: any) {
 
         // }
