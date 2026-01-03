@@ -14,7 +14,21 @@ export const getCustomer = cache(async function () {
     .then(({ customer }) => customer)
     .catch(() => null)
 })
+export const getLoyaltyPoints = async () => {
+  const headers = {
+    ...(getAuthHeaders()),
+  }
 
+  return sdk.client.fetch<{ points: number }>(
+    `/store/customers/me/loyalty-points`,
+    {
+      method: "GET",
+      headers,
+    }
+  )
+    .then(({ points }) => points)
+    .catch(() => null)
+}
 export async function resetPassword(_currentState: unknown, formData: FormData) {
   const email = String(formData.get("email") || "").trim()
 
