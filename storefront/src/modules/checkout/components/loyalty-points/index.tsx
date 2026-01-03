@@ -1,7 +1,7 @@
 "use client"
 
 import { HttpTypes } from "@medusajs/types"
-import { useEffect, useMemo, useState } from "react"
+import { useEffect, useMemo, useState, useTransition } from "react"
 import { getLoyaltyPoints } from "../../../../lib/data/customer"
 import { Button, Heading } from "@medusajs/ui"
 import {
@@ -25,21 +25,41 @@ const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
     }, [cart])
 
     const [loyaltyPoints, setLoyaltyPoints] = useState<number | null>(null)
+    const [isPending, startTransition] = useTransition()
+    const [error, setError] = useState<string | null>(null)
 
     useEffect(() => {
         getLoyaltyPoints().then((points) => setLoyaltyPoints(points))
     }, [])
 
-    const handleTogglePromotion = async (
-        e: React.MouseEvent<HTMLButtonElement, MouseEvent>
-    ) => {
+    const handleTogglePromotion = (e: React.MouseEvent<HTMLButtonElement>) => {
         e.preventDefault()
-        if (!isLoyaltyPointsPromoApplied) {
-            await applyLoyaltyPointsOnCart()
-        } else {
-            await removeLoyaltyPointsOnCart()
-        }
+
+        // ✅ hard guard against click spam
+        if (isPending) return
+
+        setError(null)
+
+        startTransition(async () => {
+            try {
+                if (!isLoyaltyPointsPromoApplied) {
+                    await applyLoyaltyPointsOnCart()
+                } else {
+                    await removeLoyaltyPointsOnCart()
+                }
+            } catch (err: any) {
+                setError(err?.message || "Something went wrong. Please try again.")
+            }
+        })
     }
+
+    const buttonText = isPending
+        ? isLoyaltyPointsPromoApplied
+            ? "Removing..."
+            : "Applying..."
+        : isLoyaltyPointsPromoApplied
+            ? "Remove Points"
+            : "Apply Points"
 
     return (
         <>
@@ -71,41 +91,30 @@ const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
                     <div className="mt-4 flex flex-col gap-2">
                         <div className="flex items-center justify-between gap-3">
                             <Button
-                                variant={"secondary"}
+                                variant="secondary"
                                 className="w-1/2"
                                 onClick={handleTogglePromotion}
-                                disabled={loyaltyPoints < 1}
+                                disabled={
+                                    isPending || loyaltyPoints < 1 // you can change to < 500 if required
+                                }
+                                isLoading={isPending} // if Medusa UI Button supports it; if not, remove
                             >
-                                {isLoyaltyPointsPromoApplied ? "Remove" : "Apply"} Points
+                                {buttonText}
                             </Button>
-                            {/* <Button
-                                variant={"secondary"}
-                                className="w-1/2"
-                                disabled={true}
-                            >
-                                Coming soon
-                            </Button> */}
-                            {/* <Button
-                                variant={"secondary"}
-                                className="w-1/2"
-                                disabled={true}
-                            >
-                                Coming soon
-                            </Button> */}
 
                             <span className="txt-medium text-ui-fg-subtle">
-                                Balance: <span className="text-ui-fg-base font-medium">{loyaltyPoints}</span> pts
+                                Balance:{" "}
+                                <span className="text-ui-fg-base font-medium">{loyaltyPoints}</span> pts
                             </span>
                         </div>
 
-                        {/* {!isLoyaltyPointsPromoApplied && loyaltyPoints < 500 && (
-                            <div className="txt-small text-ui-fg-subtle">
-                                Earn <span className="font-medium text-ui-fg-base">{500 - loyaltyPoints}</span> more points to
-                                unlock ₹20 off.
+                        {error && (
+                            <div className="txt-small text-ui-fg-error">
+                                {error}
                             </div>
-                        )} */}
+                        )}
 
-                        {isLoyaltyPointsPromoApplied && (
+                        {isLoyaltyPointsPromoApplied && !isPending && (
                             <div className="txt-small text-ui-fg-subtle">
                                 ✅ Loyalty discount applied to this cart.
                             </div>
