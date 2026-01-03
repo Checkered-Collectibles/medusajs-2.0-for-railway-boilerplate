@@ -1,6 +1,6 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework/http"
 import { applyLoyaltyOnCartWorkflow } from "../../../../../workflows/apply-loyalty-on-cart"
-import { removeLoyaltyFromCartWorkflow } from "src/workflows/remove-loyalty-from-cart"
+import { removeLoyaltyFromCartWorkflow } from "../../../../../workflows/remove-loyalty-from-cart"
 
 export async function POST(
     req: MedusaRequest,
