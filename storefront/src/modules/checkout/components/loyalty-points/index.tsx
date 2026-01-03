@@ -70,13 +70,20 @@ const LoyaltyPoints = ({ cart }: LoyaltyPointsProps) => {
                 ) : (
                     <div className="mt-4 flex flex-col gap-2">
                         <div className="flex items-center justify-between gap-3">
-                            <Button
+                            {/* <Button
                                 variant={"secondary"}
                                 className="w-1/2"
                                 onClick={handleTogglePromotion}
-                                disabled={loyaltyPoints < 1}
+                                disabled={loyaltyPoints < 1 }
                             >
                                 {isLoyaltyPointsPromoApplied ? "Remove" : "Apply"} Points
+                            </Button> */}
+                            <Button
+                                variant={"secondary"}
+                                className="w-1/2"
+                                disabled={true}
+                            >
+                                Coming soon
                             </Button>
 
                             <span className="txt-medium text-ui-fg-subtle">
