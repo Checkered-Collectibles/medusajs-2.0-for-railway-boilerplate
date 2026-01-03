@@ -2,7 +2,7 @@ import { Modules } from '@medusajs/framework/utils'
 import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { EmailTemplates } from '../modules/email-notifications/templates'
-import { handleOrderPointsWorkflow } from 'workflows/handle-order-points'
+import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
 
 export default async function orderPlacedHandler({
   event: { data },
