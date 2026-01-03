@@ -56,6 +56,9 @@ const medusaConfig = {
   },
   modules: [
     {
+      resolve: "./src/modules/loyalty",
+    },
+    {
       resolve: "@medusajs/medusa/analytics",
       options: {
         providers: [
