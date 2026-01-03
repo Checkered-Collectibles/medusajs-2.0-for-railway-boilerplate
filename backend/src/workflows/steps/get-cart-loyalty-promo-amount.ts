@@ -31,12 +31,14 @@ export const getCartLoyaltyPromoAmountStep = createStep(
             )
         }
 
-        const pointsAmount = await loyaltyModuleService.calculatePointsFromAmount(
-            loyaltyPoints
-        )
-
-        const amount = Math.min(pointsAmount, cart.total)
-
+        const discountAmount = loyaltyModuleService.calculateDiscountFromPoints(loyaltyPoints)
+        const amount = Math.min(discountAmount, cart.total)
+        if (amount <= 0) {
+            throw new MedusaError(
+                MedusaError.Types.INVALID_DATA,
+                "Not enough loyalty points to redeem"
+            )
+        }
         return new StepResponse(amount)
     }
 )

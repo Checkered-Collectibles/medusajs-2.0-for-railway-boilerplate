@@ -429,7 +429,7 @@ export async function updateRegion(countryCode: string, currentPath: string) {
 export async function applyLoyaltyPointsOnCart() {
   const cartId = await getCartId()
   const headers = {
-    ...(await getAuthHeaders()),
+    ...(getAuthHeaders()),
   }
 
   return await sdk.client.fetch<{
