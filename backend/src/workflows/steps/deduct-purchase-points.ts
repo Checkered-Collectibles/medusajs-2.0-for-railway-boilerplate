@@ -19,9 +19,7 @@ export const deductPurchasePointsStep = createStep(
             LOYALTY_MODULE
         )
 
-        const pointsToDeduct = await loyaltyModuleService.calculatePointsFromAmount(
-            amount
-        )
+        const pointsToDeduct = loyaltyModuleService.calculatePointsFromDiscount(amount)
 
         const result = await loyaltyModuleService.deductPoints(
             customer_id,

@@ -64,6 +64,14 @@ class LoyaltyModuleService extends MedusaService({
 
         return points
     }
+    calculateDiscountFromPoints(points: number) {
+        // 500 pts = ₹25 => ₹0.05 per point
+        // discount = points / 20
+        return Math.floor(points / 20) // integer rupees
+    }
+    calculatePointsFromDiscount(discountINR: number) {
+        return Math.floor(discountINR * 20)
+    }
 }
 
 export default LoyaltyModuleService
