@@ -52,7 +52,7 @@ export const applyLoyaltyOnCartWorkflow = createWorkflow(
             options: {
                 throwIfKeyNotFound: true,
             },
-        })
+        }).config({ name: "retrieve-base-cart" })
 
         validateCustomerExistsStep({
             customer: carts[0].customer,

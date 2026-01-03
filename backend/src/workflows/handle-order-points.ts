@@ -32,7 +32,7 @@ export const handleOrderPointsWorkflow = createWorkflow(
             options: {
                 throwIfKeyNotFound: true,
             },
-        })
+        }).config({ name: "retrieve-base-order" })
 
         validateCustomerExistsStep({
             customer: orders[0].customer,

@@ -43,7 +43,7 @@ export const removeLoyaltyFromCartWorkflow = createWorkflow(
             options: {
                 throwIfKeyNotFound: true,
             },
-        })
+        }).config({ name: "retrieve-base-cart-2" })
 
         const loyaltyPromo = getCartLoyaltyPromoStep({
             cart: carts[0] as unknown as CartData,
