@@ -10,6 +10,7 @@ import {
     updateCartPromotionsWorkflow,
     updateCartsStep,
     updatePromotionsStep,
+    deletePromotionsStep,
 } from "@medusajs/medusa/core-flows"
 import { getCartLoyaltyPromoStep } from "./steps/get-cart-loyalty-promo"
 import { PromotionActions } from "@medusajs/framework/utils"
@@ -82,12 +83,7 @@ export const removeLoyaltyFromCartWorkflow = createWorkflow(
             },
         ])
 
-        updatePromotionsStep([
-            {
-                id: loyaltyPromo.id,
-                status: "inactive",
-            },
-        ])
+        deletePromotionsStep([loyaltyPromo.id])
 
         // retrieve cart with updated promotions
         const { data: updatedCarts } = useQueryGraphStep({
