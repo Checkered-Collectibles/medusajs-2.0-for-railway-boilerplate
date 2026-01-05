@@ -20,7 +20,7 @@ export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
 
-    const distinctId = await getServerSidePostHogDistinctId();
+    // const distinctId = await getServerSidePostHogDistinctId();
     // Feature flags
     const isMainlineRuleEnabled = true;
     const isPremiumRuleEnabled = true;
