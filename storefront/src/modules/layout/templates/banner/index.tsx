@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Countdown from "./countdown"
 
-const DROP_DATE_IST = "2025-12-30T23:00:00+05:30"
+const DROP_DATE_IST = "2026-01-05T21:00:00+05:30";
 const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
@@ -32,13 +32,8 @@ export default function Banner() {
             )}
 
             {isSaleLive && (
-                <Link href="/store" className="text-xs sm:text-sm opacity-80">
-                    ✨ 48-Hour Freedom Drop – offer ends in{" "}
-                    <Countdown
-                        targetDate={saleEndDate}
-                        size="sm"
-                        className="px-1 inline"
-                    />
+                <Link href="/collections/a-case-2026-licensed" className="text-xs sm:text-sm opacity-80">
+                    🔥 A Case 2026 is here {"->"}
                 </Link>
             )}
 
