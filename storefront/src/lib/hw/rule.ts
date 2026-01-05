@@ -22,14 +22,16 @@ export async function evaluateHotWheelsRule(
 
     const distinctId = await getServerSidePostHogDistinctId();
     // Feature flags
-    const isMainlineRuleEnabled = await PostHogClient.isFeatureEnabled(
-        "hw-mainline-rule",
-        distinctId ?? ""
-    )
-    const isPremiumRuleEnabled = await PostHogClient.isFeatureEnabled(
-        "hw-premium-rule",
-        distinctId ?? ""
-    )
+    const isMainlineRuleEnabled = true;
+    const isPremiumRuleEnabled = true;
+    // const isMainlineRuleEnabled = await PostHogClient.isFeatureEnabled(
+    //     "hw-mainline-rule",
+    //     distinctId ?? ""
+    // )
+    // const isPremiumRuleEnabled = await PostHogClient.isFeatureEnabled(
+    //     "hw-premium-rule",
+    //     distinctId ?? ""
+    // )
 
     let licensedCount = 0
     let fantasyCount = 0
