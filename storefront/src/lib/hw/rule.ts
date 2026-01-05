@@ -1,5 +1,4 @@
 // src/modules/cart/lib/hotwheels-rule.ts
-import PostHogClient, { getServerSidePostHogDistinctId } from "@lib/posthog/server"
 import { HttpTypes } from "@medusajs/types"
 
 export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
@@ -19,23 +18,14 @@ export type HotWheelsRuleResult = {
 export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
-
-    // const distinctId = await getServerSidePostHogDistinctId();
-    // Feature flags
-    const isMainlineRuleEnabled = true;
-    const isPremiumRuleEnabled = true;
-    // const isMainlineRuleEnabled = await PostHogClient.isFeatureEnabled(
-    //     "hw-mainline-rule",
-    //     distinctId ?? ""
-    // )
-    // const isPremiumRuleEnabled = await PostHogClient.isFeatureEnabled(
-    //     "hw-premium-rule",
-    //     distinctId ?? ""
-    // )
+    const isMainlineRuleEnabled = true
+    const isPremiumRuleEnabled = true
 
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
+
+    let hasInvalidQuantity = false
 
     if (cart?.items) {
         for (const item of cart.items) {
@@ -43,11 +33,19 @@ export async function evaluateHotWheelsRule(
             const categories = (item as any).product?.categories ?? []
             const categoryIds = categories.map((c: any) => c.id)
 
+            const isFantasy = categoryIds.includes(FANTASY_CATEGORY_ID)
+
+            // 🚫 HARD RULE:
+            // Non-Fantasy cars cannot have quantity > 1
+            if (!isFantasy && quantity > 1) {
+                hasInvalidQuantity = true
+            }
+
             if (categoryIds.includes(LICENSED_CATEGORY_ID)) {
                 licensedCount += quantity
             }
 
-            if (categoryIds.includes(FANTASY_CATEGORY_ID)) {
+            if (isFantasy) {
                 fantasyCount += quantity
             }
 
@@ -63,34 +61,33 @@ export async function evaluateHotWheelsRule(
     let licensedExtra = licensedCount
     let fantasyExtra = fantasyCount
 
-    // 🔑 PREMIUM RULE (flag: hw-premium-rule)
-    // 1 Mainline (Licensed or Fantasy) per Premium
+    // 🔑 PREMIUM RULE
     if (isPremiumRuleEnabled && premiumCount > 0) {
-        const requiredMainlinesForPremium = premiumCount * 1
+        const requiredMainlinesForPremium = premiumCount
 
         missingMainlinesForPremium = Math.max(
             0,
             requiredMainlinesForPremium - mainlineCount
         )
 
-        // Allocate mainlines toward premium requirement
         if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
             const neededForPremium = Math.min(
                 requiredMainlinesForPremium,
                 mainlineCount
             )
 
-            const licensedUsedForPremium = Math.min(licensedCount, neededForPremium)
-            const remainingNeeded = neededForPremium - licensedUsedForPremium
-            const fantasyUsedForPremium = Math.min(fantasyCount, remainingNeeded)
+            const licensedUsed = Math.min(licensedCount, neededForPremium)
+            const fantasyUsed = Math.min(
+                fantasyCount,
+                neededForPremium - licensedUsed
+            )
 
-            licensedExtra = licensedCount - licensedUsedForPremium
-            fantasyExtra = fantasyCount - fantasyUsedForPremium
+            licensedExtra -= licensedUsed
+            fantasyExtra -= fantasyUsed
         }
     }
 
-    // 🔑 MAINLINE RULE (flag: hw-mainline-rule)
-    // 1 Fantasy required for every 2 extra Licensed cars
+    // 🔑 MAINLINE RULE
     let missingFantasy = 0
     if (isMainlineRuleEnabled) {
         const requiredFantasy = Math.floor(licensedExtra / 2)
@@ -98,10 +95,17 @@ export async function evaluateHotWheelsRule(
     }
 
     const canCheckout =
+        !hasInvalidQuantity &&
         (!isMainlineRuleEnabled || missingFantasy === 0) &&
         (!isPremiumRuleEnabled || missingMainlinesForPremium === 0)
 
     const messages: string[] = []
+
+    if (hasInvalidQuantity) {
+        messages.push(
+            "Only Fantasy cars can be purchased with quantity more than 1. Please reduce quantity for other items."
+        )
+    }
 
     if (isMainlineRuleEnabled && missingFantasy > 0) {
         messages.push(
@@ -113,7 +117,7 @@ export async function evaluateHotWheelsRule(
     if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
         messages.push(
             `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
-            } (1 Licensed/Fantasy mainline required per Premium car).`
+            } (1 Licensed/Fantasy required per Premium car).`
         )
     }
 
