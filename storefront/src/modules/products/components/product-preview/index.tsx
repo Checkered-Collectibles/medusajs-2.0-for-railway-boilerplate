@@ -10,7 +10,7 @@ import { HttpTypes } from "@medusajs/types"
 import QuickAddToCartButton from "../product-preview-instant/add-to-cart"
 
 import logotypes from "@avto-dev/vehicle-logotypes/src/vehicle-logotypes.json"
-import { getBrandLogoFromTitle, logosMapToArray } from "@lib/hw/get-logo"
+import { getBrandLogoFromTitle, logosMapToArray } from "@modules/cart/components/hw/get-logo"
 
 // ✅ Convert once (module-level), not on every render
 const LOGOS_ARRAY = logosMapToArray(logotypes)

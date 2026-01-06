@@ -7,7 +7,8 @@ import CheckoutSummary from "@modules/checkout/templates/checkout-summary"
 import { enrichLineItems, retrieveCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { getCustomer } from "@lib/data/customer"
-import { evaluateHotWheelsRule } from "@lib/hw/rule"
+import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
+import { evaluateOutOfStockRule } from "@modules/cart/components/out-of-stock"
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -29,16 +30,20 @@ const fetchCart = async () => {
 
 export default async function Checkout() {
   const cart = await fetchCart()
-  const customer = await getCustomer()
 
-  if (!customer) redirect("/account?nextPath=/checkout?step=address")
-  // 🔐 Enforce Hot Wheels rule server-side for /checkout
-  const { canCheckout } = await evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
+
+  // 🔐 Enforce rules server-side for /checkout
+  const hotWheelsRule = await evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
+  const stockRule = await evaluateOutOfStockRule(cart as HttpTypes.StoreCart)
+
+  const canCheckout = hotWheelsRule.canCheckout && stockRule.canCheckout
 
   if (!canCheckout) {
-    // User tried to go directly to /checkout with invalid cart
+    // User tried to bypass rules by going directly to /checkout
     redirect("/cart")
   }
+  const customer = await getCustomer()
+  if (!customer) redirect("/account?nextPath=/checkout?step=address")
 
   return (
     <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">

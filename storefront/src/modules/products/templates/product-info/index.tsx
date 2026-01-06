@@ -3,7 +3,7 @@ import { Heading, Text } from "@medusajs/ui"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import Image from "next/image"
 import logotypes from "@avto-dev/vehicle-logotypes/src/vehicle-logotypes.json"
-import { getBrandLogoFromTitle, logosMapToArray } from "@lib/hw/get-logo"
+import { getBrandLogoFromTitle, logosMapToArray } from "@modules/cart/components/hw/get-logo"
 
 
 

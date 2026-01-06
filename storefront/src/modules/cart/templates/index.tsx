@@ -4,16 +4,17 @@ import EmptyCartMessage from "../components/empty-cart-message"
 import SignInPrompt from "../components/sign-in-prompt"
 import Divider from "@modules/common/components/divider"
 import { HttpTypes } from "@medusajs/types"
-import { evaluateHotWheelsRule } from "@lib/hw/rule"
+import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
 import { Suspense } from "react"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import RelatedProducts from "@modules/products/components/related-products"
-import { getFantasyProducts, getLicensedProducts } from "@lib/hw/add-product"
+import { getFantasyProducts, getLicensedProducts } from "@modules/cart/components/hw/add-product"
 import ProductPreview from "@modules/products/components/product-preview"
 import { getRegion } from "@lib/data/regions"
 import ProductPreviewInstant from "@modules/products/components/product-preview-instant"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import InteractiveLink from "@modules/common/components/interactive-link"
+import { evaluateOutOfStockRule } from "../components/out-of-stock"
 
 const CartTemplate = async ({
   cart,
@@ -26,12 +27,22 @@ const CartTemplate = async ({
 }) => {
   const region = await getRegion(countryCode)
 
+  const hotWheelsRule = await evaluateHotWheelsRule(cart)
+  const stockRule = await evaluateOutOfStockRule(cart)
+
+  const canCheckout = hotWheelsRule.canCheckout && stockRule.canCheckout
+
+  const restrictionMessage = [
+    hotWheelsRule.restrictionMessage,
+    stockRule.restrictionMessage,
+  ]
+    .filter(Boolean)
+    .join(" ")
+
   const {
-    canCheckout,
-    restrictionMessage,
     missingFantasy,
     missingMainlinesForPremium,
-  } = await evaluateHotWheelsRule(cart)
+  } = hotWheelsRule
 
   let fantasyProducts: HttpTypes.StoreProduct[] = []
   let fantasyCategoryHandle: string | undefined
