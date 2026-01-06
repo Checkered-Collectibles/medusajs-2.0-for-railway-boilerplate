@@ -5,8 +5,8 @@ import HeroGraphic from "./graphic";
 
 const Hero = () => {
   return (
-    <div className="md:p-0 p-0 bg-black h-[calc(100vh-6rem)] md:min-h-[60rem] min-h-[45rem] relative">
-      <div className="content-container w-full flex flex-col gap-y-10 -bg-ui-bg-subtle md:pt-32 pt-16 overflow-hidden">
+    <div className="md:p-3 p-0">
+      <div className="content-container w-full flex flex-col gap-y-10 border relative -bg-ui-bg-subtle bg-gradient-to-l from-red-50 to-blue-50 md:pt-32 pt-16 overflow-hidden">
         <div className="inset-0 z-10 flex flex-col justify-start items-center text-center gap-6">
           <span className="px-2">
             <Heading
@@ -25,14 +25,13 @@ const Hero = () => {
           <a
             href="/store"
           >
-            <Button variant="primary" className="">
+            <Button variant="primary">
               Browse the Latest Drops {"->"}
             </Button>
           </a>
         </div>
         <HeroGraphic />
       </div>
-      <div className="absolute top-0 w-screen h-full bg-gradient-to-t from-transparent to-white" />
     </div>
   )
 }
