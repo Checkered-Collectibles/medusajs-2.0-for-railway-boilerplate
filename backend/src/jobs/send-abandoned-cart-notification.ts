@@ -26,9 +26,9 @@ export default async function abandonedCartJob(container: MedusaContainer) {
     // For marking carts as "notified"
     const cartModuleService = container.resolve(Modules.CART)
 
-    const oneDayAgo = new Date()
-    // oneDayAgo.setDate(oneDayAgo.getDate() - 1)
-    oneDayAgo.setMinutes(oneDayAgo.getMinutes() - 1)
+    const oneHourAgo = new Date()
+    oneHourAgo.setHours(oneHourAgo.getHours() - 1)
+
 
     const STORE_URL = process.env.STOREFRONT_URL || "https://checkered.in"
     const limit = 100
@@ -49,10 +49,8 @@ export default async function abandonedCartJob(container: MedusaContainer) {
                 "customer.last_name",
             ],
             filters: {
-                // updated_at: { $lt: oneDayAgo },
-                // email: { $ne: null },
-                updated_at: { $lt: new Date() },
-                email: "shubhankartrivedi@icloud.com",
+                updated_at: { $lt: oneHourAgo },
+                email: { $ne: null },
                 completed_at: null,
             },
             pagination: { skip: offset, take: limit },
@@ -65,8 +63,26 @@ export default async function abandonedCartJob(container: MedusaContainer) {
                 (cart.items?.length ?? 0) > 0 &&
                 !cart.metadata?.abandoned_notification
         )
+        const latestCartByEmail = new Map<string, any>()
 
         for (const cart of cartsToNotify) {
+            const email = cart.email as string
+            const existing = latestCartByEmail.get(email)
+
+            if (!existing) {
+                latestCartByEmail.set(email, cart)
+            } else {
+                const existingDate = new Date(existing.updated_at).getTime()
+                const currentDate = new Date(cart.updated_at).getTime()
+
+                if (currentDate > existingDate) {
+                    latestCartByEmail.set(email, cart)
+                }
+            }
+        }
+
+        const dedupedCartsToNotify = Array.from(latestCartByEmail.values())
+        for (const cart of dedupedCartsToNotify) {
             try {
                 const email = cart.email as string
 
@@ -151,5 +167,6 @@ export default async function abandonedCartJob(container: MedusaContainer) {
 export const config = {
     name: "abandoned-cart-notification",
     // schedule: "0 0 * * *", // midnight daily
-    schedule: "* * * * *",
+    // schedule: "* * * * *",
+    schedule: "0 * * * *"
 }

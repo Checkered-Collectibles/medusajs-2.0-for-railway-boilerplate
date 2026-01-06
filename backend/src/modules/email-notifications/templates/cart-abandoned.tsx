@@ -121,7 +121,7 @@ export const CartAbandonedEmail = ({
                                     <Img
                                         src={item.imageUrl}
                                         alt={item.name}
-                                        className="w-16 h-16 rounded mr-3"
+                                        className="w-24 h-32 rounded mr-3"
                                     />
                                 ) : null}
 
@@ -204,14 +204,14 @@ CartAbandonedEmail.PreviewProps = {
             name: "Limited Edition Diecast Car",
             quantity: 1,
             price: "₹1,999",
-            imageUrl: "https://checkered.in/images/sample-product.png",
+            imageUrl: "https://images.checkered.in/medusa-media/ford-f-150-svt-lightning-01KC8ZTSEBX3AHGJJ44X7PJDQ3.jpg",
             productUrl: "https://checkered.in/products/limited-edition-diecast-car",
         },
         {
             name: "Collector Display Case",
             quantity: 1,
             price: "₹500",
-            imageUrl: "https://checkered.in/images/sample-product-2.png",
+            imageUrl: "https://images.checkered.in/medusa-media/pixel-shaker-01KCBFVB3TY0VTG4FHM9A894GP.jpg",
             productUrl: "https://checkered.in/products/display-case",
         },
     ],
