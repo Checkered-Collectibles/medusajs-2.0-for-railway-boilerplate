@@ -12,11 +12,17 @@ import {
   PASSWORD_RESET,
   isPasswordResetData,
 } from "./password-reset"
+import {
+  CartAbandonedEmail,
+  CART_ABANDONED,
+  isCartAbandonedData,
+} from "./cart-abandoned"
 
 export const EmailTemplates = {
   INVITE_USER,
   ORDER_PLACED,
   PASSWORD_RESET,
+  CART_ABANDONED,
 } as const
 
 export type EmailTemplateType = keyof typeof EmailTemplates
@@ -46,13 +52,21 @@ export function generateEmailTemplate(
 
     case EmailTemplates.PASSWORD_RESET:
       if (!isPasswordResetData(data)) {
-        console.log(data)
         throw new MedusaError(
           MedusaError.Types.INVALID_DATA,
           `Invalid data for template "${EmailTemplates.PASSWORD_RESET}"`
         )
       }
       return <PasswordResetEmail {...data} />
+
+    case EmailTemplates.CART_ABANDONED:
+      if (!isCartAbandonedData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.CART_ABANDONED}"`
+        )
+      }
+      return <CartAbandonedEmail {...data} />
 
     default:
       throw new MedusaError(
@@ -62,4 +76,9 @@ export function generateEmailTemplate(
   }
 }
 
-export { InviteUserEmail, OrderPlacedTemplate, PasswordResetEmail }
+export {
+  InviteUserEmail,
+  OrderPlacedTemplate,
+  PasswordResetEmail,
+  CartAbandonedEmail,
+}

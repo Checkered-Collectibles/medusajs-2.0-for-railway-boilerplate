@@ -11,8 +11,8 @@ import { getProductsById } from "./products"
 import { getRegion } from "./regions"
 import { addCustomerAddress } from "./customer"
 
-export async function retrieveCart() {
-  const cartId = getCartId()
+export async function retrieveCart(id?: string) {
+  const cartId = id || getCartId()
 
   if (!cartId) {
     return null
