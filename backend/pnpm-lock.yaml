@@ -60,6 +60,9 @@ importers:
       ioredis:
         specifier: ^5.8.2
         version: 5.8.2
+      medusa-shiprocket-fulfillment-plugin:
+        specifier: ^0.4.0
+        version: 0.4.0(ycvgvgxgsfqbwyi5sdp24jqxuy)
       medusajs-launch-utils:
         specifier: 0.0.18
         version: 0.0.18
@@ -6007,6 +6010,25 @@ packages:
   media-typer@0.3.0:
     resolution: {integrity: sha512-dq+qelQ9akHpcOl/gUVRTxVIOkAJ1wR3QAvb4RsVjS8oVoFjDGTc679wJYmUmknUF5HwMLOgb5O+a3KxfWapPQ==}
     engines: {node: '>= 0.6'}
+
+  medusa-shiprocket-fulfillment-plugin@0.4.0:
+    resolution: {integrity: sha512-+Nr3sDSnQ88JbkX8nVsMmoFAcCctb0GhMxRbVzAl5mFevt+n0YWMzHTf0nwYbRivITDId3oOer5djpYZp4EocA==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@medusajs/admin-sdk': ^2.12.3
+      '@medusajs/cli': ^2.12.3
+      '@medusajs/framework': ^2.12.3
+      '@medusajs/icons': ^2.12.3
+      '@medusajs/medusa': ^2.12.3
+      '@medusajs/test-utils': ^2.12.3
+      '@medusajs/ui': ^4.0.31
+      '@mikro-orm/cli': 6.4.3
+      '@mikro-orm/core': 6.4.3
+      '@mikro-orm/knex': 6.4.3
+      '@mikro-orm/migrations': 6.4.3
+      '@mikro-orm/postgresql': 6.4.3
+      awilix: ^8.0.1
+      pg: ^8.13.0
 
   medusajs-launch-utils@0.0.18:
     resolution: {integrity: sha512-ReJT1qpYMnoIvkFls5Mzn1bzacLtxZQpsit+bTwt5LzrnqDODzWDzRiUYaV66n359La1VfK3prMghoM3k/kFxA==}
@@ -15283,6 +15305,24 @@ snapshots:
   meant@1.0.3: {}
 
   media-typer@0.3.0: {}
+
+  medusa-shiprocket-fulfillment-plugin@0.4.0(ycvgvgxgsfqbwyi5sdp24jqxuy):
+    dependencies:
+      '@medusajs/admin-sdk': 2.12.1
+      '@medusajs/cli': 2.12.1(@types/node@20.19.25)
+      '@medusajs/framework': 2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25))
+      '@medusajs/medusa': 2.12.1(@medusajs/admin-sdk@2.12.1)(@medusajs/cli@2.12.1(@types/node@20.19.25))(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(@medusajs/test-utils@2.12.1)(@swc/core@1.5.7(@swc/helpers@0.5.17))(@types/node@20.19.25)(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(awilix@8.0.1)(picomatch@4.0.3)(posthog-node@4.18.0)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)(typescript@5.9.3)(yaml@2.8.0)
+      '@medusajs/test-utils': 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(@medusajs/medusa@2.12.1)
+      '@mikro-orm/cli': 6.4.16(pg@8.16.3)
+      '@mikro-orm/core': 6.4.16
+      '@mikro-orm/knex': 6.4.16(@mikro-orm/core@6.4.16)(pg@8.16.3)
+      '@mikro-orm/migrations': 6.4.16(@mikro-orm/core@6.4.16)(@types/node@20.19.25)(pg@8.16.3)
+      '@mikro-orm/postgresql': 6.4.16(@mikro-orm/core@6.4.16)
+      awilix: 8.0.1
+      axios: 1.13.2
+      pg: 8.16.3
+    transitivePeerDependencies:
+      - debug
 
   medusajs-launch-utils@0.0.18:
     dependencies:

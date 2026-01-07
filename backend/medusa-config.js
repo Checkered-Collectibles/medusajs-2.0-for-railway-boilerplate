@@ -56,6 +56,23 @@ const medusaConfig = {
   },
   modules: [
     {
+      resolve: "@medusajs/medusa/fulfillment",
+      options: {
+        providers: [
+          {
+            resolve: "medusa-shiprocket-fulfillment-plugin",
+            id: "shiprocket",
+            options: {
+              email: process.env.SHIPROCKET_EMAIL,
+              password: process.env.SHIPROCKET_PASSWORD,
+              pickup_location: process.env.SHIPROCKET_PICKUP_LOCATION,
+              cod: "false", // Enable string "true" for COD support
+            },
+          },
+        ],
+      },
+    },
+    {
       resolve: "./src/modules/loyalty",
     },
     {
@@ -206,6 +223,10 @@ const medusaConfig = {
       : []),
   ],
   plugins: [
+    {
+      resolve: "medusa-shiprocket-fulfillment-plugin",
+      options: {},
+    },
     ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
       ? [
           {
