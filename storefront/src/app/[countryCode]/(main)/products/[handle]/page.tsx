@@ -24,7 +24,11 @@ export async function generateStaticParams() {
 
   const products = await Promise.all(
     countryCodes.map((countryCode) => {
-      return getProductsList({ countryCode })
+      return getProductsList({
+        countryCode, queryParams: {
+          limit: 1000
+        }
+      })
     })
   ).then((responses) =>
     responses.map(({ response }) => response.products).flat()
