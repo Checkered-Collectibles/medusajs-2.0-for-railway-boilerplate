@@ -8,10 +8,10 @@ function formatMoney(amountMinor: number, currencyCode?: string) {
         return new Intl.NumberFormat(undefined, {
             style: "currency",
             currency: currencyCode.toUpperCase(),
-        }).format(amountMinor / 100)
+        }).format(amountMinor)
     } catch {
         // fallback (if currency code invalid)
-        return `${amountMinor / 100} ${currencyCode}`
+        return `${amountMinor} ${currencyCode}`
     }
 }
 
