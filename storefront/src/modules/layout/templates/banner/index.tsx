@@ -38,9 +38,9 @@ export default function Banner() {
             )}
 
             {isPostSale && (
-                <div className="text-xs sm:text-sm opacity-80">
-                    Thank you for an awesome Freedom Drop! ❤️
-                </div>
+                <Link href="/collections/a-case-2026-licensed" className="text-xs sm:text-sm opacity-80">
+                    🔥 A Case 2026 is here {"->"}
+                </Link>
             )}
         </section>
     )
