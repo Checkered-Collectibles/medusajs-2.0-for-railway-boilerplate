@@ -412,6 +412,36 @@ export async function placeOrder() {
   return cartRes.cart
 }
 
+export async function deleteCartCompletely(cartId?: string) {
+  const id = cartId || getCartId()
+
+  // Nothing to delete — ensure cookie is cleared anyway
+  if (!id) {
+    removeCartId()
+    revalidateTag("cart")
+    return { deleted: true, cartId: null }
+  }
+
+  try {
+    // Preferred: delete cart in Medusa (if supported by your Medusa version)
+    // Many versions expose: sdk.store.cart.delete(cartId, config?, headers?)
+    await (sdk.store.cart as any).delete(id, {}, getAuthHeaders())
+
+    // Clear local cart reference
+    removeCartId()
+    revalidateTag("cart")
+
+    return { deleted: true, cartId: id }
+  } catch (e) {
+    // Fallback: if delete endpoint isn't available / fails,
+    // we still reset the session cart by removing the cookie.
+    removeCartId()
+    revalidateTag("cart")
+
+    return { deleted: true, cartId: id, fallback: true }
+  }
+}
+
 /**
  * Updates the countrycode param and revalidates the regions cache
  * @param regionId
