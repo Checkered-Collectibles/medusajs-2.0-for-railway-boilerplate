@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Countdown from "./countdown"
 
-const DROP_DATE_IST = "2026-01-05T21:00:00+05:30";
+const DROP_DATE_IST = "2026-01-13T21:00:00+05:30";
 const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
@@ -32,14 +32,14 @@ export default function Banner() {
             )}
 
             {isSaleLive && (
-                <Link href="/collections/a-case-2026-licensed" className="text-xs sm:text-sm opacity-80">
-                    🔥 A Case 2026 is here {"->"}
+                <Link href="/collections/exotic-mainlines-1" className="text-xs sm:text-sm opacity-80">
+                    🔥 Exotic Mainlines are here {"->"}
                 </Link>
             )}
 
             {isPostSale && (
-                <Link href="/collections/a-case-2026-licensed" className="text-xs sm:text-sm opacity-80">
-                    🔥 A Case 2026 is here {"->"}
+                <Link href="/collections/exotic-mainlines-1" className="text-xs sm:text-sm opacity-80">
+                    🔥 Exotic Mainlines are here {"->"}
                 </Link>
             )}
         </section>
