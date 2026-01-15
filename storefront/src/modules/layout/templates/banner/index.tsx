@@ -3,7 +3,7 @@
 import Link from "next/link"
 import Countdown from "./countdown"
 
-const DROP_DATE_IST = "2026-01-13T21:00:00+05:30";
+const DROP_DATE_IST = "2026-01-15T23:00:00+05:30"
 const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
@@ -23,23 +23,27 @@ export default function Banner() {
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-80">
                     🚀 Next collection drops in{" "}
-                    <Countdown
-                        targetDate={dropDate}
-                        size="sm"
-                        className="px-1 inline"
-                    />
+                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline" />
                 </div>
             )}
 
             {isSaleLive && (
-                <Link href="/collections/exotic-mainlines-1" className="text-xs sm:text-sm opacity-80">
-                    🔥 Exotic Mainlines are here {"->"}
+                <Link
+                    href="/categories/hot-wheels-premium"
+                    className="text-xs sm:text-sm opacity-80"
+                >
+                    🔥 10% OFF Hot Wheels Premium — ends in{" "}
+                    <Countdown targetDate={saleEndDate} size="sm" className="px-1 inline" />{" "}
+                    {"->"}
                 </Link>
             )}
 
             {isPostSale && (
-                <Link href="/collections/exotic-mainlines-1" className="text-xs sm:text-sm opacity-80">
-                    🔥 Exotic Mainlines are here {"->"}
+                <Link
+                    href="/store"
+                    className="text-xs sm:text-sm opacity-80"
+                >
+                    🚚 Free shipping on orders above ₹1500 {"->"}
                 </Link>
             )}
         </section>
