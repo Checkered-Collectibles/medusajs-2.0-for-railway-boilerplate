@@ -67,7 +67,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     countryCode: params.countryCode,
   })
 
-  // ✅ Collect multiple images from products
+  // ✅ Collect multiple product images for OG/Twitter cards
   const images =
     response?.products
       ?.flatMap((product) => [
@@ -75,7 +75,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         ...(product.images?.map((img) => img.url) ?? []),
       ])
       .filter((url): url is string => Boolean(url))
-      .slice(0, 6) // OG supports multiple; keep it reasonable
+      .slice(0, 6)
       .map((url) => ({
         url,
         width: 1200,
@@ -83,8 +83,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         alt: `${collection.title} product image`,
       })) ?? []
 
-  const title = `${collection.title} | Checkered Collectibles`
-  const description = `Shop ${collection.title} at Checkered Collectibles. Fast shipping, secure checkout, and collector-grade packaging.`
+  // 🧠 Improved SEO title & description with keywords and context
+  const title = `Buy ${collection.title} Online in India | Checkered Collectibles`
+  const description = `Shop ${collection.title} at Checkered Collectibles. Explore authentic Hot Wheels and die-cast collectibles with fair prices, secure checkout, and fast delivery across India.`
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
   const canonical = baseUrl
@@ -98,10 +99,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
     openGraph: {
       type: "website",
+      siteName: "Checkered Collectibles",
       title,
       description,
       url: canonical,
       images: images.length ? images : undefined,
+      locale: "en_IN",
     },
 
     twitter: {
@@ -109,6 +112,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title,
       description,
       images: images.map((img) => img.url),
+    },
+
+    // 💡 Optional: basic robots directives for SEO control
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-snippet": -1,
+        "max-image-preview": "large",
+        "max-video-preview": -1,
+      },
     },
   }
 }

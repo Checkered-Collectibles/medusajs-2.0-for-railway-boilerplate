@@ -47,16 +47,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { product_categories } = await getCategoryByHandle(params.category)
 
-    const title = product_categories
-      .map((category: StoreProductCategory) => category.name)
-      .join(" | ")
-
-    const description =
-      product_categories[product_categories.length - 1]?.description ??
-      `Shop ${title} at Checkered Collectibles. Fast shipping and secure checkout.`
-
+    const titleParts = product_categories.map(
+      (category: StoreProductCategory) => category.name
+    )
+    const titleBase = titleParts.join(" | ")
     const deepestCategory = product_categories[product_categories.length - 1]
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+
+    const title = `Buy Hot Wheels ${titleBase} Online in India | Checkered Collectibles`
+    const description =
+      deepestCategory?.description?.trim() ||
+      `Shop authentic Hot Wheels ${titleBase} cars and die-cast collectibles at Checkered Collectibles. Explore licensed, fantasy, and premium series with fast shipping and fair prices across India.`
 
     const toAbsoluteUrl = (url: string) => {
       if (!url) return url
@@ -65,13 +66,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`
     }
 
-    // ✅ Fetch a few products to use their images in OG/Twitter
+    // ✅ Fetch product images for OG/Twitter
     const { response } = await getProductsList({
       queryParams: {
         category_id: [deepestCategory.id],
         limit: 6,
       } as any,
-      countryCode: params.countryCode, // remove if your Props doesn't have it
+      countryCode: params.countryCode,
     })
 
     const images =
@@ -87,30 +88,44 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url,
           width: 1200,
           height: 630,
-          alt: `${deepestCategory.name} product image`,
+          alt: `${deepestCategory.name} Hot Wheels product image`,
         })) ?? []
 
     const canonicalPath = `/${params.category.join("/")}`
     const canonical = baseUrl ? `${baseUrl}${canonicalPath}` : canonicalPath
 
     return {
-      title: `${title} | Checkered Collectibles`,
+      title,
       description,
       alternates: { canonical },
 
       openGraph: {
         type: "website",
-        title: `${title} | Checkered Collectibles`,
+        siteName: "Checkered Collectibles",
+        title,
         description,
         url: canonical,
+        locale: "en_IN",
         images: images.length ? images : undefined,
       },
 
       twitter: {
         card: images.length ? "summary_large_image" : "summary",
-        title: `${title} | Checkered Collectibles`,
+        title,
         description,
         images: images.length ? images.map((i) => i.url) : undefined,
+      },
+
+      robots: {
+        index: true,
+        follow: true,
+        googleBot: {
+          index: true,
+          follow: true,
+          "max-snippet": -1,
+          "max-image-preview": "large",
+          "max-video-preview": -1,
+        },
       },
     }
   } catch (error) {

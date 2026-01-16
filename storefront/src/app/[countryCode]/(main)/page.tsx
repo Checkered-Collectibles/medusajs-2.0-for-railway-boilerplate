@@ -6,10 +6,10 @@ import { getCollectionsWithProducts } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 
 export const metadata: Metadata = {
-  title: "Checkered Collectibles | Hot Wheels Without the Hype",
+  title: "Buy Hot Wheels Online in India | Checkered Collectibles",
   description:
-    "Authentic Hot Wheels and die-cast collectibles at honest prices. We’re putting collectibles back in the hands of fans — not scalpers.",
-}
+    "Buy authentic Hot Wheels and die-cast collectibles online in India at Checkered Collectibles. Fair prices, new case drops, collector-safe packing, and fast nationwide shipping — no scalpers, just passion.",
+};
 
 export default async function Home({
   params: { countryCode },

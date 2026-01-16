@@ -4,9 +4,10 @@ import { SortOptions } from "@modules/store/components/refinement-list/sort-prod
 import StoreTemplate from "@modules/store/templates"
 
 export const metadata: Metadata = {
-  title: "Store",
-  description: "Explore all of our products.",
-}
+  title: "Buy Hot Wheels Cars Online in India | All Products – Checkered Collectibles",
+  description:
+    "Explore our full range of Hot Wheels and die-cast collectibles at Checkered Collectibles. Buy the latest case drops, licensed models, and premium editions online in India — fast delivery and fair prices guaranteed.",
+};
 
 type Params = {
   searchParams: {
