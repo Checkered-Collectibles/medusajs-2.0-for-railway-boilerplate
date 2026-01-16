@@ -40,7 +40,7 @@ export const metadata: Metadata = {
 
   // 🧭 Canonical URL
   alternates: {
-    canonical: "https://checkered.in/",
+    canonical: "https://checkered.in",
   },
 
   openGraph: {
