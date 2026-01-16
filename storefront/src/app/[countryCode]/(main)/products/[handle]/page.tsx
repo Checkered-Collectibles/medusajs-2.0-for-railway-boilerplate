@@ -4,6 +4,8 @@ import { notFound } from "next/navigation"
 import ProductTemplate from "@modules/products/templates"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { getProductByHandle, getProductsList } from "@lib/data/products"
+import { getProductPrice } from "@lib/util/get-product-price"
+import Script from "next/script"
 
 type Props = {
   params: { countryCode: string; handle: string }
@@ -153,15 +155,43 @@ export default async function ProductPage({ params }: Props) {
   }
 
   const pricedProduct = await getProductByHandle(params.handle, region.id)
-  if (!pricedProduct) {
+  if (!pricedProduct || !pricedProduct.variants) {
     notFound()
   }
+  // const { cheapestPrice, variantPrice } = getProductPrice({
+  //   product: pricedProduct,
+  //   variantId: pricedProduct.variants[0].id,
+  // })
   return (
     <>
       <ProductTemplate
         product={pricedProduct}
         region={region}
         countryCode={params.countryCode}
+      />
+      <Script
+        id="json-d"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org/",
+            "@type": "Product",
+            name: pricedProduct.title,
+            image: pricedProduct.images?.map((img) => img.url),
+            description: pricedProduct.description,
+            sku: pricedProduct.handle,
+            brand: { "@type": "Brand", name: "Hot Wheels" },
+            // offers: {
+            //   "@type": "Offer",
+            //   priceCurrency: "INR",
+            //   price: variantPrice,
+            //   availability: `https://schema.org/${availability}`,
+            //   url: ,
+            //   itemCondition: "https://schema.org/NewCondition",
+            //   seller: { "@type": "Organization", name: "Checkered Collectibles" },
+            // },
+          }),
+        }}
       />
     </>
   )
