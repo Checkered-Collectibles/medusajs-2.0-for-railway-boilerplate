@@ -40,7 +40,7 @@ const Hero = () => {
             </Heading>
           </span>
 
-          <Link href="/store/all-products">
+          <Link href="/store">
             <Button variant="primary" className="mt-4">
               Browse the 2026 Catalog {"->"}
             </Button>
