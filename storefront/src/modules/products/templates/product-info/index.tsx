@@ -49,7 +49,7 @@ const ProductInfo = async ({ product }: ProductInfoProps) => {
           }
 
           <Heading
-            level="h2"
+            level="h1"
             className="text-3xl leading-10 text-ui-fg-base"
             data-testid="product-title"
           >
