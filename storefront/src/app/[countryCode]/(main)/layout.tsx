@@ -7,19 +7,38 @@ import Banner from "@modules/layout/templates/banner"
 import WhatsappContact from "@modules/layout/templates/whatsapp"
 
 export const metadata: Metadata = {
-  metadataBase: new URL(getBaseURL()),
+  metadataBase: new URL("https://checkered.in"),
 
-  // 🧠 Strong keyword-rich title for SEO & CTR
-  title: "Buy Hot Wheels Online in India | Checkered Collectibles",
+  // 🧠 OPTIMIZED TITLE
+  // Targets: "Hot Wheels Cars" (165k vol), "Hot Wheels India" (8k vol), "Hot Wheels Premium" (6.6k vol)
+  title: {
+    default: "Buy Hot Wheels Cars Online India | Premium & Mainline | Checkered Collectibles",
+    template: "%s | Checkered Collectibles"
+  },
 
-  // 📝 Optimized description with keyword placement
+  // 📝 OPTIMIZED DESCRIPTION
+  // Includes "Price", "JDM", and "Authentic" to build trust and hit keywords
   description:
-    "Buy authentic Hot Wheels cars online in India at Checkered Collectibles. Discover new case drops, premium die-cast collectibles, and fast nationwide shipping.",
+    "Shop authentic Hot Wheels cars online in India at Checkered Collectibles. Best prices for Premium, JDM, Mainlines, and new 2025 case drops. Fast shipping nationwide.",
 
   applicationName: "Checkered Collectibles",
   category: "Shopping",
 
-  // 🧭 Canonical URL — explicit and absolute (important for SEO)
+  // 🔑 NEW: KEYWORDS ARRAY (Based on your CSV data)
+  keywords: [
+    "Hot Wheels India",
+    "Buy Hot Wheels Online",
+    "Hot Wheels Cars",
+    "Hot Wheels Premium",
+    "Hot Wheels Price List",
+    "Diecast Cars India",
+    "Hot Wheels Collectors",
+    "JDM Hot Wheels",
+    "Matchbox India",
+    "Majorette India"
+  ],
+
+  // 🧭 Canonical URL
   alternates: {
     canonical: "https://checkered.in/",
   },
@@ -27,13 +46,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     siteName: "Checkered Collectibles",
-    title: "Buy Hot Wheels Online in India | Checkered Collectibles",
+    title: "Buy Hot Wheels Cars Online in India | Best Prices",
     description:
-      "Shop authentic Hot Wheels cars online in India. Explore rare models, premium collectibles, and exclusive case drops — all with secure packing and fast delivery.",
+      "Shop authentic Hot Wheels cars online in India. Explore rare JDM models, Premium sets, and exclusive case drops. Secure packing & fast delivery.",
     url: "https://checkered.in/",
+    locale: 'en_IN', // Important for local SEO
     images: [
       {
-        url: "/images/og-image.jpg",
+        url: "/images/og-image.jpg", // Ensure this image features a POPULAR car (like a GTR or Porsche)
         width: 1200,
         height: 630,
         alt: "Buy Hot Wheels Online in India - Checkered Collectibles",
@@ -43,13 +63,12 @@ export const metadata: Metadata = {
 
   twitter: {
     card: "summary_large_image",
-    title: "Buy Hot Wheels Online in India | Checkered Collectibles",
+    title: "Buy Hot Wheels Cars Online in India | Checkered Collectibles",
     description:
-      "Shop Hot Wheels cars and die-cast collectibles online in India. Affordable, authentic, and collector-approved — Checkered Collectibles delivers quality fast.",
+      "Shop Hot Wheels cars and die-cast collectibles online in India. Affordable, authentic, and collector-approved.",
     images: ["/images/og-image.jpg"],
   },
 
-  // ✅ Robot directives for full indexing
   robots: {
     index: true,
     follow: true,
@@ -62,12 +81,10 @@ export const metadata: Metadata = {
     },
   },
 
-  // 💡 Add structured data for better product discovery
   other: {
     "theme-color": "#ffffff",
   },
 };
-
 export default async function PageLayout(props: { children: React.ReactNode }) {
   return (
     <>

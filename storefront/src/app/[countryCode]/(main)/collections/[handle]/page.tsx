@@ -62,12 +62,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     queryParams: {
       collection_id: [collection.id],
       region_id: region?.id,
-      limit: 6, // fetch more to get good images
+      limit: 6,
     } as any,
     countryCode: params.countryCode,
   })
 
-  // ✅ Collect multiple product images for OG/Twitter cards
+  // ✅ Keep your existing excellent image logic
   const images =
     response?.products
       ?.flatMap((product) => [
@@ -80,12 +80,25 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url,
         width: 1200,
         height: 630,
-        alt: `${collection.title} product image`,
+        alt: `${collection.title} - Checkered Collectibles India`,
       })) ?? []
 
-  // 🧠 Improved SEO title & description with keywords and context
-  const title = `Buy ${collection.title} Online in India | Checkered Collectibles`
-  const description = `Shop ${collection.title} at Checkered Collectibles. Explore authentic Hot Wheels and die-cast collectibles with fair prices, secure checkout, and fast delivery across India.`
+  // 🧠 SMART TITLE LOGIC
+  // If collection name is "Premium", this becomes "Hot Wheels Premium"
+  // If collection name is "Hot Wheels JDM", it stays "Hot Wheels JDM" (no duplication)
+  const seoTitleRaw = collection.title.toLowerCase().includes('hot wheels')
+    ? collection.title
+    : `Hot Wheels ${collection.title}`;
+
+  // Capitalize first letters for display
+  const seoTitle = seoTitleRaw.replace(/\b\w/g, l => l.toUpperCase());
+
+  // 🚀 SEO TITLE: Targets "Buy [Type]" + "India" + "Prices" (High Volume)
+  const title = `Buy ${seoTitle} Online India | Prices & Catalog`
+
+  // 📝 SEO DESCRIPTION: 
+  // hits "Authentic", "Price List", and "India" explicitly.
+  const description = `Shop authentic ${seoTitle} online in India. Browse the 2025 price list, rare die-cast models, and new drops. Fast shipping and fair prices at Checkered Collectibles.`
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
   const canonical = baseUrl
@@ -95,6 +108,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
+    // 🔑 NEW: Dynamic Keywords for this specific collection
+    keywords: [
+      `${seoTitle} India`,
+      `${seoTitle} Price`,
+      `Buy ${seoTitle} Online`,
+      "Hot Wheels India",
+      "Diecast Collectors India",
+      "Checkered Collectibles"
+    ],
+
     alternates: canonical ? { canonical } : undefined,
 
     openGraph: {
@@ -114,7 +137,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       images: images.map((img) => img.url),
     },
 
-    // 💡 Optional: basic robots directives for SEO control
     robots: {
       index: true,
       follow: true,

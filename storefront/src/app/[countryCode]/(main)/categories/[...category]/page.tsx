@@ -47,17 +47,31 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { product_categories } = await getCategoryByHandle(params.category)
 
-    const titleParts = product_categories.map(
-      (category: StoreProductCategory) => category.name
-    )
-    const titleBase = titleParts.join(" | ")
-    const deepestCategory = product_categories[product_categories.length - 1]
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+    if (!product_categories || product_categories.length === 0) return notFound()
 
-    const title = `Buy Hot Wheels ${titleBase} Online in India | Checkered Collectibles`
+    // 🎯 SEO STRATEGY: Focus on the specific (deepest) category
+    // e.g., if path is "Hot Wheels -> Premium", we focus on "Premium"
+    const deepestCategory = product_categories[product_categories.length - 1]
+    const categoryName = deepestCategory.name
+
+    // 🧠 SMART TITLE LOGIC
+    // 1. Remove "Hot Wheels" from the category name if it exists to avoid stuttering
+    // 2. Re-add it cleanly at the start
+    const cleanName = categoryName.replace(/hot\s?wheels/i, "").trim()
+    const seoTitle = `Hot Wheels ${cleanName}`
+
+    // 🏆 FINAL TITLE
+    // Targets: "Buy [Category] India" + "Price List"
+    // Example: "Buy Hot Wheels Premium Cars India | Price List & Catalog"
+    const title = `Buy ${seoTitle} Cars India | Price List & Catalog`
+
+    // 📝 OPTIMIZED DESCRIPTION
+    // Uses the category description if available, otherwise uses a strong SEO template
     const description =
       deepestCategory?.description?.trim() ||
-      `Shop authentic Hot Wheels ${titleBase} cars and die-cast collectibles at Checkered Collectibles. Explore licensed, fantasy, and premium series with fast shipping and fair prices across India.`
+      `Shop authentic ${seoTitle} cars online in India. Browse the 2025 price list for ${cleanName}, view new case drops, and buy with fast shipping at Checkered Collectibles.`
+
+    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
 
     const toAbsoluteUrl = (url: string) => {
       if (!url) return url
@@ -88,7 +102,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
           url,
           width: 1200,
           height: 630,
-          alt: `${deepestCategory.name} Hot Wheels product image`,
+          alt: `${seoTitle} - Checkered Collectibles India`,
         })) ?? []
 
     const canonicalPath = `/${params.category.join("/")}`
@@ -97,6 +111,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     return {
       title,
       description,
+      // 🔑 DYNAMIC KEYWORDS
+      keywords: [
+        `${seoTitle} India`,
+        `${seoTitle} Price`,
+        `Buy ${cleanName} Online`,
+        "Hot Wheels India",
+        "Diecast Cars India",
+        "Checkered Collectibles"
+      ],
       alternates: { canonical },
 
       openGraph: {
@@ -132,6 +155,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     notFound()
   }
 }
+
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { sortBy, page } = searchParams
 
