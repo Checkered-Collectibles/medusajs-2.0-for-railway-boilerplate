@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
   const canonical = baseUrl
-    ? `${baseUrl}/products/${handle}`
+    ? `${baseUrl}/${params.countryCode}/products/${handle}`
     : undefined
 
   // 🧠 SMART TITLE LOGIC
@@ -148,7 +148,6 @@ export default async function ProductPage({ params }: Props) {
   const shippingCost = priceValue > 1499 ? "0" : "150"
 
   // 📅 PRICE VALID UNTIL LOGIC (Today + 1 Year)
-  // This satisfies the "priceValidUntil" warning
   const nextYear = new Date()
   nextYear.setFullYear(nextYear.getFullYear() + 1)
   const priceValidString = nextYear.toISOString().split("T")[0] // Format: YYYY-MM-DD
@@ -174,15 +173,16 @@ export default async function ProductPage({ params }: Props) {
     sku: pricedProduct.handle,
     brand: {
       "@type": "Brand",
-      name: pricedProduct.type || "Hot Wheels",
+      // ✅ FIX: Force name to "Hot Wheels" to avoid object/ID errors
+      name: pricedProduct.type?.value || "Hot Wheels",
     },
     offers: {
       "@type": "Offer",
       priceCurrency: currencyCode,
       price: priceValue,
       availability: availabilitySchema,
-      priceValidUntil: priceValidString, // ✅ ADDED FIX HERE
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${params.handle}`,
+      priceValidUntil: priceValidString,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${pricedProduct.handle}`,
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
