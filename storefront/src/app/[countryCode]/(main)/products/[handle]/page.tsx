@@ -74,12 +74,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     : undefined
 
   // 🧠 SMART TITLE LOGIC
-  // If product is "Nissan Skyline", title becomes "Buy Hot Wheels Nissan Skyline..."
-  // If product is "Hot Wheels Premium", title stays "Buy Hot Wheels Premium..."
   const cleanTitle = product.title.replace(/hot\s?wheels/i, "").trim()
   const fullTitle = `Hot Wheels ${cleanTitle}`
 
-  // 🏆 SEO TITLE: Targets "[Model] Price" + "Buy India"
+  // 🏆 SEO TITLE
   const title = `Buy ${fullTitle} Online India | Best Price`
 
   // 📝 SEO DESCRIPTION
@@ -141,12 +139,14 @@ export default async function ProductPage({ params }: Props) {
   if (!pricedProduct || !pricedProduct.variants) notFound()
 
   // 🔢 EXTRACT PRICE FOR SCHEMA (JSON-LD)
-  // We extract the raw number (e.g., 249) directly from the first variant
-  // This avoids dependency on 'getProductPrice' helper which might return strings
   const firstVariant = pricedProduct.variants[0]
   const priceObj = firstVariant?.calculated_price
   const priceValue = priceObj?.calculated_amount || 0
   const currencyCode = priceObj?.currency_code?.toUpperCase() || "INR"
+
+  // 🚚 DYNAMIC SHIPPING LOGIC
+  // If Item Price > 1499, Shipping is 0. Else 150.
+  const shippingCost = priceValue > 1499 ? "0" : "150"
 
   const isAvailable = pricedProduct.variants.some(
     (v) =>
@@ -160,7 +160,6 @@ export default async function ProductPage({ params }: Props) {
     : "https://schema.org/OutOfStock"
 
   // 🏗️ CONSTRUCT JSON-LD SCHEMA
-  // This puts the "Rich Snippet" data on the page
   const jsonLd = {
     "@context": "https://schema.org/",
     "@type": "Product",
@@ -170,12 +169,12 @@ export default async function ProductPage({ params }: Props) {
     sku: pricedProduct.handle,
     brand: {
       "@type": "Brand",
-      name: "Hot Wheels",
+      name: pricedProduct.type,
     },
     offers: {
       "@type": "Offer",
       priceCurrency: currencyCode,
-      price: priceValue, // Must be a number (e.g. 249)
+      price: priceValue,
       availability: availabilitySchema,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/${params.countryCode}/products/${params.handle}`,
       itemCondition: "https://schema.org/NewCondition",
@@ -183,6 +182,43 @@ export default async function ProductPage({ params }: Props) {
         "@type": "Organization",
         name: "Checkered Collectibles",
       },
+      // ✅ FIX: DYNAMIC SHIPPING (150 INR or Free > 1499)
+      shippingDetails: {
+        "@type": "OfferShippingDetails",
+        "shippingRate": {
+          "@type": "MonetaryAmount",
+          "value": shippingCost,
+          "currency": "INR"
+        },
+        "shippingDestination": {
+          "@type": "DefinedRegion",
+          "addressCountry": "IN"
+        },
+        "deliveryTime": {
+          "@type": "ShippingDeliveryTime",
+          "handlingTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 0,
+            "maxValue": 2,
+            "unitCode": "DAY"
+          },
+          "transitTime": {
+            "@type": "QuantitativeValue",
+            "minValue": 3,
+            "maxValue": 7,
+            "unitCode": "DAY"
+          }
+        }
+      },
+      // ✅ RETURN POLICY (Standard 7 Days)
+      hasMerchantReturnPolicy: {
+        "@type": "MerchantReturnPolicy",
+        "applicableCountry": "IN",
+        "returnPolicyCategory": "https://schema.org/MerchantReturnFiniteReturnWindow",
+        "merchantReturnDays": 7,
+        "returnMethod": "https://schema.org/ReturnByMail",
+        "returnFees": "https://schema.org/ReturnShippingFees"
+      }
     },
   }
 
