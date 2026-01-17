@@ -145,8 +145,13 @@ export default async function ProductPage({ params }: Props) {
   const currencyCode = priceObj?.currency_code?.toUpperCase() || "INR"
 
   // 🚚 DYNAMIC SHIPPING LOGIC
-  // If Item Price > 1499, Shipping is 0. Else 150.
   const shippingCost = priceValue > 1499 ? "0" : "150"
+
+  // 📅 PRICE VALID UNTIL LOGIC (Today + 1 Year)
+  // This satisfies the "priceValidUntil" warning
+  const nextYear = new Date()
+  nextYear.setFullYear(nextYear.getFullYear() + 1)
+  const priceValidString = nextYear.toISOString().split("T")[0] // Format: YYYY-MM-DD
 
   const isAvailable = pricedProduct.variants.some(
     (v) =>
@@ -169,20 +174,20 @@ export default async function ProductPage({ params }: Props) {
     sku: pricedProduct.handle,
     brand: {
       "@type": "Brand",
-      name: pricedProduct.type,
+      name: pricedProduct.type || "Hot Wheels",
     },
     offers: {
       "@type": "Offer",
       priceCurrency: currencyCode,
       price: priceValue,
       availability: availabilitySchema,
+      priceValidUntil: priceValidString, // ✅ ADDED FIX HERE
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${params.handle}`,
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
         name: "Checkered Collectibles",
       },
-      // ✅ FIX: DYNAMIC SHIPPING (150 INR or Free > 1499)
       shippingDetails: {
         "@type": "OfferShippingDetails",
         "shippingRate": {
@@ -210,7 +215,6 @@ export default async function ProductPage({ params }: Props) {
           }
         }
       },
-      // ✅ RETURN POLICY (Standard 7 Days)
       hasMerchantReturnPolicy: {
         "@type": "MerchantReturnPolicy",
         "applicableCountry": "IN",
