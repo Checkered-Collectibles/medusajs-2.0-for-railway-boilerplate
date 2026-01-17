@@ -106,7 +106,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         })) ?? []
 
     const canonicalPath = `/${params.category.join("/")}`
-    const canonical = baseUrl ? `${baseUrl}${canonicalPath}` : canonicalPath
+    const canonical = baseUrl ? `${baseUrl}/categories/${canonicalPath}` : canonicalPath
 
     return {
       title,
