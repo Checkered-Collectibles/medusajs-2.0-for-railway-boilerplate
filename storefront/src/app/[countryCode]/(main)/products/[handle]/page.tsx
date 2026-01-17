@@ -176,7 +176,7 @@ export default async function ProductPage({ params }: Props) {
       priceCurrency: currencyCode,
       price: priceValue,
       availability: availabilitySchema,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/${params.countryCode}/products/${params.handle}`,
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${params.handle}`,
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
