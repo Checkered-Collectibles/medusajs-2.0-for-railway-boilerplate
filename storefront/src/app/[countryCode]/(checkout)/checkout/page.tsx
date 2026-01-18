@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
+import Script from "next/script" // 1. Import Script
 
 import Wrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -10,8 +11,15 @@ import { getCustomer } from "@lib/data/customer"
 import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
 import { evaluateOutOfStockRule } from "@modules/cart/components/out-of-stock"
 
+// 🔒 SEO STRATEGY: NOINDEX
 export const metadata: Metadata = {
-  title: "Checkout",
+  title: "Secure Checkout | Checkered Collectibles",
+  description: "Complete your purchase securely.",
+  // 🛑 CRITICAL: Block Google from indexing the checkout flow
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
 
 const fetchCart = async () => {
@@ -31,26 +39,60 @@ const fetchCart = async () => {
 export default async function Checkout() {
   const cart = await fetchCart()
 
-
-  // 🔐 Enforce rules server-side for /checkout
+  // 🔐 Enforce rules server-side
   const hotWheelsRule = await evaluateHotWheelsRule(cart as HttpTypes.StoreCart)
   const stockRule = await evaluateOutOfStockRule(cart as HttpTypes.StoreCart)
 
   const canCheckout = hotWheelsRule.canCheckout && stockRule.canCheckout
 
   if (!canCheckout) {
-    // User tried to bypass rules by going directly to /checkout
     redirect("/cart")
   }
+
   const customer = await getCustomer()
   if (!customer) redirect("/account?nextPath=/checkout?step=address")
 
+  // 🍞 BREADCRUMB SCHEMA (For structure/accessibility only)
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": baseUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cart",
+        "item": `${baseUrl}/cart`
+      },
+      {
+        "@type": "ListItem",
+        "position": 3,
+        "name": "Checkout",
+        "item": `${baseUrl}/checkout`
+      }
+    ]
+  }
+
   return (
-    <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
-      <Wrapper cart={cart}>
-        <CheckoutForm cart={cart} customer={customer} />
-      </Wrapper>
-      <CheckoutSummary cart={cart} />
-    </div>
+    <>
+      <Script
+        id="checkout-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
+        <Wrapper cart={cart}>
+          <CheckoutForm cart={cart} customer={customer} />
+        </Wrapper>
+        <CheckoutSummary cart={cart} />
+      </div>
+    </>
   )
 }
