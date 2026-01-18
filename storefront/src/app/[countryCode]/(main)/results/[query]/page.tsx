@@ -59,7 +59,7 @@ export default async function SearchResults({ params, searchParams }: Params) {
         "position": index + 1,
         // Assuming your hit object has 'handle' and 'title'. 
         // Adjust if your search index uses different keys.
-        "url": `${process.env.NEXT_PUBLIC_SITE_URL}/products/${hit.handle}`,
+        "url": `${process.env.NEXT_PUBLIC_BASE_URL}/products/${hit.handle}`,
         "name": hit.title || hit.name
       }))
     }

@@ -1,8 +1,9 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import Script from "next/script" // 1. Import Script
 
 import { getCategoryByHandle, listCategories } from "@lib/data/categories"
-import { listRegions } from "@lib/data/regions"
+import { getRegion, listRegions } from "@lib/data/regions"
 import { StoreProductCategory, StoreRegion } from "@medusajs/types"
 import CategoryTemplate from "@modules/categories/templates"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
@@ -46,72 +47,31 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const { product_categories } = await getCategoryByHandle(params.category)
-
     if (!product_categories || product_categories.length === 0) return notFound()
 
-    // 🎯 SEO STRATEGY: Focus on the specific (deepest) category
-    // e.g., if path is "Hot Wheels -> Premium", we focus on "Premium"
     const deepestCategory = product_categories[product_categories.length - 1]
     const categoryName = deepestCategory.name
 
     // 🧠 SMART TITLE LOGIC
-    // 1. Remove "Hot Wheels" from the category name if it exists to avoid stuttering
-    // 2. Re-add it cleanly at the start
     const cleanName = categoryName.replace(/hot\s?wheels/i, "").trim()
     const seoTitle = `Hot Wheels ${cleanName}`
 
     // 🏆 FINAL TITLE
-    // Targets: "Buy [Category] India" + "Price List"
-    // Example: "Buy Hot Wheels Premium Cars India | Price List & Catalog"
     const title = `Buy ${seoTitle} Cars India | Price List & Catalog`
 
     // 📝 OPTIMIZED DESCRIPTION
-    // Uses the category description if available, otherwise uses a strong SEO template
     const description =
       deepestCategory?.description?.trim() ||
-      `Shop authentic ${seoTitle} cars online in India. Browse the 2025 price list for ${cleanName}, view new case drops, and buy with fast shipping at Checkered Collectibles.`
+      `Shop authentic ${seoTitle} cars online in India. Browse the 2026 price list for ${cleanName}, view new case drops, and buy with fast shipping at Checkered Collectibles.`
 
-    const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
-
-    const toAbsoluteUrl = (url: string) => {
-      if (!url) return url
-      if (url.startsWith("http")) return url
-      if (!baseUrl) return url
-      return `${baseUrl}${url.startsWith("/") ? "" : "/"}${url}`
-    }
-
-    // ✅ Fetch product images for OG/Twitter
-    const { response } = await getProductsList({
-      queryParams: {
-        category_id: [deepestCategory.id],
-        limit: 6,
-      } as any,
-      countryCode: params.countryCode,
-    })
-
-    const images =
-      response?.products
-        ?.flatMap((p) => [
-          p.thumbnail,
-          ...(p.images?.map((img) => img.url) ?? []),
-        ])
-        .filter((u): u is string => Boolean(u))
-        .map(toAbsoluteUrl)
-        .slice(0, 6)
-        .map((url) => ({
-          url,
-          width: 1200,
-          height: 630,
-          alt: `${seoTitle} - Checkered Collectibles India`,
-        })) ?? []
-
-    const canonicalPath = `/${params.category.join("/")}`
-    const canonical = baseUrl ? `${baseUrl}/categories/${canonicalPath}` : canonicalPath
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+    const canonicalPath = params.category.join("/")
+    // ✅ Fix: Include country code in canonical
+    const canonical = baseUrl ? `${baseUrl}/${params.countryCode}/categories/${canonicalPath}` : canonicalPath
 
     return {
       title,
       description,
-      // 🔑 DYNAMIC KEYWORDS
       keywords: [
         `${seoTitle} India`,
         `${seoTitle} Price`,
@@ -121,7 +81,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         "Checkered Collectibles"
       ],
       alternates: { canonical },
-
       openGraph: {
         type: "website",
         siteName: "Checkered Collectibles",
@@ -129,27 +88,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         description,
         url: canonical,
         locale: "en_IN",
-        images: images.length ? images : undefined,
       },
-
-      twitter: {
-        card: images.length ? "summary_large_image" : "summary",
-        title,
-        description,
-        images: images.length ? images.map((i) => i.url) : undefined,
-      },
-
       robots: {
         index: true,
         follow: true,
-        googleBot: {
-          index: true,
-          follow: true,
-          "max-snippet": -1,
-          "max-image-preview": "large",
-          "max-video-preview": -1,
-        },
-      },
+      }
     }
   } catch (error) {
     notFound()
@@ -159,20 +102,109 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CategoryPage({ params, searchParams }: Props) {
   const { sortBy, page } = searchParams
 
-  const { product_categories } = await getCategoryByHandle(
-    params.category
-  )
+  // 1. Fetch Categories & Region
+  const { product_categories } = await getCategoryByHandle(params.category)
+  const region = await getRegion(params.countryCode)
 
-  if (!product_categories) {
+  if (!product_categories || !region) {
     notFound()
   }
 
+  const deepestCategory = product_categories[product_categories.length - 1]
+
+  // 2. Fetch Products for Schema
+  const pageNumber = page ? parseInt(page) : 1
+  const limit = 12
+  const { response } = await getProductsList({
+    page: pageNumber,
+    queryParams: {
+      category_id: [deepestCategory.id],
+      limit: limit,
+      offset: (pageNumber - 1) * limit,
+    },
+    countryCode: params.countryCode,
+  })
+
+  // 3. BUILD JSON-LD SCHEMA
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  const categoryPath = params.category.join("/")
+  const currentUrl = `${baseUrl}/${params.countryCode}/categories/${categoryPath}`
+
+  // A. Dynamic Breadcrumbs construction
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": baseUrl
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Categories",
+      "item": `${baseUrl}/${params.countryCode}/store` // Fallback to store
+    }
+  ]
+
+  // Add each level of the category hierarchy to breadcrumbs
+  product_categories.forEach((cat: any, index: number) => {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      "position": index + 3,
+      "name": cat.name,
+      // Construct cumulative URL path
+      "item": `${baseUrl}/${params.countryCode}/categories/${product_categories.slice(0, index + 1).map((c: any) => c.handle).join("/")}`
+    })
+  })
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      // Schema 1: Breadcrumbs
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": breadcrumbItems
+      },
+      // Schema 2: Category Page (Product List)
+      {
+        "@type": "CollectionPage",
+        "name": `${deepestCategory.name} - Checkered Collectibles`,
+        "url": currentUrl,
+        "description": deepestCategory.description || `Buy authentic ${deepestCategory.name} cars in India.`,
+        "mainEntity": {
+          "@type": "ItemList",
+          "itemListElement": response?.products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `${baseUrl}/${params.countryCode}/products/${product.handle}`,
+            "name": product.title,
+            // ✅ Price Injection
+            "offers": {
+              "@type": "Offer",
+              "price": product.variants?.[0]?.calculated_price?.calculated_amount,
+              "priceCurrency": region.currency_code.toUpperCase()
+            }
+          }))
+        }
+      }
+    ]
+  }
+
   return (
-    <CategoryTemplate
-      categories={product_categories}
-      sortBy={sortBy}
-      page={page}
-      countryCode={params.countryCode}
-    />
+    <>
+      {/* 4. INJECT SCHEMA */}
+      <Script
+        id={`category-schema-${deepestCategory.handle}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <CategoryTemplate
+        categories={product_categories}
+        sortBy={sortBy}
+        page={page}
+        countryCode={params.countryCode}
+      />
+    </>
   )
 }

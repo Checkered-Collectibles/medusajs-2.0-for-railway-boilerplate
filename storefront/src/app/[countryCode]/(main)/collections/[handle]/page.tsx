@@ -133,7 +133,7 @@ export default async function CollectionPage({ params, searchParams }: Props) {
   // 3. BUILD JSON-LD STRUCTURED DATA
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
   // ✅ FIX: URLs must include country code (e.g., /in/collections/...)
-  const collectionUrl = `${baseUrl}/${params.countryCode}/collections/${collection.handle}`;
+  const collectionUrl = `${baseUrl}/collections/${collection.handle}`;
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -152,7 +152,7 @@ export default async function CollectionPage({ params, searchParams }: Props) {
             "@type": "ListItem",
             "position": 2,
             "name": "Collections",
-            "item": `${baseUrl}/${params.countryCode}/store`
+            "item": `${baseUrl}/store`
           },
           {
             "@type": "ListItem",
@@ -173,7 +173,7 @@ export default async function CollectionPage({ params, searchParams }: Props) {
           "itemListElement": response?.products.map((product, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `${baseUrl}/${params.countryCode}/products/${product.handle}`,
+            "url": `${baseUrl}/products/${product.handle}`,
             "name": product.title,
             // ✅ PRICE INJECTION: Now we show prices in search results
             "offers": {
