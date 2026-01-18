@@ -51,7 +51,7 @@ export default async function OrderConfirmedPage({ params }: Props) {
 
   // 3. ORDER SCHEMA (For Browser & Email Integration)
   // This helps browsers/extensions identify a successful transaction.
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Order",

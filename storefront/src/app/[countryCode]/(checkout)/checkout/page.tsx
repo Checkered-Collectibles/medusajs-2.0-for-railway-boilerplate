@@ -53,7 +53,7 @@ export default async function Checkout() {
   if (!customer) redirect("/account?nextPath=/checkout?step=address")
 
   // 🍞 BREADCRUMB SCHEMA (For structure/accessibility only)
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
