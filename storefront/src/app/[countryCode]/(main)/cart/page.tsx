@@ -1,14 +1,22 @@
 import { Metadata } from "next"
-import CartTemplate from "@modules/cart/templates"
+import Script from "next/script" // Import Script
 
+import CartTemplate from "@modules/cart/templates"
 import { enrichLineItems, retrieveCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
 import { getCustomer } from "@lib/data/customer"
 
+// 🔒 SEO STRATEGY: NOINDEX
 export const metadata: Metadata = {
-  title: "Cart",
-  description: "View your cart",
+  title: "Your Shopping Cart | Checkered Collectibles",
+  description: "Review your selected Hot Wheels cars and proceed to checkout.",
+  // 🛑 CRITICAL: Tell Google to ignore this page
+  robots: {
+    index: false,
+    follow: false,
+  },
 }
+
 type Props = {
   params: { countryCode: string; handle: string }
 }
@@ -33,5 +41,37 @@ export default async function Cart({ params }: Props) {
   const cart = await fetchCart()
   const customer = await getCustomer()
 
-  return <CartTemplate cart={cart} customer={customer} countryCode={countryCode} />
+  // 🍞 BREADCRUMB SCHEMA
+  // Even though it's noindex, this helps assistive tech understand site structure.
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      {
+        "@type": "ListItem",
+        "position": 1,
+        "name": "Home",
+        "item": baseUrl
+      },
+      {
+        "@type": "ListItem",
+        "position": 2,
+        "name": "Cart",
+        "item": `${baseUrl}/cart`
+      }
+    ]
+  }
+
+  return (
+    <>
+      <Script
+        id="cart-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <CartTemplate cart={cart} customer={customer} countryCode={countryCode} />
+    </>
+  )
 }
