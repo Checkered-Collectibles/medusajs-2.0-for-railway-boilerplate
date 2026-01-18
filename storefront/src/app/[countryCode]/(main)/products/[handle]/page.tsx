@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     ? "InStock"
     : "OutOfStock"
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const canonical = baseUrl
     ? `${baseUrl}/${params.countryCode}/products/${handle}`
     : undefined
@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: Props) {
       price: priceValue,
       availability: availabilitySchema,
       priceValidUntil: priceValidString,
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/products/${pricedProduct.handle}`,
+      url: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${pricedProduct.handle}`,
       itemCondition: "https://schema.org/NewCondition",
       seller: {
         "@type": "Organization",
