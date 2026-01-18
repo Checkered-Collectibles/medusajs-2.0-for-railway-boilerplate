@@ -1,5 +1,6 @@
 import { Metadata } from "next"
 import { notFound } from "next/navigation"
+import Script from "next/script"
 
 import {
   getCollectionByHandle,
@@ -56,51 +57,20 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const collection = await getCollectionByHandle(params.handle)
   if (!collection) notFound()
 
-  const region = await getRegion(params.countryCode)
-
-  const { response } = await getProductsList({
-    queryParams: {
-      collection_id: [collection.id],
-      region_id: region?.id,
-      limit: 6,
-    } as any,
-    countryCode: params.countryCode,
-  })
-
-  // ✅ Keep your existing excellent image logic
-  const images =
-    response?.products
-      ?.flatMap((product) => [
-        product.thumbnail,
-        ...(product.images?.map((img) => img.url) ?? []),
-      ])
-      .filter((url): url is string => Boolean(url))
-      .slice(0, 6)
-      .map((url) => ({
-        url,
-        width: 1200,
-        height: 630,
-        alt: `${collection.title} - Checkered Collectibles India`,
-      })) ?? []
-
   // 🧠 SMART TITLE LOGIC
-  // If collection name is "Premium", this becomes "Hot Wheels Premium"
-  // If collection name is "Hot Wheels JDM", it stays "Hot Wheels JDM" (no duplication)
   const seoTitleRaw = collection.title.toLowerCase().includes('hot wheels')
     ? collection.title
     : `Hot Wheels ${collection.title}`;
-
-  // Capitalize first letters for display
   const seoTitle = seoTitleRaw.replace(/\b\w/g, l => l.toUpperCase());
 
-  // 🚀 SEO TITLE: Targets "Buy [Type]" + "India" + "Prices" (High Volume)
+  // 🚀 SEO TITLE
   const title = `Buy ${seoTitle} Online India | Prices & Catalog`
 
-  // 📝 SEO DESCRIPTION: 
-  // hits "Authentic", "Price List", and "India" explicitly.
-  const description = `Shop authentic ${seoTitle} online in India. Browse the 2025 price list, rare die-cast models, and new drops. Fast shipping and fair prices at Checkered Collectibles.`
+  // 📝 SEO DESCRIPTION
+  const description = `Shop authentic ${seoTitle} online in India. Browse the 2026 price list, rare die-cast models, and new drops. Fast shipping and fair prices at Checkered Collectibles.`
 
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  // ✅ FIX: Include countryCode in canonical to match actual URL structure
   const canonical = baseUrl
     ? `${baseUrl}/${params.countryCode}/collections/${params.handle}`
     : undefined
@@ -108,7 +78,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   return {
     title,
     description,
-    // 🔑 NEW: Dynamic Keywords for this specific collection
     keywords: [
       `${seoTitle} India`,
       `${seoTitle} Price`,
@@ -117,26 +86,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       "Diecast Collectors India",
       "Checkered Collectibles"
     ],
-
     alternates: canonical ? { canonical } : undefined,
-
     openGraph: {
       type: "website",
       siteName: "Checkered Collectibles",
       title,
       description,
       url: canonical,
-      images: images.length ? images : undefined,
       locale: "en_IN",
     },
-
-    twitter: {
-      card: images.length ? "summary_large_image" : "summary",
-      title,
-      description,
-      images: images.map((img) => img.url),
-    },
-
     robots: {
       index: true,
       follow: true,
@@ -154,20 +112,96 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function CollectionPage({ params, searchParams }: Props) {
   const { sortBy, page } = searchParams
 
-  const collection = await getCollectionByHandle(params.handle).then(
-    (collection: StoreCollection) => collection
-  )
+  // 1. Fetch Collection & Region Data
+  const collection = await getCollectionByHandle(params.handle)
+  const region = await getRegion(params.countryCode) // ✅ Fetch Region for Currency Code
 
-  if (!collection) {
-    notFound()
+  if (!collection || !region) notFound()
+
+  // 2. Fetch Products for Schema (Rich Snippets)
+  const pageNumber = page ? parseInt(page) : 1
+  const { response } = await getProductsList({
+    page: pageNumber,
+    queryParams: {
+      collection_id: [collection.id],
+      limit: PRODUCT_LIMIT,
+      offset: (pageNumber - 1) * PRODUCT_LIMIT,
+    },
+    countryCode: params.countryCode,
+  })
+
+  // 3. BUILD JSON-LD STRUCTURED DATA
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+  // ✅ FIX: URLs must include country code (e.g., /in/collections/...)
+  const collectionUrl = `${baseUrl}/${params.countryCode}/collections/${collection.handle}`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      // A. BREADCRUMB LIST
+      {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          {
+            "@type": "ListItem",
+            "position": 1,
+            "name": "Home",
+            "item": baseUrl
+          },
+          {
+            "@type": "ListItem",
+            "position": 2,
+            "name": "Collections",
+            "item": `${baseUrl}/${params.countryCode}/store`
+          },
+          {
+            "@type": "ListItem",
+            "position": 3,
+            "name": collection.title,
+            "item": collectionUrl
+          }
+        ]
+      },
+      // B. COLLECTION PAGE (The Rich Snippet)
+      {
+        "@type": "CollectionPage",
+        "name": `${collection.title} - Checkered Collectibles`,
+        "url": collectionUrl,
+        "description": `Buy authentic ${collection.title} in India.`,
+        "mainEntity": {
+          "@type": "ItemList",
+          "itemListElement": response?.products.map((product, index) => ({
+            "@type": "ListItem",
+            "position": index + 1,
+            "url": `${baseUrl}/${params.countryCode}/products/${product.handle}`,
+            "name": product.title,
+            // ✅ PRICE INJECTION: Now we show prices in search results
+            "offers": {
+              "@type": "Offer",
+              "price": product.variants?.[0]?.calculated_price?.calculated_amount,
+              "priceCurrency": region.currency_code.toUpperCase()
+            }
+          }))
+        }
+      }
+    ]
   }
 
   return (
-    <CollectionTemplate
-      collection={collection}
-      page={page}
-      sortBy={sortBy}
-      countryCode={params.countryCode}
-    />
+    <>
+      {/* 4. INJECT SCHEMA */}
+      <Script
+        id={`collection-schema-${params.handle}`}
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
+      <CollectionTemplate
+        collection={collection}
+        page={page}
+        sortBy={sortBy}
+        countryCode={params.countryCode}
+      />
+    </>
   )
 }

@@ -58,13 +58,13 @@ export default async function StorePage({ searchParams, params }: Params) {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": process.env.NEXT_PUBLIC_SITE_URL
+            "item": process.env.NEXT_PUBLIC_BASE_URL
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Store",
-            "item": `${process.env.NEXT_PUBLIC_SITE_URL}/store`
+            "item": `${process.env.NEXT_PUBLIC_BASE_URL}/store`
           }
         ]
       },
@@ -72,14 +72,14 @@ export default async function StorePage({ searchParams, params }: Params) {
       {
         "@type": "CollectionPage",
         "name": "Hot Wheels Catalog - Checkered Collectibles",
-        "url": `${process.env.NEXT_PUBLIC_SITE_URL}/store`,
+        "url": `${process.env.NEXT_PUBLIC_BASE_URL}/store`,
         "description": "Browse our full inventory of Hot Wheels die-cast cars available in India.",
         "mainEntity": {
           "@type": "ItemList",
           "itemListElement": response.products.map((product, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `${process.env.NEXT_PUBLIC_SITE_URL}/products/${product.handle}`,
+            "url": `${process.env.NEXT_PUBLIC_BASE_URL}/products/${product.handle}`,
             "name": product.title
           }))
         }
