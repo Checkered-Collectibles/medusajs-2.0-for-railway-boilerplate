@@ -3,16 +3,22 @@ import { INotificationModuleService, IOrderModuleService } from '@medusajs/frame
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
+import { trackOrderPlacedWorkflow } from 'src/workflows/track-order-placed'
 
 export default async function orderPlacedHandler({
   event: { data },
   container,
 }: SubscriberArgs<any>) {
+
   await handleOrderPointsWorkflow(container).run({
     input: {
       order_id: data.id,
     },
   })
+
+  await trackOrderPlacedWorkflow(container).run({ input: { order_id: data.id, }, })
+
+
 
   const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
   const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
