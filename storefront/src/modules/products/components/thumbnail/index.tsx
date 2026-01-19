@@ -3,24 +3,26 @@ import Image from "next/image"
 import React from "react"
 
 import PlaceholderImage from "@modules/common/icons/placeholder-image"
-const IMAGE_SIZES: Record<
-  NonNullable<ThumbnailProps["size"]>,
-  string
-> = {
-  small: "(max-width: 768px) 180px, 180px",
-  medium: "(max-width: 768px) 290px, 290px",
-  large: "(max-width: 1024px) 440px, 440px",
-  square: "(max-width: 768px) 80px, 80px",
-  full: "100vw",
+
+// Defaults if no specific 'sizes' prop is passed
+const DEFAULT_SIZES: Record<NonNullable<ThumbnailProps["size"]>, string> = {
+  small: "180px",
+  medium: "290px",
+  large: "440px",
+  square: "80px",
+  // Default assumption: 1 col mobile, 2 col tablet, 3 col desktop
+  full: "(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw",
 }
+
 type ThumbnailProps = {
   thumbnail?: string | null
-  // TODO: Fix image typings
   images?: any[] | null
   size?: "small" | "medium" | "large" | "full" | "square"
   isFeatured?: boolean
   className?: string
   "data-testid"?: string
+  // ✅ NEW: Allow passing specific sizes string to override defaults
+  sizes?: string
 }
 
 const Thumbnail: React.FC<ThumbnailProps> = ({
@@ -30,6 +32,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
   isFeatured,
   className,
   "data-testid": dataTestid,
+  sizes, // Destructure new prop
 }) => {
   const initialImage = thumbnail || images?.[0]?.url
 
@@ -50,7 +53,7 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
       )}
       data-testid={dataTestid}
     >
-      <ImageOrPlaceholder image={initialImage} size={size} />
+      <ImageOrPlaceholder image={initialImage} size={size} customSizes={sizes} />
     </Container>
   )
 }
@@ -58,16 +61,18 @@ const Thumbnail: React.FC<ThumbnailProps> = ({
 const ImageOrPlaceholder = ({
   image,
   size,
-}: Pick<ThumbnailProps, "size"> & { image?: string }) => {
+  customSizes,
+}: Pick<ThumbnailProps, "size"> & { image?: string; customSizes?: string }) => {
   return image ? (
     <Image
       fill
       src={image}
       alt="Thumbnail"
-      className={`absolute inset-0 object-cover object-center w-full`}
+      className="absolute inset-0 object-cover object-center w-full"
       draggable={false}
-      quality={50}
-      sizes={IMAGE_SIZES[size ?? "small"]}
+      quality={75}
+      // ✅ LOGIC: Use custom sizes if provided, otherwise fallback to defaults
+      sizes={customSizes || DEFAULT_SIZES[size ?? "small"]}
     />
   ) : (
     <div className="w-full h-full absolute inset-0 flex items-center justify-center">

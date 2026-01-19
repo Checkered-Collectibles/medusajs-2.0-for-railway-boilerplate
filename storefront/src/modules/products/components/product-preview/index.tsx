@@ -12,7 +12,7 @@ import QuickAddToCartButton from "../product-preview-instant/add-to-cart"
 import logotypes from "@avto-dev/vehicle-logotypes/src/vehicle-logotypes.json"
 import { getBrandLogoFromTitle, logosMapToArray } from "@modules/cart/components/hw/get-logo"
 
-// ✅ Convert once (module-level), not on every render
+// ✅ Cached for performance
 const LOGOS_ARRAY = logosMapToArray(logotypes)
 
 export default async function ProductPreview({
@@ -36,30 +36,32 @@ export default async function ProductPreview({
   const countryCode = region.countries?.[0]?.iso_2
   if (!countryCode) return null
 
-  // ✅ Use variants from pricedProduct (has stock fields)
   const defaultVariant = pricedProduct.variants?.[0]
   if (!defaultVariant) return null
+
   const isInStock =
     !defaultVariant.manage_inventory ||
     defaultVariant.allow_backorder ||
     (defaultVariant.inventory_quantity || 0) > 0
-  // ✅ Find brand logo from title (use pricedProduct title to be safe)
+
   const brand = getBrandLogoFromTitle(pricedProduct.title, LOGOS_ARRAY)
 
   return (
     <div
       className={[
         "flex flex-col gap-5 group/item justify-between h-full transition",
-        !isInStock ? "grayscale" : "",
+        !isInStock ? "grayscale opacity-80" : "", // Added opacity for better UX on OOS items
       ].join(" ")}
     >
       <LocalizedClientLink href={`/products/${product.handle}`} className="group relative">
-        {product.metadata?.preorder == true &&
+        {product.metadata?.preorder == true && (
           <div className="absolute top-2 right-2 z-10">
-            <div className="px-3 py-1 rounded-full bg-black text-white">Pre-order</div>
+            <div className="px-3 py-1 rounded-full bg-black text-white text-xs font-bold uppercase tracking-wider">
+              Pre-order
+            </div>
           </div>
-        }
-        {/* ✅ Brand logo */}
+        )}
+
         {brand?.uri && (
           <div title={`Official ${brand.name} Licensed Car`} className="absolute top-2 left-2 z-10">
             <Image
@@ -67,7 +69,7 @@ export default async function ProductPreview({
               alt={`${brand.name} logo`}
               width={50}
               height={40}
-              className="h-14 w-auto object-contain rounded"
+              className="h-10 w-auto object-contain drop-shadow-md" // Optimized sizing & shadow
             />
           </div>
         )}
@@ -78,6 +80,7 @@ export default async function ProductPreview({
             images={product.images}
             size="full"
             isFeatured={isFeatured}
+            sizes="(max-width: 768px) 35vw, (max-width: 1024px) 40vw, (max-width: 1280px) 33vw, 326px"
           />
 
           <div className="flex txt-compact-medium mt-4 justify-between gap-3">
@@ -94,7 +97,7 @@ export default async function ProductPreview({
         </div>
       </LocalizedClientLink>
 
-      <div className="md:invisible md:group-hover/item:visible">
+      <div className="md:invisible md:group-hover/item:visible transition-all duration-200">
         <QuickAddToCartButton
           productId={pricedProduct.id}
           countryCode={countryCode}
