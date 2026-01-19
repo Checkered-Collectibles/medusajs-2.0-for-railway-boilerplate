@@ -3,8 +3,9 @@
 import Link from "next/link"
 import Countdown from "./countdown"
 
-const DROP_DATE_IST = "2026-01-15T23:00:00+05:30"
-const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
+// Set for TODAY at 3:00 PM IST (based on your current time)
+const DROP_DATE_IST = "2026-01-19T14:00:00+05:30"
+const SALE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -21,19 +22,19 @@ export default function Banner() {
     return (
         <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
             {isPreDrop && (
-                <div className="text-xs sm:text-sm opacity-80">
-                    🚀 Next collection drops in{" "}
-                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline" />
+                <div className="text-xs sm:text-sm opacity-90 font-medium">
+                    ✨ FREEDOM DROP starts in{" "}
+                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-bold" />
                 </div>
             )}
 
             {isSaleLive && (
                 <Link
-                    href="/categories/hot-wheels-premium"
-                    className="text-xs sm:text-sm opacity-80"
+                    href="/store"
+                    className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🔥 10% OFF Hot Wheels Premium — ends in{" "}
-                    <Countdown targetDate={saleEndDate} size="sm" className="px-1 inline" />{" "}
+                    🔓 FREEDOM DROP LIVE: No Rules on Mainlines or Premiums! Ends in{" "}
+                    <Countdown targetDate={saleEndDate} size="sm" className="px-1 inline text-white" />{" "}
                     {"->"}
                 </Link>
             )}
