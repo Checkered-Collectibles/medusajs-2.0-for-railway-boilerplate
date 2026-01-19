@@ -29,6 +29,7 @@ export default function HeroGraphic() {
                 src={HeroImage}
                 // width={1200}
                 priority
+                fetchPriority="high"
                 fill
                 draggable={false}
                 alt="Hero image 1"
