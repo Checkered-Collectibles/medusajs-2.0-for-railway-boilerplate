@@ -1,4 +1,5 @@
 import { Metadata } from "next"
+import Script from "next/script" // 1. Import Script
 
 import Footer from "@modules/layout/templates/footer"
 import Nav from "@modules/layout/templates/nav"
@@ -10,21 +11,19 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://checkered.in"),
 
   // 🧠 OPTIMIZED TITLE
-  // Targets: "Hot Wheels Cars" (165k vol), "Hot Wheels India" (8k vol), "Hot Wheels Premium" (6.6k vol)
   title: {
-    default: "Buy Hot Wheels Cars Online India | Premium & Mainline | Checkered Collectibles",
-    template: "%s | Checkered Collectibles"
+    template: "%s | Checkered Collectibles", // ✅ Un-commented this so sub-pages work automatically
+    default: "Buy Hot Wheels Cars Online India | Checkered Collectibles", // Fallback title
   },
 
   // 📝 OPTIMIZED DESCRIPTION
-  // Includes "Price", "JDM", and "Authentic" to build trust and hit keywords
   description:
-    "Shop authentic Hot Wheels cars online in India at Checkered Collectibles. Best prices for Premium, JDM, Mainlines, and new 2025 case drops. Fast shipping nationwide.",
+    "Shop authentic Hot Wheels cars online in India at Checkered Collectibles. Best prices for Premium, JDM, Mainlines, and new 2026 case drops. Fast shipping nationwide.",
 
   applicationName: "Checkered Collectibles",
   category: "Shopping",
 
-  // 🔑 NEW: KEYWORDS ARRAY (Based on your CSV data)
+  // 🔑 KEYWORDS
   keywords: [
     "Hot Wheels India",
     "Buy Hot Wheels Online",
@@ -38,7 +37,15 @@ export const metadata: Metadata = {
     "Majorette India"
   ],
 
-  // 🧭 Canonical URL
+  // 🖼️ FAVICON HARD REFRESH (The Fix)
+  // We add this here to ensure it overrides any defaults and forces a re-crawl
+  icons: {
+    icon: '/favicon.ico?v=2',
+    apple: '/apple-touch-icon.png?v=2',
+    shortcut: '/apple-touch-icon.png?v=2'
+  },
+
+  // Compass
   alternates: {
     canonical: "https://checkered.in",
   },
@@ -50,10 +57,10 @@ export const metadata: Metadata = {
     description:
       "Shop authentic Hot Wheels cars online in India. Explore rare JDM models, Premium sets, and exclusive case drops. Secure packing & fast delivery.",
     url: "https://checkered.in/",
-    locale: 'en_IN', // Important for local SEO
+    locale: 'en_IN',
     images: [
       {
-        url: "/images/og-image.jpg", // Ensure this image features a POPULAR car (like a GTR or Porsche)
+        url: "/images/og-image.jpg",
         width: 1200,
         height: 630,
         alt: "Buy Hot Wheels Online in India - Checkered Collectibles",
@@ -85,9 +92,34 @@ export const metadata: Metadata = {
     "theme-color": "#ffffff",
   },
 };
+
 export default async function PageLayout(props: { children: React.ReactNode }) {
+  // 🔍 WEBSITE SCHEMA
+  // This helps Google understand your site structure and adds the Search Box in SERPs
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Checkered Collectibles",
+    "url": "https://checkered.in",
+    "potentialAction": {
+      "@type": "SearchAction",
+      "target": {
+        "@type": "EntryPoint",
+        "urlTemplate": "https://checkered.in/search?q={search_term_string}"
+      },
+      "query-input": "required name=search_term_string"
+    }
+  }
+
   return (
     <>
+      {/* 💉 Inject Schema */}
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <Banner />
       <Nav />
       <WhatsappContact />
