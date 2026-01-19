@@ -17,18 +17,27 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
-
+      <head>
+        {/* ✅ Trustpilot Widget Script */}
+        {/* We use 'afterInteractive' to match the 'async' behavior of the original tag */}
+        <Script
+          src="//widget.trustpilot.com/bootstrap/v5/tp.widget.bootstrap.min.js"
+          strategy="lazyOnload"
+        />
+      </head>
       <body className={`${inter.variable} font-sans`}>
+        {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-17801513380" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
-				window.dataLayer = window.dataLayer || [];
-				function gtag(){window.dataLayer.push(arguments);}
-				gtag('js', new Date());
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){window.dataLayer.push(arguments);}
+            gtag('js', new Date());
 
-				gtag('config', 'AW-17801513380');
-				`}
+            gtag('config', 'AW-17801513380');
+          `}
         </Script>
+
         <main className="relative">{props.children}</main>
       </body>
     </html>
