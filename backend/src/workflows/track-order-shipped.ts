@@ -1,12 +1,39 @@
 import { createWorkflow, createStep } from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
-import { Modules } from "@medusajs/framework/utils"
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+// 1. Create a CUSTOM step to fetch the fulfillment
+// This bypasses the collision caused by useQueryGraphStep
+const retrieveFulfillmentDataStep = createStep(
+    "retrieve-fulfillment-data-manual",
+    async ({ id }: { id: string }, { container }) => {
+        const query = container.resolve(ContainerRegistrationKeys.QUERY)
+
+        const { data: fulfillments } = await query.graph({
+            entity: "fulfillment",
+            fields: [
+                "*",
+                "order.id",
+                "order.customer_id",
+                "items.*"
+            ],
+            filters: {
+                id: id,
+            },
+        })
+
+        return fulfillments[0]
+    }
+)
+
+// 2. Your tracking step (Unchanged)
 const trackOrderShippedStep = createStep(
     "track-order-shipped-step",
     async ({ fulfillment }: any, { container }) => {
         const analytics = container.resolve(Modules.ANALYTICS)
-        // Order ID is needed to link to the customer
+
+        // Safety check
+        if (!fulfillment) return
+
         const orderId = fulfillment.order?.id
 
         await analytics.track({
@@ -23,14 +50,14 @@ const trackOrderShippedStep = createStep(
     }
 )
 
+// 3. The Workflow
 export const trackOrderShippedWorkflow = createWorkflow(
-    "track-order-shipped-workflow",
+    "track-order-shipped-workflow", // ✅ Unique ID
     ({ fulfillment_id }: { fulfillment_id: string }) => {
-        const { data: fulfillments } = useQueryGraphStep({
-            entity: "fulfillment",
-            fields: ["*", "order.id", "order.customer_id", "items.*"],
-            filters: { id: fulfillment_id }
-        })
-        trackOrderShippedStep({ fulfillment: fulfillments[0] })
+
+        // Use our manual step instead of useQueryGraphStep
+        const fulfillment = retrieveFulfillmentDataStep({ id: fulfillment_id })
+
+        trackOrderShippedStep({ fulfillment })
     }
 )

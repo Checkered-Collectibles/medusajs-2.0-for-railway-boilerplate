@@ -1,11 +1,36 @@
 import { createWorkflow, createStep } from "@medusajs/framework/workflows-sdk"
-import { useQueryGraphStep } from "@medusajs/medusa/core-flows"
-import { Modules } from "@medusajs/framework/utils"
+import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
+// 1. CUSTOM STEP: Manually fetch order data
+// This avoids conflicts with Medusa's internal query steps
+const retrieveOrderDeliveredDataStep = createStep(
+    "retrieve-order-delivered-data-manual",
+    async ({ id }: { id: string }, { container }) => {
+        const query = container.resolve(ContainerRegistrationKeys.QUERY)
+
+        const { data: orders } = await query.graph({
+            entity: "order",
+            fields: [
+                "*",
+                "customer_id"
+            ],
+            filters: {
+                id: id,
+            },
+        })
+
+        return orders[0]
+    }
+)
+
+// 2. TRACKING STEP
 const trackOrderDeliveredStep = createStep(
     "track-order-delivered-step",
     async ({ order }: any, { container }) => {
         const analytics = container.resolve(Modules.ANALYTICS)
+
+        // Safety check
+        if (!order) return
 
         await analytics.track({
             event: "order_delivered",
@@ -14,20 +39,19 @@ const trackOrderDeliveredStep = createStep(
                 order_id: order.id,
                 total: order.total,
                 currency: order.currency_code,
-                // Time to deliver calculation could be done here if you pull created_at
             }
         })
     }
 )
 
+// 3. WORKFLOW
 export const trackOrderDeliveredWorkflow = createWorkflow(
     "track-order-delivered-workflow",
     ({ order_id }: { order_id: string }) => {
-        const { data: orders } = useQueryGraphStep({
-            entity: "order",
-            fields: ["*", "customer_id"],
-            filters: { id: order_id }
-        })
-        trackOrderDeliveredStep({ order: orders[0] })
+
+        // Use the manual step to get data safely
+        const order = retrieveOrderDeliveredDataStep({ id: order_id })
+
+        trackOrderDeliveredStep({ order })
     }
 )
