@@ -37,14 +37,6 @@ export const metadata: Metadata = {
     "Majorette India"
   ],
 
-  // 🖼️ FAVICON HARD REFRESH (The Fix)
-  // We add this here to ensure it overrides any defaults and forces a re-crawl
-  icons: {
-    icon: '/favicon.ico?v=2',
-    apple: '/apple-touch-icon.png?v=2',
-    shortcut: '/apple-touch-icon.png?v=2'
-  },
-
   // Compass
   alternates: {
     canonical: "https://checkered.in",

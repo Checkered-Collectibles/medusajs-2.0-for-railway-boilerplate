@@ -7,6 +7,11 @@ import "styles/globals.css"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
+  icons: {
+    icon: '/favicon.ico?v=2',
+    apple: '/apple-touch-icon.png?v=2',
+    shortcut: '/apple-touch-icon.png?v=2',
+  },
 }
 
 export default function RootLayout(props: { children: React.ReactNode }) {
