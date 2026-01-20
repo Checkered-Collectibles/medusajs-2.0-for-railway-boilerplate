@@ -1,7 +1,7 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { trackOrderShippedWorkflow } from 'src/workflows/track-order-shipped'
 
-export async function fulfillmentCreatedHandler({
+export default async function fulfillmentCreatedHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {

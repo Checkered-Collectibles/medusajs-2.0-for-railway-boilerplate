@@ -1,7 +1,7 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { trackCustomerCreatedWorkflow } from 'src/workflows/track-customer-created'
 
-export async function customerCreatedHandler({
+export default async function customerCreatedHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {

@@ -10,21 +10,24 @@ export default async function orderPlacedHandler({
   container,
 }: SubscriberArgs<any>) {
 
-  await handleOrderPointsWorkflow(container).run({
-    input: {
-      order_id: data.id,
-    },
+  // Fix: Pass container inside .run()
+  await handleOrderPointsWorkflow.run({
+    input: { order_id: data.id },
+    container: container
   })
 
-  await trackOrderPlacedWorkflow(container).run({ input: { order_id: data.id, }, })
-
-
+  await trackOrderPlacedWorkflow.run({
+    input: { order_id: data.id },
+    container: container
+  })
 
   const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
   const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
 
-  const order = await orderModuleService.retrieveOrder(data.id, { relations: ['items', 'summary', 'shipping_address'] })
-  const shippingAddress = await (orderModuleService as any).orderAddressService_.retrieve(order.shipping_address.id)
+  // In v2, many address fields are available directly in the order object if fetched correctly
+  const order = await orderModuleService.retrieveOrder(data.id, {
+    relations: ['items', 'summary', 'shipping_address']
+  })
 
   try {
     await notificationModuleService.createNotifications({
@@ -37,7 +40,7 @@ export default async function orderPlacedHandler({
           subject: 'Your order has been placed'
         },
         order,
-        shippingAddress,
+        shippingAddress: order.shipping_address, // Use the resolved relation directly
         preview: 'Thank you for your order!'
       }
     })

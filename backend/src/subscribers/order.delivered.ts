@@ -1,7 +1,7 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { trackOrderDeliveredWorkflow } from 'src/workflows/track-order-delivered'
 
-export async function orderDeliveredHandler({
+export default async function orderDeliveredHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {
