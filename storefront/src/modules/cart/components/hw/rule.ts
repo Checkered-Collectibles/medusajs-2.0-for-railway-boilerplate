@@ -18,8 +18,8 @@ export type HotWheelsRuleResult = {
 export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
-    const isMainlineRuleEnabled = false
-    const isPremiumRuleEnabled = false
+    const isMainlineRuleEnabled = true
+    const isPremiumRuleEnabled = true
 
     let licensedCount = 0
     let fantasyCount = 0

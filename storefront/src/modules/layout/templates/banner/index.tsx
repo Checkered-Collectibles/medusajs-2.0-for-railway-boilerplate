@@ -3,9 +3,12 @@
 import Link from "next/link"
 import Countdown from "./countdown"
 
-// Set for TODAY at 3:00 PM IST (based on your current time)
-const DROP_DATE_IST = "2026-01-19T14:00:00+05:30"
-const SALE_DURATION_MS = 31 * 60 * 60 * 1000 // 24 hours
+/**
+ * UPDATED DATE: January 21, 2026 at 3:00 PM IST
+ * Current Time: Jan 20, 2026, 9:13 PM IST
+ */
+const DROP_DATE_IST = "2026-01-20T22:00:00+05:30"
+const SALE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -23,8 +26,8 @@ export default function Banner() {
         <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium">
-                    ✨ FREEDOM DROP starts in{" "}
-                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-bold" />
+                    🔥 2026 D CASE DROP starts in{" "}
+                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-bold text-yellow-400" />
                 </div>
             )}
 
@@ -33,18 +36,16 @@ export default function Banner() {
                     href="/store"
                     className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🔓 FREEDOM DROP LIVE: No Rules on Mainlines or Premiums! Ends in{" "}
-                    <Countdown targetDate={saleEndDate} size="sm" className="px-1 inline text-white" />{" "}
-                    {"->"}
+                    🔓 2026 D CASE IS LIVE!
                 </Link>
             )}
 
             {isPostSale && (
                 <Link
                     href="/store"
-                    className="text-xs sm:text-sm opacity-80"
+                    className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🚚 Free shipping on orders above ₹1500 {"->"}
+                    🔓 2026 D CASE IS LIVE!
                 </Link>
             )}
         </section>
