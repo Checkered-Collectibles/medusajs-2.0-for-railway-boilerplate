@@ -1,9 +1,9 @@
 import { Modules } from '@medusajs/framework/utils'
 import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
-import { EmailTemplates } from '../modules/email-notifications/templates'
-import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
-import { trackOrderPlacedWorkflow } from 'src/workflows/track-order-placed'
+import { EmailTemplates } from 'src/modules/email-notifications/templates'
+import { handleOrderPointsWorkflow } from 'src/workflows/handle-order-points'
+import { trackOrderPlacedWorkflow } from 'src/workflows/track-order-placed' // Fix path if needed
 
 export default async function orderPlacedHandler({
   event: { data },
@@ -13,18 +13,18 @@ export default async function orderPlacedHandler({
   // Fix: Pass container inside .run()
   await handleOrderPointsWorkflow.run({
     input: { order_id: data.id },
-    container: container
+    container
   })
 
   await trackOrderPlacedWorkflow.run({
     input: { order_id: data.id },
-    container: container
+    container
   })
 
-  const notificationModuleService: INotificationModuleService = container.resolve(Modules.NOTIFICATION)
-  const orderModuleService: IOrderModuleService = container.resolve(Modules.ORDER)
+  const notificationModuleService = container.resolve(Modules.NOTIFICATION)
+  const orderModuleService = container.resolve(Modules.ORDER)
 
-  // In v2, many address fields are available directly in the order object if fetched correctly
+  // Retrieve order with necessary relations
   const order = await orderModuleService.retrieveOrder(data.id, {
     relations: ['items', 'summary', 'shipping_address']
   })
@@ -40,7 +40,7 @@ export default async function orderPlacedHandler({
           subject: 'Your order has been placed'
         },
         order,
-        shippingAddress: order.shipping_address, // Use the resolved relation directly
+        shippingAddress: order.shipping_address, // Use relation directly
         preview: 'Thank you for your order!'
       }
     })
@@ -49,6 +49,6 @@ export default async function orderPlacedHandler({
   }
 }
 
-export const config: SubscriberConfig = {
+export const config = {
   event: 'order.placed'
 }
