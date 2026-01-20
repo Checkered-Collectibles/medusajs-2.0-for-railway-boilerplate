@@ -60,7 +60,7 @@ const trackOrderCanceledStep = createStep(
         if (!order) return
 
         // Calculate negative revenue for PostHog
-        const negativeRevenue = -1 * (order.total as number)
+        const negativeRevenue = -1 * (order.original_total as number)
 
         await analyticsModuleService.track({
             event: "order_canceled",
