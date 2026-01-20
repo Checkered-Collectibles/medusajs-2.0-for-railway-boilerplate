@@ -27,7 +27,7 @@ export default function Banner() {
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium">
                     🔥 2026 D CASE DROP starts in{" "}
-                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-bold text-yellow-400" />
+                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-medium text-yellow-400" />
                 </div>
             )}
 
