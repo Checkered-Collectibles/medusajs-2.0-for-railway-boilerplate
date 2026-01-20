@@ -11,11 +11,34 @@ const retrieveOrderCanceledDataStep = createStep(
         const { data: orders } = await query.graph({
             entity: "order",
             fields: [
-                "*",
-                "customer.*"
+                "id",
+                "currency_code",
+                "total",
+                "subtotal",
+                "tax_total",
+                "original_total",
+                "original_subtotal",
+                "original_tax_total",
+                "discount_total",
+                "discount_tax_total",
+                "shipping_total",
+                "shipping_subtotal",
+                "shipping_tax_total",
+                "original_shipping_total",
+                "original_shipping_subtotal",
+                "original_shipping_tax_total",
+                "item_total",
+                "item_tax_total",
+                "item_subtotal",
+                "original_item_total",
+                "original_item_tax_total",
+                "original_item_subtotal",
+                "gift_card_total",
+                "gift_card_tax_total",
+                "customer.*",
             ],
             filters: {
-                id: id,
+                id,
             },
         })
 
@@ -37,7 +60,7 @@ const trackOrderCanceledStep = createStep(
         if (!order) return
 
         // Calculate negative revenue for PostHog
-        const negativeRevenue = -1 * (order.subtotal as number)
+        const negativeRevenue = -1 * (order.total as number)
 
         await analyticsModuleService.track({
             event: "order_canceled",
