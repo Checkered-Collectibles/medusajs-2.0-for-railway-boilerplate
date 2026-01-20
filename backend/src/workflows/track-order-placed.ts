@@ -38,7 +38,7 @@ const trackOrderPlacedStep = createStep(
             actor_id: order.customer_id,
             properties: {
                 order_id: order.id,
-                total: order.total,
+                total: order.subtotal,
                 items: order.items?.map((item: any) => ({
                     variant_id: item.variant_id,
                     product_id: item.product_id,
