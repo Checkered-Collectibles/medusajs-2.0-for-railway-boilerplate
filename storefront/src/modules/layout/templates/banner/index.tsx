@@ -5,7 +5,7 @@ import Countdown from "./countdown"
 
 // Set for TODAY at 3:00 PM IST (based on your current time)
 const DROP_DATE_IST = "2026-01-19T14:00:00+05:30"
-const SALE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
+const SALE_DURATION_MS = 31 * 60 * 60 * 1000 // 24 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
