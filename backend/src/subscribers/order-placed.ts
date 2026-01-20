@@ -1,9 +1,9 @@
 import { Modules } from '@medusajs/framework/utils'
-import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
-import { SubscriberArgs, SubscriberConfig } from '@medusajs/medusa'
-import { EmailTemplates } from 'src/modules/email-notifications/templates'
-import { handleOrderPointsWorkflow } from 'src/workflows/handle-order-points'
-import { trackOrderPlacedWorkflow } from 'src/workflows/track-order-placed' // Fix path if needed
+// import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
+import { SubscriberArgs } from '@medusajs/medusa'
+import { EmailTemplates } from '../modules/email-notifications/templates'
+import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
+import { trackOrderPlacedWorkflow } from '../workflows/track-order-placed' // Fix path if needed
 
 export default async function orderPlacedHandler({
   event: { data },

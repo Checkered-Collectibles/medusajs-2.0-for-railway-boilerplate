@@ -1,5 +1,5 @@
 import { SubscriberArgs, type SubscriberConfig } from "@medusajs/framework"
-import { trackOrderCanceledWorkflow } from "src/workflows/track-order-canceled" // Import your new workflow
+import { trackOrderCanceledWorkflow } from "../workflows/track-order-canceled" // Import your new workflow
 
 export default async function orderCanceledHandler({
     event: { data },
