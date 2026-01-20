@@ -104,7 +104,7 @@ export const getProductsList = cache(async function ({
 export const getProductsListWithSort = cache(async function ({
   page = 0,
   queryParams,
-  sortBy = "created_at",
+  sortBy = "-updated_at",
   countryCode,
 }: {
   page?: number
