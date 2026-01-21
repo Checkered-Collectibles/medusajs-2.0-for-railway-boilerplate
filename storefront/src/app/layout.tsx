@@ -17,10 +17,9 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
-      <body className={`${inter.variable} font-sans`}>
-        <Script
+      <head>
+        <script
           id="trustpilot-init" // Unique ID is required for inline scripts
-          strategy="afterInteractive" // Loads script early without blocking the page
         >
           {`
         (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
@@ -28,7 +27,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
             tp('register', 'FHw2hvWiXcRDNF5a');
             `}
-        </Script>
+        </script>
+      </head>
+      <body className={`${inter.variable} font-sans`}>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-17801513380" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
