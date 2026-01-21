@@ -31,23 +31,6 @@ const OrderDetailsTemplate: React.FC<OrderDetailsTemplateProps> = ({
           >
             <XMark /> Back to overview
           </LocalizedClientLink>
-          {/* Trustpilot Widget */}
-          <div
-            className="trustpilot-widget"
-            data-locale="en-US"
-            data-template-id="56278e9abfbbba0bdcd568bc"
-            data-businessunit-id="696e9f0be5a9d97a72a7e4ab"
-            data-style-height="52px" data-style-width="250px"
-            data-token="12a2beb7-e6e6-4751-a8d1-d95567350e9a"
-          >
-            <Link
-              href="https://www.trustpilot.com/review/checkered.in"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Trustpilot
-            </Link>
-          </div>
 
         </div>
       </div>
