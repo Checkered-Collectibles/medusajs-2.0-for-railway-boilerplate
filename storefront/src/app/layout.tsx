@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
-      <body className={`${inter.variable} font-sans`}>
+      <head>
         <Script
           id="trustpilot-init" // Unique ID is required for inline scripts
           strategy="afterInteractive" // Loads script early without blocking the page
@@ -30,6 +30,8 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             `,
           }}
         />
+      </head>
+      <body className={`${inter.variable} font-sans`}>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-17801513380" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
