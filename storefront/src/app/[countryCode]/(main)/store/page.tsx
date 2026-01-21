@@ -1,40 +1,50 @@
 import { Metadata } from "next"
-import Script from "next/script" // 1. Import Script for JSON-LD
-
+import Script from "next/script"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import StoreTemplate from "@modules/store/templates"
-import { getProductsList } from "@lib/data/products" // 2. Import fetching logic
-
-export const metadata: Metadata = {
-  // 🧠 SEO TITLE:
-  title: "Hot Wheels Cars Price List & Full Catalog India | Checkered Collectibles",
-
-  // 📝 SEO DESCRIPTION:
-  description:
-    "Browse the complete 2026 Hot Wheels collection in India. View our up-to-date price list for Premium, Mainline, and JDM die-cast cars. Authentic models, fair market prices, and fast shipping.",
-
-  // 🧭 CANONICAL:
-  alternates: {
-    canonical: "https://checkered.in/store",
-  },
-}
+import { getProductsList } from "@lib/data/products"
 
 type Params = {
-  searchParams: {
+  searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
-  }
-  params: {
+  }>
+  params: Promise<{
     countryCode: string
+  }>
+}
+
+// 1. SWITCH TO DYNAMIC METADATA GENERATION
+export async function generateMetadata({ searchParams, params }: Params): Promise<Metadata> {
+  const { countryCode } = await params
+  const { page } = await searchParams
+
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in"
+
+  // Construct the correct regional path
+  const cleanPath = `${baseUrl}/store`
+
+  // 🧠 SMART CANONICAL LOGIC:
+  // - If Page > 1: Canonical must match the specific page (content is unique)
+  // - If Page 1 (or just sorting): Point to the clean root URL to consolidate SEO power
+  let canonicalUrl = cleanPath
+  if (page && parseInt(page) > 1) {
+    canonicalUrl = `${cleanPath}?page=${page}`
+  }
+
+  return {
+    title: "Hot Wheels Cars Price List & Full Catalog India | Checkered Collectibles",
+    description: "Browse the complete 2026 Hot Wheels collection in India. View our up-to-date price list for Premium, Mainline, and JDM die-cast cars.",
+    alternates: {
+      canonical: canonicalUrl,
+    },
   }
 }
 
 export default async function StorePage({ searchParams, params }: Params) {
-  const { sortBy, page } = searchParams
+  const { sortBy, page } = await searchParams
+  const { countryCode } = await params
 
-  // 3. FETCH DATA FOR SCHEMA
-  // We fetch the first 12 items to tell Google "These are the products on this page"
-  // Next.js automatically deduplicates this request if StoreTemplate uses the same fetch.
   const pageNumber = page ? parseInt(page) : 1
   const limit = 12
 
@@ -43,14 +53,16 @@ export default async function StorePage({ searchParams, params }: Params) {
       limit: limit,
       offset: (pageNumber - 1) * limit,
     },
-    countryCode: params.countryCode,
+    countryCode: countryCode,
   })
 
-  // 4. BUILD JSON-LD SCHEMA
+  // 2. UPDATE SCHEMA TO MATCH DYNAMIC URLS
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  const currentUrl = `${baseUrl}/${countryCode}/store`
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@graph": [
-      // A. BREADCRUMB LIST (Essential for "Home > Store" structure in Google)
       {
         "@type": "BreadcrumbList",
         "itemListElement": [
@@ -58,28 +70,27 @@ export default async function StorePage({ searchParams, params }: Params) {
             "@type": "ListItem",
             "position": 1,
             "name": "Home",
-            "item": process.env.NEXT_PUBLIC_BASE_URL
+            "item": `${baseUrl}/${countryCode}`
           },
           {
             "@type": "ListItem",
             "position": 2,
             "name": "Store",
-            "item": `${process.env.NEXT_PUBLIC_BASE_URL}/store`
+            "item": currentUrl
           }
         ]
       },
-      // B. COLLECTION PAGE (Tells Google this is a Product List)
       {
         "@type": "CollectionPage",
         "name": "Hot Wheels Catalog - Checkered Collectibles",
-        "url": `${process.env.NEXT_PUBLIC_BASE_URL}/store`,
+        "url": currentUrl,
         "description": "Browse our full inventory of Hot Wheels die-cast cars available in India.",
         "mainEntity": {
           "@type": "ItemList",
           "itemListElement": response.products.map((product, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `${process.env.NEXT_PUBLIC_BASE_URL}/products/${product.handle}`,
+            "url": `${baseUrl}/${countryCode}/products/${product.handle}`,
             "name": product.title
           }))
         }
@@ -89,17 +100,15 @@ export default async function StorePage({ searchParams, params }: Params) {
 
   return (
     <>
-      {/* 5. INJECT SCHEMA */}
       <Script
         id="store-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-
       <StoreTemplate
         sortBy={sortBy}
         page={page}
-        countryCode={params.countryCode}
+        countryCode={countryCode}
       />
     </>
   )
