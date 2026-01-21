@@ -17,21 +17,18 @@ export const metadata: Metadata = {
 export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
-      <head>
+      <body className={`${inter.variable} font-sans`}>
         <Script
           id="trustpilot-init" // Unique ID is required for inline scripts
           strategy="afterInteractive" // Loads script early without blocking the page
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
-              a=d.createElement(s);a.async=1;a.src=r;a.type='text/java'+s;f=d.getElementsByTagName(s)[0];
-              f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
-              tp('register', 'FHw2hvWiXcRDNF5a');
-            `,
-          }}
-        />
-      </head>
-      <body className={`${inter.variable} font-sans`}>
+        >
+          {`
+        (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
+            a=d.createElement(s);a.async=1;a.src=r;a.type='text/java'+s;f=d.getElementsByTagName(s)[0];
+            f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
+            tp('register', 'FHw2hvWiXcRDNF5a');
+            `}
+        </Script>
         {/* Google Analytics */}
         <Script src="https://www.googletagmanager.com/gtag/js?id=AW-17801513380" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
