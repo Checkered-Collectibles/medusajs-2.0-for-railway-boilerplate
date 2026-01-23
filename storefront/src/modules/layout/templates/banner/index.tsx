@@ -33,7 +33,7 @@ export default function Banner() {
 
             {isSaleLive && (
                 <Link
-                    href="/store"
+                    href="/collections/n-case-2025-licensed"
                     className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
                     🔓 The 2025 N CASE &quot;Near-MRP&quot; Vault is Unlocked!
