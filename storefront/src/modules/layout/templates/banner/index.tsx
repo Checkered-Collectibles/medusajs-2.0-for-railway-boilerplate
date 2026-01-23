@@ -34,9 +34,15 @@ export default function Banner() {
             {isSaleLive && (
                 <Link
                     href="/collections/n-case-2025-licensed"
-                    className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
+                    className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🔓 The 2025 N CASE &quot;Near-MRP&quot; Vault is Unlocked!
+                    <span className="uppercase tracking-wide">
+                        🔓 2025 N CASE UNLOCKED: <span className="text-white">Flat ₹199</span>
+                    </span>
+                    <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded">
+                        <span className="text-white/80 font-normal">Ends in:</span>
+                        <Countdown targetDate={saleEndDate} size="sm" className="font-mono text-white" />
+                    </div>
                 </Link>
             )}
 
