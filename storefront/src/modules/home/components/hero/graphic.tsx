@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import HeroImage from "@images/mclaren.jpg";
+import HeroImage from "@images/hero/team-transport.jpeg";
 // import HeroImage2 from "@images/bugatti-hero.png";
 import EuroSpeed from "@images/euro-speed.png";
 import ExoticEnvy from "@images/exotic-envy.jpg";
@@ -36,6 +36,7 @@ export default function HeroGraphic() {
                 className="hero-img drop-shadow-xl object-cover object-right"
             />
             <div className="absolute bottom-2 left-2 flex flex-wrap items-end gap-3">
+                {/* <p className="text-white bg-black px-2 py-1 italic">Some things never change</p> */}
                 {/* <div title="Hot Wheels Premium Euro Speed set coming soon" className="hero-img h-fit bg-white border shadow-md rounded-3xl p-2 flex flex-col items-center">
                     <Image
                         src={EuroSpeed}

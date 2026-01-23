@@ -11,22 +11,22 @@ const Hero = () => {
         <div className="inset-0 z-10 flex flex-col justify-start items-center text-center gap-6">
           <span className="px-2">
             {/* 🏆 H1 SEO STRATEGY: 
-               Google reads this as: "Buy Hot Wheels Cars Online in India" 
+               Google reads this as: "Buy Hot Wheels Cars Online in India"
                This hits your #1 keyword (165k searches) immediately.
             */}
             <Heading
               level="h1"
-              className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-normal flex flex-wrap gap-2 items-center justify-center"
+              className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-thin"
             >
-              Buy
-              <Image
+              MORE THAN METAL. <br className="sm:hidden block" /> MORE THAN SPEED.
+              {/* <Image
                 src={HWImage}
                 width={160}
                 alt="Hot Wheels" // Critical: Google reads this as text
                 className="mb-1"
                 priority // ⚡ Loads image faster for better Core Web Vitals
               />
-              Cars Online in India
+              Cars Online in India */}
             </Heading>
 
             {/* 📝 H2 SUBTEXT:
@@ -36,8 +36,17 @@ const Hero = () => {
               level="h2"
               className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal mt-2"
             >
-              Your hunt ends here. Shop Premium & Mainline.
+              It's a love story written in gasoline.
             </Heading>
+            <p className="flex flex-wrap gap-2 items-center justify-center mt-3">
+              Fuel your passion with the best<Image
+                src={HWImage}
+                width={100}
+                alt="Hot Wheels" // Critical: Google reads this as text
+                className="mb-1"
+                priority // ⚡ Loads image faster for better Core Web Vitals
+              /> Collection.
+            </p>
           </span>
 
           <Link href="/store">
@@ -50,7 +59,7 @@ const Hero = () => {
       </div>
 
       {/* Gradient Overlay */}
-      <div className="absolute top-0 w-screen h-full bg-gradient-to-t from-transparent to-white pointer-events-none" />
+      <div className="absolute top-0 w-screen h-full bg-gradient-to-t from-transparent to-[80%] to-white pointer-events-none" />
     </div>
   )
 }
