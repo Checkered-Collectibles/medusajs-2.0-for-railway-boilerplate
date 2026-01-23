@@ -10,6 +10,8 @@ export default function ConfettiComponent() {
 
     useEffect(() => {
         setMounted(true);
+        // Force scroll to top when this page mounts
+        window.scrollTo(0, 0)
     }, []);
 
     if (!mounted) return null; // ⛔️ Prevent SSR render → stops hydration mismatch
@@ -20,6 +22,7 @@ export default function ConfettiComponent() {
             numberOfPieces={300}
             width={width}
             height={height}
+            className="z-99"
         />
     );
 }
