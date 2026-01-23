@@ -7,8 +7,8 @@ import Countdown from "./countdown"
  * UPDATED DATE: January 21, 2026 at 3:00 PM IST
  * Current Time: Jan 20, 2026, 9:13 PM IST
  */
-const DROP_DATE_IST = "2026-01-20T22:00:00+05:30"
-const SALE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 hours
+const DROP_DATE_IST = "2026-01-23T21:00:00+05:30"
+const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -26,7 +26,7 @@ export default function Banner() {
         <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium">
-                    🔥 2026 D CASE DROP starts in{" "}
+                    🔥 The 2025 N CASE &quot;Near-MRP&quot; Vault Unlocks in{" "}
                     <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-medium text-yellow-400" />
                 </div>
             )}
@@ -36,7 +36,7 @@ export default function Banner() {
                     href="/store"
                     className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🔓 2026 D CASE IS LIVE!
+                    🔓 The 2025 N CASE &quot;Near-MRP&quot; Vault is Unlocked!
                 </Link>
             )}
 
@@ -45,7 +45,7 @@ export default function Banner() {
                     href="/store"
                     className="text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
-                    🔓 2026 D CASE IS LIVE!
+                    🚚 Free Shipping on orders above ₹1499
                 </Link>
             )}
         </section>
