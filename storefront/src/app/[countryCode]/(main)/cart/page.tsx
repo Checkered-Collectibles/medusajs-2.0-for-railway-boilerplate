@@ -69,7 +69,6 @@ export default async function Cart({ params }: Props) {
         id="cart-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-
       />
 
       <CartTemplate cart={cart} customer={customer} countryCode={countryCode} />

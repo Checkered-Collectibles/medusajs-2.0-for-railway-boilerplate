@@ -15,7 +15,6 @@ import ProductPreviewInstant from "@modules/products/components/product-preview-
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import { evaluateOutOfStockRule } from "../components/out-of-stock"
-import RazorpayEmbed from "./razorpay-embed"
 
 const CartTemplate = async ({
   cart,
@@ -80,6 +79,7 @@ const CartTemplate = async ({
                   <Divider />
                 </>
               )}
+
               {restrictionMessage && (
                 <div className="rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-700">
                   {restrictionMessage}
@@ -190,7 +190,6 @@ const CartTemplate = async ({
                     )}
                   </div>
                 )}
-              <RazorpayEmbed amount={cart.total} />
             </div>
 
             <div className="relative">
@@ -206,7 +205,6 @@ const CartTemplate = async ({
                 )}
               </div>
             </div>
-
           </div>
         ) : (
           <div>
