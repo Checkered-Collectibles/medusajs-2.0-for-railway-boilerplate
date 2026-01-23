@@ -90,7 +90,11 @@ export async function evaluateHotWheelsRule(
     // 🔑 MAINLINE RULE
     let missingFantasy = 0
     if (isMainlineRuleEnabled) {
-        const requiredFantasy = Math.floor(licensedExtra / 2)
+        // 👇 CHANGED FROM FLOOR TO CEIL
+        // Logic: 1 Licensed / 2 = 0.5 -> ceil(0.5) = 1 Fantasy Required
+        // Logic: 2 Licensed / 2 = 1.0 -> ceil(1.0) = 1 Fantasy Required
+        const requiredFantasy = Math.ceil(licensedExtra / 2)
+
         missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
     }
 
