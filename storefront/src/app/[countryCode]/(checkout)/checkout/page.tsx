@@ -10,9 +10,8 @@ import { HttpTypes } from "@medusajs/types"
 import { getCustomer } from "@lib/data/customer"
 import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
 import { evaluateOutOfStockRule } from "@modules/cart/components/out-of-stock"
+import { CheckoutTracker } from "@modules/checkout/components/meta-tracker"
 
-// 👇 Import the tracker
-import { CheckoutTracker } from "@modules/checkout/components/checkout-tracker"
 
 // 🔒 SEO STRATEGY: NOINDEX
 export const metadata: Metadata = {
