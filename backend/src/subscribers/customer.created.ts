@@ -5,8 +5,9 @@ export default async function customerCreatedHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {
-    await trackCustomerCreatedWorkflow(container).run({
+    await trackCustomerCreatedWorkflow.run({
         input: { customer_id: data.id },
+        container
     })
 }
 
