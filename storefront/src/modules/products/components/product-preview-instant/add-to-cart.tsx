@@ -1,9 +1,8 @@
 "use client"
 
-import { useTransition } from "react"
 import { Button } from "@medusajs/ui"
-import { addToCart } from "@lib/data/cart"
 import { HttpTypes } from "@medusajs/types"
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 
 type QuickAddToCartButtonProps = {
     productId: string
@@ -18,25 +17,20 @@ export default function QuickAddToCartButton({
     disabled,
     countryCode,
 }: QuickAddToCartButtonProps) {
-    const [isPending, startTransition] = useTransition()
+    // 1. Use the custom hook instead of useTransition
+    const { add, isAdding } = useAddToCart()
 
     // ✅ EXACT same stock logic as ProductActions.tsx
     const isInStock = (() => {
-        // If we don't manage inventory, we can always add to cart
         if (variant && !variant.manage_inventory) {
             return true
         }
-
-        // If we allow back orders on the variant, we can add to cart
         if (variant?.allow_backorder) {
             return true
         }
-
-        // If there is inventory available, we can add to cart
         if (variant?.manage_inventory && (variant?.inventory_quantity || 0) > 0) {
             return true
         }
-        // Otherwise, we can't add to cart
         return false
     })()
 
@@ -44,20 +38,17 @@ export default function QuickAddToCartButton({
         if (!variant?.id) return
         if (!isInStock) return
 
-        startTransition(async () => {
-            try {
-                await addToCart({
-                    variantId: variant.id,
-                    quantity: 1,
-                    countryCode,
-                })
-            } catch (e) {
-                console.error("Failed to add to cart", e)
-            }
+        // 2. Call the centralized 'add' function
+        // This handles both the Server Action AND the Pixel Tracking
+        add({
+            variantId: variant.id,
+            quantity: 1,
+            countryCode,
         })
     }
 
-    const finalDisabled = !!disabled || isPending || !variant?.id || !isInStock
+    // 3. Update loading/disabled state to use 'isAdding' from the hook
+    const finalDisabled = !!disabled || isAdding || !variant?.id || !isInStock
 
     return (
         <Button
@@ -66,7 +57,7 @@ export default function QuickAddToCartButton({
             onClick={handleAdd}
             disabled={finalDisabled}
             className={`w-full duration-0 ${!isInStock ? 'bg-white text-black' : 'md:group-hover/item:bg-black md:group-hover/item:text-white md:hover:opacity-80'}`}
-            isLoading={isPending}
+            isLoading={isAdding} // 👈 Updated here
             data-testid="quick-add-to-cart"
         >
             {!variant?.id ? "Unavailable" : !isInStock ? "Out of stock" : "Add to cart"}

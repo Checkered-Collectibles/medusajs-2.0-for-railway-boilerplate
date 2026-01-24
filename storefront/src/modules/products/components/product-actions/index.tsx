@@ -11,10 +11,13 @@ import OptionSelect from "@modules/products/components/product-actions/option-se
 
 import MobileActions from "./mobile-actions"
 import ProductPrice from "../product-price"
-import { addToCart } from "@lib/data/cart"
+// ❌ Remove direct import
+// import { addToCart } from "@lib/data/cart" 
 import { HttpTypes } from "@medusajs/types"
 import ShippingCountdown from "@modules/checkout/templates/shipping-countdown"
 import Socials from "./socials"
+// ✅ Import the hook
+import { useAddToCart } from "@lib/hooks/use-add-to-cart"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -37,8 +40,10 @@ export default function ProductActions({
   disabled,
 }: ProductActionsProps) {
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
-  const [isAdding, setIsAdding] = useState(false)
   const countryCode = useParams().countryCode as string
+
+  // ✅ Use the hook (replaces local isAdding state)
+  const { add, isAdding } = useAddToCart()
 
   // If there is only 1 variant, preselect the options
   useEffect(() => {
@@ -69,25 +74,18 @@ export default function ProductActions({
 
   // check if the selected variant is in stock
   const inStock = useMemo(() => {
-    // If we don't manage inventory, we can always add to cart
     if (selectedVariant && !selectedVariant.manage_inventory) {
       return true
     }
-
-    // If we allow back orders on the variant, we can add to cart
     if (selectedVariant?.allow_backorder) {
       return true
     }
-
-    // If there is inventory available, we can add to cart
     if (
       selectedVariant?.manage_inventory &&
       (selectedVariant?.inventory_quantity || 0) > 0
     ) {
       return true
     }
-
-    // Otherwise, we can't add to cart
     return false
   }, [selectedVariant])
 
@@ -105,7 +103,6 @@ export default function ProductActions({
     const qty = selectedVariant.inventory_quantity || 0
 
     if (qty > 0) {
-      // You can tweak threshold text
       const lowStock = qty <= 3
       return {
         text: lowStock ? `Only ${qty} left` : `In stock (${qty} available)`,
@@ -120,19 +117,15 @@ export default function ProductActions({
 
   const inView = useIntersection(actionsRef, "0px")
 
-  // add the selected variant to the cart
-  const handleAddToCart = async () => {
+  // ✅ Updated handler using the hook
+  const handleAddToCart = () => {
     if (!selectedVariant?.id) return null
 
-    setIsAdding(true)
-
-    await addToCart({
+    add({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
     })
-
-    setIsAdding(false)
   }
 
   return (
@@ -161,7 +154,7 @@ export default function ProductActions({
         </div>
         <div className="flex justify-between gap-3 items-center">
           <ProductPrice product={product} variant={selectedVariant} />
-          {/* ✅ Stock display */}
+          {/* Stock display */}
           {stockLabel && (
             <div
               className={[
@@ -193,7 +186,7 @@ export default function ProductActions({
         </Button>
         {!inStock && <Socials />}
         {inStock && <ShippingCountdown className="mt-2" />}
-        {/* ✅ Trust & scarcity points */}
+        {/* Trust & scarcity points */}
         <div className="mt-3 flex flex-col gap-2 text-sm text-ui-fg-subtle">
           <div className="flex items-center gap-2">
             <span>✅</span>
