@@ -11,7 +11,13 @@ import {
   OrderShippedTemplate,
   ORDER_SHIPPED,
   isOrderShippedTemplateData,
-} from "./order-shipped" // 👈 Added Import
+} from "./order-shipped"
+// 👇 ADDED IMPORT
+import {
+  OrderDeliveredTemplate,
+  ORDER_DELIVERED,
+  isOrderDeliveredTemplateData,
+} from "./order-delivered"
 import {
   PasswordResetEmail,
   PASSWORD_RESET,
@@ -26,7 +32,8 @@ import {
 export const EmailTemplates = {
   INVITE_USER,
   ORDER_PLACED,
-  ORDER_SHIPPED, // 👈 Added Key
+  ORDER_SHIPPED,
+  ORDER_DELIVERED, // 👈 Added Key
   PASSWORD_RESET,
   CART_ABANDONED,
 } as const
@@ -56,7 +63,6 @@ export function generateEmailTemplate(
       }
       return <OrderPlacedTemplate {...data} />
 
-    // 👇 ADDED NEW CASE
     case EmailTemplates.ORDER_SHIPPED:
       if (!isOrderShippedTemplateData(data)) {
         throw new MedusaError(
@@ -65,6 +71,16 @@ export function generateEmailTemplate(
         )
       }
       return <OrderShippedTemplate {...data} />
+
+    // 👇 ADDED NEW CASE
+    case EmailTemplates.ORDER_DELIVERED:
+      if (!isOrderDeliveredTemplateData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.ORDER_DELIVERED}"`
+        )
+      }
+      return <OrderDeliveredTemplate {...data} />
 
     case EmailTemplates.PASSWORD_RESET:
       if (!isPasswordResetData(data)) {
@@ -95,7 +111,8 @@ export function generateEmailTemplate(
 export {
   InviteUserEmail,
   OrderPlacedTemplate,
-  OrderShippedTemplate, // 👈 Added Export
+  OrderShippedTemplate,
+  OrderDeliveredTemplate, // 👈 Added Export
   PasswordResetEmail,
   CartAbandonedEmail,
 }
