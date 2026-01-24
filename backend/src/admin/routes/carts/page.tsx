@@ -60,7 +60,7 @@ const CartActions = ({ cart }: { cart: AdminCart }) => {
                 </IconButton>
             </DropdownMenu.Trigger>
             <DropdownMenu.Content>
-                <Link to={`/app/carts/${cart.id}`}>
+                <Link to={`/carts/${cart.id}`}>
                     <DropdownMenu.Item className="gap-x-2">
                         <Eye className="text-ui-fg-subtle" />
                         View Details
@@ -318,7 +318,7 @@ const CartListTable = () => {
         },
         onRowClick: (e, row) => {
             if ((e.target as HTMLElement).closest("button, a")) return
-            window.location.assign(`/app/carts/${row.id}`)
+            window.location.assign(`/carts/${row.id}`)
         }
     })
 
