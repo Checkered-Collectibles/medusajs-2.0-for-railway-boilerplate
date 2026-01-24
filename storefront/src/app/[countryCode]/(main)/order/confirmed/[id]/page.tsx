@@ -6,6 +6,9 @@ import OrderCompletedTemplate from "@modules/order/templates/order-completed-tem
 import { enrichLineItems } from "@lib/data/cart"
 import { retrieveOrder } from "@lib/data/orders"
 import { HttpTypes } from "@medusajs/types"
+import { PurchaseTracker } from "@modules/checkout/components/meta-pixel/purchase"
+
+
 
 type Props = {
   params: { id: string }
@@ -49,12 +52,11 @@ export default async function OrderConfirmedPage({ params }: Props) {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in"
 
   // 1. PREPARE TRUSTPILOT DATA SERVER-SIDE
-  // We map the order items to the format Trustpilot expects
   const trustpilotProducts = order.items.map((item: any) => ({
     sku: item.variant_sku || item.variant?.sku || item.id,
     productUrl: `${baseUrl}/products/${item.product_handle || item.variant?.product?.handle}`,
     imageUrl: item.thumbnail || item.variant?.product?.thumbnail,
-    name: item.title, // e.g. "Hot Wheels Ferrari 12Cilindri"
+    name: item.title,
   }))
 
   const productSkus = trustpilotProducts.map((p) => p.sku)
@@ -63,13 +65,13 @@ export default async function OrderConfirmedPage({ params }: Props) {
   const invitationData = {
     recipientEmail: order.email,
     recipientName: `${order.shipping_address?.first_name || 'Collector'} ${order.shipping_address?.last_name || ''}`.trim(),
-    referenceId: order.display_id, // Use display_id (e.g., #1001) so it matches what the customer sees
+    referenceId: order.display_id,
     source: 'InvitationScript',
     productSkus: productSkus,
     products: trustpilotProducts
   }
 
-  // 3. JSON-LD SCHEMA (Unchanged)
+  // 3. JSON-LD SCHEMA
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Order",
@@ -112,17 +114,12 @@ export default async function OrderConfirmedPage({ params }: Props) {
 
   return (
     <>
-      {/* Schema Script */}
       <Script
         id="order-schema"
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      {/* 🚀 TRUSTPILOT SCRIPT 
-         We inject the pre-calculated 'invitationData' object directly into the script.
-         using JSON.stringify ensures it handles quotes and special characters safely.
-      */}
       <Script id="trustpilot-review" strategy="afterInteractive">
         {`
         document.addEventListener('DOMContentLoaded', function() {
@@ -135,6 +132,9 @@ export default async function OrderConfirmedPage({ params }: Props) {
         });
         `}
       </Script>
+
+      {/* 👇 2. Add the tracker here */}
+      <PurchaseTracker order={order} />
 
       <OrderCompletedTemplate order={order} />
     </>
