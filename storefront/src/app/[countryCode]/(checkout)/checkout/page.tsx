@@ -1,6 +1,6 @@
 import { Metadata } from "next"
 import { notFound, redirect } from "next/navigation"
-import Script from "next/script" // 1. Import Script
+import Script from "next/script"
 
 import Wrapper from "@modules/checkout/components/payment-wrapper"
 import CheckoutForm from "@modules/checkout/templates/checkout-form"
@@ -11,11 +11,13 @@ import { getCustomer } from "@lib/data/customer"
 import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
 import { evaluateOutOfStockRule } from "@modules/cart/components/out-of-stock"
 
+// 👇 Import the tracker
+import { CheckoutTracker } from "@modules/checkout/components/checkout-tracker"
+
 // 🔒 SEO STRATEGY: NOINDEX
 export const metadata: Metadata = {
   title: "Secure Checkout | Checkered Collectibles",
   description: "Complete your purchase securely.",
-  // 🛑 CRITICAL: Block Google from indexing the checkout flow
   robots: {
     index: false,
     follow: false,
@@ -52,7 +54,6 @@ export default async function Checkout() {
   const customer = await getCustomer()
   if (!customer) redirect("/account?nextPath=/checkout?step=address")
 
-  // 🍞 BREADCRUMB SCHEMA (For structure/accessibility only)
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const jsonLd = {
     "@context": "https://schema.org",
@@ -86,6 +87,9 @@ export default async function Checkout() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+
+      {/* 👇 Add the tracker here */}
+      <CheckoutTracker cart={cart as HttpTypes.StoreCart} />
 
       <div className="grid grid-cols-1 small:grid-cols-[1fr_416px] content-container gap-x-40 py-12">
         <Wrapper cart={cart}>
