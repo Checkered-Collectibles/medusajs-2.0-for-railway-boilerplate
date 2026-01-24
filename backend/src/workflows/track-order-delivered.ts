@@ -1,21 +1,25 @@
 import { createWorkflow, createStep } from "@medusajs/framework/workflows-sdk"
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
 
-// 1. CUSTOM STEP: Manually fetch order data
-// This avoids conflicts with Medusa's internal query steps
-const retrieveOrderDeliveredDataStep = createStep(
-    "retrieve-order-delivered-data-manual",
-    async ({ id }: { id: string }, { container }) => {
+// 1. CUSTOM STEP: Fetch Order via Fulfillment ID
+const retrieveOrderFromFulfillmentStep = createStep(
+    "retrieve-order-from-fulfillment-manual",
+    async ({ fulfillment_id }: { fulfillment_id: string }, { container }) => {
         const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
+        // We query the ORDER entity, but filter by the connected fulfillment ID
         const { data: orders } = await query.graph({
             entity: "order",
             fields: [
                 "*",
-                "customer_id"
+                "customer_id",
+                "currency_code",
+                "total"
             ],
             filters: {
-                id: id,
+                fulfillments: {
+                    id: fulfillment_id,
+                },
             },
         })
 
@@ -23,7 +27,7 @@ const retrieveOrderDeliveredDataStep = createStep(
     }
 )
 
-// 2. TRACKING STEP
+// 2. TRACKING STEP (Unchanged logic, just receives order)
 const trackOrderDeliveredStep = createStep(
     "track-order-delivered-step",
     async ({ order }: any, { container }) => {
@@ -47,10 +51,11 @@ const trackOrderDeliveredStep = createStep(
 // 3. WORKFLOW
 export const trackOrderDeliveredWorkflow = createWorkflow(
     "track-order-delivered-workflow",
-    ({ order_id }: { order_id: string }) => {
+    // Update Input to accept fulfillment_id
+    ({ fulfillment_id }: { fulfillment_id: string }) => {
 
-        // Use the manual step to get data safely
-        const order = retrieveOrderDeliveredDataStep({ id: order_id })
+        // Use the new step to resolve the order from the fulfillment ID
+        const order = retrieveOrderFromFulfillmentStep({ fulfillment_id })
 
         trackOrderDeliveredStep({ order })
     }

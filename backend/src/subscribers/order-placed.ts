@@ -11,14 +11,12 @@ export default async function orderPlacedHandler({
 }: SubscriberArgs<any>) {
 
   // Fix: Pass container inside .run()
-  await handleOrderPointsWorkflow.run({
+  await handleOrderPointsWorkflow(container).run({
     input: { order_id: data.id },
-    container
   })
 
-  await trackOrderPlacedWorkflow.run({
+  await trackOrderPlacedWorkflow(container).run({
     input: { order_id: data.id },
-    container
   })
 
   const notificationModuleService = container.resolve(Modules.NOTIFICATION)

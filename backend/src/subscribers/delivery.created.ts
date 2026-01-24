@@ -1,16 +1,15 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { trackOrderShippedWorkflow } from 'src/workflows/track-order-shipped'
+import { trackOrderDeliveredWorkflow } from '../workflows/track-order-delivered'
 
-export default async function fulfillmentCreatedHandler({
+export default async function orderDeliveredHandler({
     event: { data },
     container,
 }: SubscriberArgs<{ id: string }>) {
-    await trackOrderShippedWorkflow(container).run({
+    await trackOrderDeliveredWorkflow(container).run({
         input: { fulfillment_id: data.id },
     })
 }
 
-
 export const config: SubscriberConfig = {
-    event: "fulfillment.created"
+    event: "delivery.created"
 }
