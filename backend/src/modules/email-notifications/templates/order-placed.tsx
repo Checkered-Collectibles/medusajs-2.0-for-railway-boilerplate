@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Text, Section, Hr, Img } from "@react-email/components"
+import { Text, Section, Hr, Img, Button } from "@react-email/components" // Added Button import
 import { Base } from "./base"
 import {
   BigNumberValue,
@@ -65,11 +65,13 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
     total: order.total ?? 0,
   }
 
+  // Define the Order Details URL
+  const orderDetailsUrl = `https://checkered.in/account/orders/details/${order.id}`
+
   return (
     <Base preview={preview}>
       <Section>
         {/* HEADER */}
-        {/* Replace this with your logo URL if you have one */}
         <Img
           src="https://checkered.in/images/logo.png"
           alt="Checkered Collectibles"
@@ -90,10 +92,29 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           Dear {shippingAddress.first_name} {shippingAddress.last_name},
         </Text>
 
-        <Text style={{ margin: "0 0 30px" }}>
+        <Text style={{ margin: "0 0 20px" }}>
           Thank you for your order! We're processing it and will notify you once
           it ships.
         </Text>
+
+        {/* CTA BUTTON - Added Here */}
+        <Section style={{ textAlign: "center", margin: "30px 0" }}>
+          <Button
+            href={orderDetailsUrl}
+            style={{
+              backgroundColor: "#000000",
+              color: "#ffffff",
+              padding: "12px 24px",
+              borderRadius: "4px",
+              fontSize: "16px",
+              fontWeight: "bold",
+              textDecoration: "none",
+              display: "inline-block",
+            }}
+          >
+            View Order Details
+          </Button>
+        </Section>
 
         {/* ORDER SUMMARY */}
         <Text
@@ -280,6 +301,7 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
 /* -----------------------
    MOCK ORDER FOR PREVIEW
+   (No changes needed below this line, but included for completeness)
 ------------------------ */
 
 const mockOrder = {
