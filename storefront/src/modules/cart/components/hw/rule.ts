@@ -9,6 +9,7 @@ export type HotWheelsRuleResult = {
     licensedCount: number
     fantasyCount: number
     premiumCount: number
+    totalCount: number // 👈 Added totalCount to result
     missingFantasy: number
     missingMainlinesForPremium: number
     canCheckout: boolean
@@ -20,16 +21,20 @@ export async function evaluateHotWheelsRule(
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = true
+    const MAX_ITEMS_ALLOWED = 14 // 👈 Limit defined here
 
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
+    let totalCount = 0 // 👈 Track total quantity
 
     let hasInvalidQuantity = false
 
     if (cart?.items) {
         for (const item of cart.items) {
             const quantity = item.quantity || 0
+            totalCount += quantity // 👈 Sum up total items
+
             const categories = (item as any).product?.categories ?? []
             const categoryIds = categories.map((c: any) => c.id)
 
@@ -90,45 +95,55 @@ export async function evaluateHotWheelsRule(
     // 🔑 MAINLINE RULE
     let missingFantasy = 0
     if (isMainlineRuleEnabled) {
-        // 👇 CHANGED FROM FLOOR TO CEIL
-        // Logic: 1 Licensed / 2 = 0.5 -> ceil(0.5) = 1 Fantasy Required
-        // Logic: 2 Licensed / 2 = 1.0 -> ceil(1.0) = 1 Fantasy Required
         const requiredFantasy = Math.ceil(licensedExtra / 2)
-
         missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
     }
 
+    // 🔑 BULK ORDER RULE
+    const isBulkOrder = totalCount > MAX_ITEMS_ALLOWED
+
     const canCheckout =
         !hasInvalidQuantity &&
+        !isBulkOrder && // 👈 Block if bulk order
         (!isMainlineRuleEnabled || missingFantasy === 0) &&
         (!isPremiumRuleEnabled || missingMainlinesForPremium === 0)
 
     const messages: string[] = []
 
-    if (hasInvalidQuantity) {
+    // 1. Bulk Order Message (Highest Priority)
+    if (isBulkOrder) {
         messages.push(
-            "Only Fantasy cars can be purchased with quantity more than 1. Please reduce quantity for other items."
+            `You have ${totalCount} items. For orders with more than ${MAX_ITEMS_ALLOWED} items, please contact us for bulk orders.`
         )
     }
+    // Only show other messages if it's NOT a bulk order (to avoid clutter)
+    else {
+        if (hasInvalidQuantity) {
+            messages.push(
+                "Only Fantasy cars can be purchased with quantity more than 1. Please reduce quantity for other items."
+            )
+        }
 
-    if (isMainlineRuleEnabled && missingFantasy > 0) {
-        messages.push(
-            `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
-            } (1 required per 2 extra Licensed cars).`
-        )
-    }
+        if (isMainlineRuleEnabled && missingFantasy > 0) {
+            messages.push(
+                `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
+                } (1 required per 2 extra Licensed cars).`
+            )
+        }
 
-    if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
-        messages.push(
-            `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
-            } (1 Licensed/Fantasy required per Premium car).`
-        )
+        if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
+            messages.push(
+                `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
+                } (1 Licensed/Fantasy required per Premium car).`
+            )
+        }
     }
 
     return {
         licensedCount,
         fantasyCount,
         premiumCount,
+        totalCount,
         missingFantasy,
         missingMainlinesForPremium,
         canCheckout,
