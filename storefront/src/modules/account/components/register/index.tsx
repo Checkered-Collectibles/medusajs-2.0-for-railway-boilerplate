@@ -7,13 +7,40 @@ import { SubmitButton } from "@modules/checkout/components/submit-button"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { signup } from "@lib/data/customer"
 import { useActionState } from "react"
+// 1. Import your pixel helper
+import { metaEvent } from "@lib/meta/fpixel"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Register = ({ setCurrentView }: Props) => {
-  const [message, formAction] = useActionState(signup, null)
+  // 2. Create a wrapper to intercept the Server Action result
+  const signupWithTracking = async (currentState: any, formData: FormData) => {
+    try {
+      const error = await signup(currentState, formData)
+
+      // If there is no error string, registration was successful
+      if (!error) {
+        metaEvent("CompleteRegistration", {
+          status: "success",
+        })
+      }
+
+      return error
+    } catch (e: any) {
+      // Handle Next.js Redirects (which are thrown as errors)
+      if (e.message === "NEXT_REDIRECT" || e.digest?.startsWith("NEXT_REDIRECT")) {
+        metaEvent("CompleteRegistration", {
+          status: "success",
+        })
+      }
+      throw e
+    }
+  }
+
+  // 3. Use the wrapper in useActionState instead of 'signup' directly
+  const [message, formAction] = useActionState(signupWithTracking, null)
 
   return (
     <div

@@ -125,6 +125,11 @@ export default function ProductActions({
       variantId: selectedVariant.id,
       quantity: 1,
       countryCode,
+      productInfo: {
+        title: product.title,
+        value: selectedVariant.calculated_price?.calculated_amount || 0,
+        currency: "INR"
+      }
     })
   }
 

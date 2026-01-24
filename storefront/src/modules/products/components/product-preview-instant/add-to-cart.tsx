@@ -44,6 +44,11 @@ export default function QuickAddToCartButton({
             variantId: variant.id,
             quantity: 1,
             countryCode,
+            productInfo: {
+                title: variant.product?.title || variant.title || "Undefined Title",
+                value: variant.calculated_price?.calculated_amount || 0,
+                currency: "INR"
+            }
         })
     }
 
