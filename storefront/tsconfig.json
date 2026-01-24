@@ -19,9 +19,7 @@
       "@lib/*": ["lib/*"],
       "@modules/*": ["modules/*"],
       "@pages/*": ["pages/*"],
-      "@images/*": [
-        "../public/images/*"
-      ]
+      "@images/*": ["../public/images/*"]
     },
     "plugins": [
       {
@@ -29,7 +27,13 @@
       }
     ]
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    "src/lib/meta/fpixel.js"
+  ],
   "exclude": [
     "node_modules",
     ".next",

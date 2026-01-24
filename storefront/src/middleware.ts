@@ -160,6 +160,6 @@ export const config = {
      * - robots.txt / sitemap.xml
      * - any file ending in .png, .jpg, .jpeg, .svg
      */
-    "/((?!api|_next/static|_next/image|images/|favicon.ico|site.webmanifest|robots.txt|sitemap.xml|sitemap/.*\\.xml|.*\\.png$|.*\\.svg$|.*\\.jpg$).*)",
+    "/((?!api|_next/static|_next/image|images/|scripts/|favicon.ico|site.webmanifest|robots.txt|sitemap.xml|sitemap/.*\\.xml|.*\\.png$|.*\\.svg$|.*\\.jpg$).*)",
   ],
 }
