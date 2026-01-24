@@ -56,7 +56,7 @@ export default function WatchingCount({
     if (isLoading) return null
 
     return (
-        <p>
+        <p className="bg-blue-100 text-blue-700 px-3 py-2 rounded-full border border-blue-200 animate-pulse">
             {watching > 1
                 ? `${watching} watching`
                 : watching === 1

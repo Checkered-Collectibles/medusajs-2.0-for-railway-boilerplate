@@ -13,6 +13,7 @@ import { HttpTypes } from "@medusajs/types"
 import { getAuthHeaders } from "@lib/data/cookies"
 import { cookies } from "next/headers"
 import WatchingCount from "./watcher"
+import Share from "./share"
 
 type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
@@ -38,8 +39,9 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
         </div>
         <div className="block w-full relative">
           <ImageGallery images={product?.images || []} />
-          <div className="absolute -top-3 left-3 bg-blue-100 text-blue-700 px-3 py-2 rounded-full border border-blue-200 animate-pulse">
+          <div className="absolute -top-3 left-3 flex items-center gap-2">
             <WatchingCount productId={product.id} backendUrl={process.env.NEXT_PUBLIC_MEDUSA_BACKEND_URL!} />
+            <Share />
           </div>
         </div>
         <div className="flex flex-col small:sticky small:top-48 small:py-0 small:max-w-[300px] w-full py-8 gap-y-12">
