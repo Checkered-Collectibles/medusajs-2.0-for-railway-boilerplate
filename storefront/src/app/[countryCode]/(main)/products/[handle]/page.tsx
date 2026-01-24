@@ -5,6 +5,8 @@ import ProductTemplate from "@modules/products/templates"
 import { getRegion, listRegions } from "@lib/data/regions"
 import { getProductByHandle, getProductsList } from "@lib/data/products"
 import Script from "next/script"
+import { ViewContentTracker } from "@modules/products/components/meta-pixel"
+
 
 type Props = {
   params: { countryCode: string; handle: string }
@@ -56,7 +58,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const priceObj = product.variants?.[0]?.calculated_price
   const currency = priceObj?.currency_code?.toUpperCase() ?? "INR"
   const amount = priceObj?.calculated_amount
-    ? priceObj.calculated_amount.toFixed(2) // Ensure "249.00" format
+    ? priceObj.calculated_amount.toFixed(2)
     : null
 
   const availability = product.variants?.some(
@@ -120,7 +122,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description,
       images: images.map((img) => img.url),
     },
-    // 🛍️ PRODUCT METADATA FOR INSTAGRAM/FACEBOOK SHOP
     other: {
       "product:price:amount": amount || "0",
       "product:price:currency": currency,
@@ -147,10 +148,10 @@ export default async function ProductPage({ params }: Props) {
   // 🚚 DYNAMIC SHIPPING LOGIC
   const shippingCost = priceValue > 1499 ? "0" : "150"
 
-  // 📅 PRICE VALID UNTIL LOGIC (Today + 1 Year)
+  // 📅 PRICE VALID UNTIL LOGIC
   const nextYear = new Date()
   nextYear.setFullYear(nextYear.getFullYear() + 1)
-  const priceValidString = nextYear.toISOString().split("T")[0] // Format: YYYY-MM-DD
+  const priceValidString = nextYear.toISOString().split("T")[0]
 
   const isAvailable = pricedProduct.variants.some(
     (v) =>
@@ -173,7 +174,6 @@ export default async function ProductPage({ params }: Props) {
     sku: pricedProduct.handle,
     brand: {
       "@type": "Brand",
-      // ✅ FIX: Force name to "Hot Wheels" to avoid object/ID errors
       name: pricedProduct.type?.value || "Hot Wheels",
     },
     offers: {
@@ -233,7 +233,10 @@ export default async function ProductPage({ params }: Props) {
         region={region}
         countryCode={params.countryCode}
       />
-      {/* ⚡ INJECT SCHEMA FOR GOOGLE RICH SNIPPETS */}
+
+      {/* 👇 2. Render the tracker here */}
+      <ViewContentTracker product={pricedProduct} region={region} />
+
       <Script
         id="product-schema"
         type="application/ld+json"
