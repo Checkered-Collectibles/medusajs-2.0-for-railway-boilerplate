@@ -1,4 +1,5 @@
 import FacebookPixel from "@lib/meta/facebook-pixel"
+import RegistrationFlusher from "@lib/meta/registration"
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import Script from "next/script"
@@ -20,7 +21,7 @@ export default function RootLayout(props: { children: React.ReactNode }) {
     <html lang="en" data-mode="light">
       <head>
         <script
-          id="trustpilot-init" // Unique ID is required for inline scripts
+          id="trustpilot-init"
         >
           {`
         (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
@@ -45,6 +46,9 @@ export default function RootLayout(props: { children: React.ReactNode }) {
         </Script>
 
         <main className="relative">{props.children}</main>
+
+        {/* 2. Add the flusher here (inside body is fine) */}
+        <RegistrationFlusher />
       </body>
       <FacebookPixel />
     </html>

@@ -9,12 +9,14 @@ export function SubmitButton({
   variant = "primary",
   className,
   disabled = false,
+  onClick, // 👈 1. Destructure onClick
   "data-testid": dataTestId,
 }: {
   children: React.ReactNode
   variant?: "primary" | "secondary" | "transparent" | "danger" | null
-  className?: string,
-  disabled?: boolean,
+  className?: string
+  disabled?: boolean
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void // 👈 2. Add type definition
   "data-testid"?: string
 }) {
   const { pending } = useFormStatus()
@@ -27,6 +29,7 @@ export function SubmitButton({
       isLoading={pending}
       variant={variant || "primary"}
       disabled={disabled}
+      onClick={onClick} // 👈 3. Pass it to the UI component
       data-testid={dataTestId}
     >
       {children}
