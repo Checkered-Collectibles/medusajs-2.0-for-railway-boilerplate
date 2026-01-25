@@ -384,7 +384,7 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
   }
 
   redirect(
-    `/${formData.get("shipping_address.country_code")}/checkout?step=delivery`
+    `/checkout?step=delivery`
   )
 }
 
@@ -463,7 +463,7 @@ export async function updateRegion(countryCode: string, currentPath: string) {
   revalidateTag("regions")
   revalidateTag("products")
 
-  redirect(`/${countryCode}${currentPath}`)
+  redirect(`/${currentPath}`)
 }
 
 export async function applyLoyaltyPointsOnCart() {
