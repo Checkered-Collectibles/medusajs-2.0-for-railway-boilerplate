@@ -318,7 +318,7 @@ const CartListTable = () => {
         },
         onRowClick: (e, row) => {
             if ((e.target as HTMLElement).closest("button, a")) return
-            window.location.assign(`/carts/${row.id}`)
+            window.location.assign(`/app/carts/${row.id}`)
         }
     })
 
