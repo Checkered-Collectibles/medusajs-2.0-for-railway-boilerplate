@@ -1,11 +1,13 @@
 import FacebookPixel from "@lib/meta/facebook-pixel"
-import RegistrationFlusher from "@lib/meta/registration"
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import Script from "next/script"
 import { inter } from "styles/fonts"
+// 1. Import Suspense
+import { Suspense } from "react"
 
 import "styles/globals.css"
+import RegistrationFlusher from "@lib/meta/registration"
 
 export const metadata: Metadata = {
   metadataBase: new URL(getBaseURL()),
@@ -20,17 +22,14 @@ export default function RootLayout(props: { children: React.ReactNode }) {
   return (
     <html lang="en" data-mode="light">
       <head>
-        <script
-          id="trustpilot-init"
-        >
+        <script id="trustpilot-init">
           {`
-        (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
+            (function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
             a=d.createElement(s);a.async=1;a.src=r;a.type='text/java'+s;f=d.getElementsByTagName(s)[0];
             f.parentNode.insertBefore(a,f)})(window,document,'script', 'https://invitejs.trustpilot.com/tp.min.js', 'tp');
             tp('register', 'FHw2hvWiXcRDNF5a');
             `}
         </script>
-
       </head>
       <body className={`${inter.variable} font-sans`}>
         {/* Google Analytics */}
@@ -40,15 +39,16 @@ export default function RootLayout(props: { children: React.ReactNode }) {
             window.dataLayer = window.dataLayer || [];
             function gtag(){window.dataLayer.push(arguments);}
             gtag('js', new Date());
-
             gtag('config', 'AW-17801513380');
           `}
         </Script>
 
         <main className="relative">{props.children}</main>
 
-        {/* 2. Add the flusher here (inside body is fine) */}
-        <RegistrationFlusher />
+        {/* 2. Wrap the flusher in Suspense */}
+        <Suspense fallback={null}>
+          <RegistrationFlusher />
+        </Suspense>
       </body>
       <FacebookPixel />
     </html>
