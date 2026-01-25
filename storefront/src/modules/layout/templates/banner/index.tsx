@@ -8,7 +8,7 @@ import Countdown from "./countdown"
  * Current Time: Jan 20, 2026, 9:13 PM IST
  */
 const DROP_DATE_IST = "2026-01-23T21:00:00+05:30"
-const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 hours
+const SALE_DURATION_MS = 49 * 60 * 60 * 1000 // 48 hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
