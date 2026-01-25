@@ -15,6 +15,8 @@ import ErrorMessage from "../error-message"
 import ShippingAddress from "../shipping-address"
 import { SubmitButton } from "../submit-button"
 import { useActionState } from "react"
+// 1. Import tracker
+import { metaEvent } from "@lib/meta/fpixel"
 
 const Addresses = ({
   cart,
@@ -39,7 +41,42 @@ const Addresses = ({
     router.push(pathname + "?step=address")
   }
 
-  const [message, formAction] = useActionState(setAddresses, null)
+  // 2. Define the Tracking Logic
+  const trackPaymentInfo = () => {
+    if (!cart) return
+
+    metaEvent("AddPaymentInfo", {
+      content_category: "Checkout",
+      content_ids: cart.items?.map((i) => i.variant_id) || [],
+      content_type: "product",
+      currency: cart.region?.currency_code?.toUpperCase(),
+      value: (cart.total || 0) / 100, // Convert cents to decimal
+      num_items: cart.items?.reduce((acc, item) => acc + item.quantity, 0) || 0
+    })
+  }
+
+  // 3. Create a Wrapper to intercept the Server Action
+  const handleFormSubmit = async (prevState: any, formData: FormData) => {
+    try {
+      const error = await setAddresses(prevState, formData)
+
+      // If no error string is returned, it was successful
+      if (!error) {
+        trackPaymentInfo()
+      }
+      return error
+    } catch (e: any) {
+      // ⚠️ CRITICAL: Next.js Redirects appear as errors. 
+      // We must catch them, fire the pixel, and then let the redirect happen.
+      if (e.message === "NEXT_REDIRECT" || e.digest?.startsWith("NEXT_REDIRECT")) {
+        trackPaymentInfo()
+      }
+      throw e
+    }
+  }
+
+  // 4. Use the wrapper instead of 'setAddresses' directly
+  const [message, formAction] = useActionState(handleFormSubmit, null)
 
   return (
     <div className="bg-white">
