@@ -1,6 +1,6 @@
 "use client"
 
-import { InstantSearch } from "react-instantsearch-hooks-web"
+import { InstantSearch, useSearchBox } from "react-instantsearch-hooks-web" // 1. Import hook
 import { useRouter } from "next/navigation"
 import { MagnifyingGlassMini } from "@medusajs/icons"
 
@@ -9,6 +9,38 @@ import Hit from "@modules/search/components/hit"
 import Hits from "@modules/search/components/hits"
 import SearchBox from "@modules/search/components/search-box"
 import { useEffect, useRef } from "react"
+// 2. Import tracker
+import { metaEvent } from "@lib/meta/fpixel"
+
+// 3. Create a Tracker Component
+// This sits inside InstantSearch context to access the query
+const SearchTracker = () => {
+  const { query } = useSearchBox()
+  const timerRef = useRef<NodeJS.Timeout | null>(null)
+
+  useEffect(() => {
+    // Don't track empty strings
+    if (!query) return
+
+    // Clear previous timer (user is still typing)
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
+    }
+
+    // Set new timer: Wait 1.5 seconds after typing stops
+    timerRef.current = setTimeout(() => {
+      metaEvent("Search", {
+        search_string: query
+      })
+    }, 1500)
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current)
+    }
+  }, [query])
+
+  return null
+}
 
 export default function SearchModal() {
   const router = useRouter()
@@ -23,14 +55,12 @@ export default function SearchModal() {
 
   useEffect(() => {
     window.addEventListener("click", handleOutsideClick)
-    // cleanup
     return () => {
       window.removeEventListener("click", handleOutsideClick)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // disable scroll on body when modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden"
     return () => {
@@ -38,7 +68,6 @@ export default function SearchModal() {
     }
   }, [])
 
-  // on escape key press, close modal
   useEffect(() => {
     const handleEsc = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -47,7 +76,6 @@ export default function SearchModal() {
     }
     window.addEventListener("keydown", handleEsc)
 
-    // cleanup
     return () => {
       window.removeEventListener("keydown", handleEsc)
     }
@@ -63,6 +91,9 @@ export default function SearchModal() {
             indexName={SEARCH_INDEX_NAME}
             searchClient={searchClient}
           >
+            {/* 4. Drop the tracker inside the Provider */}
+            <SearchTracker />
+
             <div
               className="flex absolute flex-col h-fit w-full sm:w-fit"
               data-testid="search-modal-container"
