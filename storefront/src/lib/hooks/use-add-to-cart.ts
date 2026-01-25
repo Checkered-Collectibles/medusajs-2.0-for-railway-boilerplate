@@ -11,7 +11,6 @@ export const useAddToCart = () => {
         variantId,
         quantity,
         countryCode,
-        // Add extra data needed for Pixel that the Server Action doesn't need
         productInfo
     }: {
         variantId: string
@@ -21,33 +20,31 @@ export const useAddToCart = () => {
             title: string
             value: number
             currency: string
+            productId: string // 👈 ADD THIS: We need the parent ID
         }
     }) => {
         setIsAdding(true)
 
         try {
-            // 1. Call the Server Action
             await addToCart({ variantId, quantity, countryCode })
 
-            // 2. If successful, Track the Event on Client
-            // We check productInfo exists to prevent errors
             if (productInfo) {
                 metaEvent("AddToCart", {
                     content_name: productInfo.title,
-                    content_ids: [variantId],
+                    // 👇 CHANGE: Prioritize Parent ID for catalog matching
+                    content_ids: [productInfo.productId],
                     content_type: "product",
                     value: productInfo.value,
                     currency: productInfo.currency,
                     num_items: quantity
                 })
             } else {
-                // Fallback if you don't pass full details (Basic Tracking)
+                // Fallback using variantId (better than nothing)
                 metaEvent("AddToCart", { content_ids: [variantId] })
             }
 
         } catch (e) {
             console.error("Failed to add to cart", e)
-            // Optional: Add toast error here
         } finally {
             setIsAdding(false)
         }

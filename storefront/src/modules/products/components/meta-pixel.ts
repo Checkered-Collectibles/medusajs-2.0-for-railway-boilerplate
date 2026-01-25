@@ -16,14 +16,14 @@ export const ViewContentTracker = ({ product, region }: Props) => {
         if (product?.id && !fired.current) {
             fired.current = true
 
-            // Get price from the first variant (default display price)
             const variant = product.variants?.[0]
             const price = variant?.calculated_price?.calculated_amount || 0
             const currency = variant?.calculated_price?.currency_code?.toUpperCase() || region.currency_code.toUpperCase()
 
             metaEvent("ViewContent", {
                 content_name: product.title,
-                content_ids: [variant?.id || product.id], // Using Variant ID is best for dynamic ads
+                // 👇 CHANGE: Use product.id (Parent ID) to match Catalog
+                content_ids: [product.id],
                 content_type: "product",
                 value: price,
                 currency: currency,
