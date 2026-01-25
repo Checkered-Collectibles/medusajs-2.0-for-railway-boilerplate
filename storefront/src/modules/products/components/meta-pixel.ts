@@ -16,14 +16,15 @@ export const ViewContentTracker = ({ product, region }: Props) => {
         if (product?.id && !fired.current) {
             fired.current = true
 
+            // Get the first variant (default)
             const variant = product.variants?.[0]
             const price = variant?.calculated_price?.calculated_amount || 0
             const currency = variant?.calculated_price?.currency_code?.toUpperCase() || region.currency_code.toUpperCase()
 
             metaEvent("ViewContent", {
                 content_name: product.title,
-                // 👇 CHANGE: Use product.id (Parent ID) to match Catalog
-                content_ids: [product.id],
+                // 👇 CHANGE: Strictly use the Variant ID
+                content_ids: [variant?.id],
                 content_type: "product",
                 value: price,
                 currency: currency,

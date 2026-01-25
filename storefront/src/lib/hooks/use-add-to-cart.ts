@@ -8,7 +8,7 @@ export const useAddToCart = () => {
     const [isAdding, setIsAdding] = useState(false)
 
     const handleAddToCart = async ({
-        variantId,
+        variantId, // 👈 This is the ID we want!
         quantity,
         countryCode,
         productInfo
@@ -20,7 +20,6 @@ export const useAddToCart = () => {
             title: string
             value: number
             currency: string
-            productId: string // 👈 ADD THIS: We need the parent ID
         }
     }) => {
         setIsAdding(true)
@@ -31,15 +30,15 @@ export const useAddToCart = () => {
             if (productInfo) {
                 metaEvent("AddToCart", {
                     content_name: productInfo.title,
-                    // 👇 CHANGE: Prioritize Parent ID for catalog matching
-                    content_ids: [productInfo.productId],
+                    // 👇 CHANGE: Strictly use variantId
+                    content_ids: [variantId],
                     content_type: "product",
                     value: productInfo.value,
                     currency: productInfo.currency,
                     num_items: quantity
                 })
             } else {
-                // Fallback using variantId (better than nothing)
+                // Fallback
                 metaEvent("AddToCart", { content_ids: [variantId] })
             }
 
