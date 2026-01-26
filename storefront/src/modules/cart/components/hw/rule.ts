@@ -9,7 +9,7 @@ export type HotWheelsRuleResult = {
     licensedCount: number
     fantasyCount: number
     premiumCount: number
-    totalCount: number // 👈 Added totalCount to result
+    totalCount: number
     missingFantasy: number
     missingMainlinesForPremium: number
     canCheckout: boolean
@@ -21,19 +21,19 @@ export async function evaluateHotWheelsRule(
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = true
-    const MAX_ITEMS_ALLOWED = 14 // 👈 Limit defined here
+    const MAX_ITEMS_ALLOWED = 14
 
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
-    let totalCount = 0 // 👈 Track total quantity
+    let totalCount = 0
 
     let hasInvalidQuantity = false
 
     if (cart?.items) {
         for (const item of cart.items) {
             const quantity = item.quantity || 0
-            totalCount += quantity // 👈 Sum up total items
+            totalCount += quantity
 
             const categories = (item as any).product?.categories ?? []
             const categoryIds = categories.map((c: any) => c.id)
@@ -60,39 +60,33 @@ export async function evaluateHotWheelsRule(
         }
     }
 
-    const mainlineCount = licensedCount + fantasyCount
-
-    let missingMainlinesForPremium = 0
-    let licensedExtra = licensedCount
+    // Initialize "waterfall" variables
     let fantasyExtra = fantasyCount
 
-    // 🔑 PREMIUM RULE
-    if (isPremiumRuleEnabled && premiumCount > 0) {
-        const requiredMainlinesForPremium = premiumCount
+    // Note: Licensed cars are no longer used for Premium rule, so licensedExtra is just licensedCount
+    const licensedExtra = licensedCount
 
+    // 🔑 PREMIUM RULE
+    // Updated: Now requires 2 FANTASY cars per 1 Premium car
+    let missingMainlinesForPremium = 0 // Keeping variable name for compatibility, but tracks Fantasy now
+
+    if (isPremiumRuleEnabled && premiumCount > 0) {
+        const requiredFantasyForPremium = premiumCount * 2
+
+        // Calculate missing fantasy specifically for premium rule
         missingMainlinesForPremium = Math.max(
             0,
-            requiredMainlinesForPremium - mainlineCount
+            requiredFantasyForPremium - fantasyCount
         )
 
-        if (requiredMainlinesForPremium > 0 && mainlineCount > 0) {
-            const neededForPremium = Math.min(
-                requiredMainlinesForPremium,
-                mainlineCount
-            )
-
-            const licensedUsed = Math.min(licensedCount, neededForPremium)
-            const fantasyUsed = Math.min(
-                fantasyCount,
-                neededForPremium - licensedUsed
-            )
-
-            licensedExtra -= licensedUsed
-            fantasyExtra -= fantasyUsed
-        }
+        // Deduct the fantasy cars used by this rule from the "Extra" pool
+        // so they aren't double-counted for the Licensed Rule below
+        const fantasyUsed = Math.min(fantasyCount, requiredFantasyForPremium)
+        fantasyExtra -= fantasyUsed
     }
 
-    // 🔑 MAINLINE RULE
+    // 🔑 MAINLINE RULE (Licensed Rule)
+    // Checks remaining fantasy cars against licensed cars
     let missingFantasy = 0
     if (isMainlineRuleEnabled) {
         const requiredFantasy = Math.ceil(licensedExtra / 2)
@@ -104,7 +98,7 @@ export async function evaluateHotWheelsRule(
 
     const canCheckout =
         !hasInvalidQuantity &&
-        !isBulkOrder && // 👈 Block if bulk order
+        !isBulkOrder &&
         (!isMainlineRuleEnabled || missingFantasy === 0) &&
         (!isPremiumRuleEnabled || missingMainlinesForPremium === 0)
 
@@ -116,7 +110,7 @@ export async function evaluateHotWheelsRule(
             `You have ${totalCount} items. For orders with more than ${MAX_ITEMS_ALLOWED} items, please contact us for bulk orders.`
         )
     }
-    // Only show other messages if it's NOT a bulk order (to avoid clutter)
+    // Only show other messages if it's NOT a bulk order
     else {
         if (hasInvalidQuantity) {
             messages.push(
@@ -124,17 +118,17 @@ export async function evaluateHotWheelsRule(
             )
         }
 
+        if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
+            messages.push(
+                `Add ${missingMainlinesForPremium} more Fantasy car${missingMainlinesForPremium === 1 ? "" : "s"
+                } (2 Fantasy required per Premium car).`
+            )
+        }
+
         if (isMainlineRuleEnabled && missingFantasy > 0) {
             messages.push(
                 `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
                 } (1 required per 2 extra Licensed cars).`
-            )
-        }
-
-        if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
-            messages.push(
-                `Add ${missingMainlinesForPremium} more mainline car${missingMainlinesForPremium === 1 ? "" : "s"
-                } (1 Licensed/Fantasy required per Premium car).`
             )
         }
     }
