@@ -5,16 +5,14 @@ import SignInPrompt from "../components/sign-in-prompt"
 import Divider from "@modules/common/components/divider"
 import { HttpTypes } from "@medusajs/types"
 import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
-import { Suspense } from "react"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import RelatedProducts from "@modules/products/components/related-products"
-import { getFantasyProducts, getLicensedProducts } from "@modules/cart/components/hw/add-product"
-import ProductPreview from "@modules/products/components/product-preview"
-import { getRegion } from "@lib/data/regions"
+import { getFantasyProducts, getRelatedProductsForCart } from "@modules/cart/components/hw/add-product"
+// 👇 Import your new function (Update path if needed)
 import ProductPreviewInstant from "@modules/products/components/product-preview-instant"
-import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import InteractiveLink from "@modules/common/components/interactive-link"
 import { evaluateOutOfStockRule } from "../components/out-of-stock"
+import { getRegion } from "@lib/data/regions"
 
 const CartTemplate = async ({
   cart,
@@ -47,18 +45,19 @@ const CartTemplate = async ({
   let fantasyProducts: HttpTypes.StoreProduct[] = []
   let fantasyCategoryHandle: string | undefined
 
-  let licensedProducts: HttpTypes.StoreProduct[] = []
-  let licensedCategoryHandle: string | undefined
+  // 👇 New variable for related products
+  let relatedProducts: HttpTypes.StoreProduct[] = []
 
   if (!canCheckout) {
+    // 1. If blocked, show Fantasy cars needed to unblock
     const fantasyRes = await getFantasyProducts(cart, countryCode)
     fantasyProducts = fantasyRes.products
     fantasyCategoryHandle = fantasyRes.categoryHandle
   } else if (canCheckout) {
-    // const licensedRes = await getLicensedProducts(cart, countryCode)
-    // licensedProducts = licensedRes.products
-    // licensedCategoryHandle = licensedRes.categoryHandle
+    // 2. If allowed, show "You might also like" (Related Products)
+    relatedProducts = await getRelatedProductsForCart(cart, countryCode)
   }
+
   if (!region) {
     return null
   }
@@ -86,54 +85,69 @@ const CartTemplate = async ({
               )}
 
               <ItemsTemplate items={cart.items} />
-
+              <div className="relative small:hidden block">
+                <div className="flex flex-col gap-y-8 sticky top-12">
+                  {cart && cart.region && (
+                    <div className="bg-white py-6">
+                      <Summary
+                        cart={cart as any}
+                        canCheckout={canCheckout}
+                        restrictionMessage={restrictionMessage}
+                      />
+                    </div>
+                  )}
+                </div>
+              </div>
+              {/* Suggestions Section */}
               {
-                (fantasyProducts.length > 0 || licensedProducts.length > 0) && (
+                (fantasyProducts.length > 0 || relatedProducts.length > 0) && (
                   <div className="mt-12">
                     <div className="flex gap-5 justify-between items-center">
                       <div>
+                        {/* Dynamic Header */}
                         <h3 className="text-xl font-semibold mb-4">
-                          {canCheckout ? "You might like these" : "Add Mainline Cars to Checkout"}
+                          {canCheckout ? "You might also like" : "Add Cars to Checkout"}
                         </h3>
-                        <p className="text-sm text-red-600 mb-2">
-                          {needsFantasy && needsMainlinesForPremium && (
-                            <>
-                              You need {missingMainlinesForPremium} more
-                              mainline car
-                              {missingMainlinesForPremium === 1 ? "" : "s"} in
-                              total, including at least {missingFantasy} Fantasy
-                              car{missingFantasy === 1 ? "" : "s"}.
-                            </>
-                          )}
 
-                          {needsFantasy && !needsMainlinesForPremium && (
-                            <>
-                              You need {missingFantasy} more Fantasy car
-                              {missingFantasy === 1 ? "" : "s"} to continue.
-                            </>
-                          )}
+                        {/* Error Messages (Only shown if blocked) */}
+                        {!canCheckout && (
+                          <p className="text-sm text-red-600 mb-2">
+                            {needsFantasy && needsMainlinesForPremium && (
+                              <>
+                                You need {missingMainlinesForPremium} more
+                                mainline car
+                                {missingMainlinesForPremium === 1 ? "" : "s"} in
+                                total, including at least {missingFantasy} Fantasy
+                                car{missingFantasy === 1 ? "" : "s"}.
+                              </>
+                            )}
 
-                          {!needsFantasy && needsMainlinesForPremium && (
-                            <>
-                              You need {missingMainlinesForPremium} more
-                              mainline car
-                              {missingMainlinesForPremium === 1 ? "" : "s"}{" "}
-                              (Licensed or Fantasy) to continue.
-                            </>
-                          )}
-                        </p>
-                        {/* <p className="text-xs text-gray-500">
-                          Mainlines include both Licensed and Fantasy Hot Wheels.
-                        </p> */}
+                            {needsFantasy && !needsMainlinesForPremium && (
+                              <>
+                                You need {missingFantasy} more Fantasy car
+                                {missingFantasy === 1 ? "" : "s"} to continue.
+                              </>
+                            )}
+
+                            {!needsFantasy && needsMainlinesForPremium && (
+                              <>
+                                You need {missingMainlinesForPremium} more
+                                mainline car
+                                {missingMainlinesForPremium === 1 ? "" : "s"}{" "}
+                                (Licensed or Fantasy) to continue.
+                              </>
+                            )}
+                          </p>
+                        )}
                       </div>
                     </div>
 
-                    {/* Fantasy suggestions */}
+                    {/* 1. Fantasy suggestions (Shown when Blocked) */}
                     {fantasyProducts.length > 0 && (
                       <div className="mt-8">
                         <div className="flex justify-between items-center mb-4">
                           <h4 className="text-base font-semibold">
-                            Fantasy Picks
+                            Fantasy Picks (Required)
                           </h4>
                           <InteractiveLink
                             target="_blank"
@@ -159,25 +173,16 @@ const CartTemplate = async ({
                       </div>
                     )}
 
-                    {/* Licensed suggestions */}
-                    {licensedProducts.length > 0 && (
+                    {/* 2. Related suggestions (Shown when Can Checkout) */}
+                    {relatedProducts.length > 0 && (
                       <div className="mt-10">
                         <div className="flex justify-start items-center mb-4">
                           <h4 className="text-base font-semibold">
-                            Mainline Licensed
+                            Complete your collection
                           </h4>
-                          {/* <InteractiveLink
-                            href={
-                              licensedCategoryHandle
-                                ? `/categories/${licensedCategoryHandle}`
-                                : "/categories"
-                            }
-                          >
-                            View all Licensed
-                          </InteractiveLink> */}
                         </div>
                         <ul className="grid grid-cols-2 small:grid-cols-3 gap-6">
-                          {licensedProducts.map((product) => (
+                          {relatedProducts.map((product) => (
                             <li key={product.id}>
                               <ProductPreviewInstant
                                 product={product}
@@ -192,7 +197,7 @@ const CartTemplate = async ({
                 )}
             </div>
 
-            <div className="relative">
+            <div className="relative small:block hidden">
               <div className="flex flex-col gap-y-8 sticky top-12">
                 {cart && cart.region && (
                   <div className="bg-white py-6">
