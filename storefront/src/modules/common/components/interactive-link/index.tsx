@@ -6,12 +6,14 @@ type InteractiveLinkProps = {
   href: string
   children?: React.ReactNode
   onClick?: () => void
+  target?: React.HTMLAttributeAnchorTarget // 👈 Added target prop type
 }
 
 const InteractiveLink = ({
   href,
   children,
   onClick,
+  target, // 👈 Destructure target
   ...props
 }: InteractiveLinkProps) => {
   return (
@@ -19,6 +21,7 @@ const InteractiveLink = ({
       className="flex gap-x-1 items-center group py-2 px-3 bg-blue-50 rounded border border-blue-200"
       href={href}
       onClick={onClick}
+      target={target} // 👈 Pass target to the link
       {...props}
     >
       <Text className="text-blue-600">{children}</Text>

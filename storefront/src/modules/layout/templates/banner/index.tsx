@@ -4,11 +4,11 @@ import Link from "next/link"
 import Countdown from "./countdown"
 
 /**
- * UPDATED DATE: January 21, 2026 at 3:00 PM IST
- * Current Time: Jan 20, 2026, 9:13 PM IST
+ * UPDATED: New Tier System & Price Drop
+ * Current Time: Jan 26, 2026
  */
-const DROP_DATE_IST = "2026-01-23T21:00:00+05:30"
-const SALE_DURATION_MS = 49 * 60 * 60 * 1000 // 48 hours
+const DROP_DATE_IST = "2026-01-26T12:00:00+05:30" // Live Now
+const SALE_DURATION_MS = 7 * 24 * 60 * 60 * 1000 // 7 Days (Announcement banner)
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -26,23 +26,24 @@ export default function Banner() {
         <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium">
-                    🔥 The 2025 N CASE &quot;Near-MRP&quot; Vault Unlocks in{" "}
+                    💎 New Collector Tiers & ₹99 Drop launching in{" "}
                     <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-medium text-yellow-400" />
                 </div>
             )}
 
             {isSaleLive && (
                 <Link
-                    href="/collections/n-case-2025-licensed"
-                    className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm font-bold text-yellow-400 hover:text-yellow-300 transition-colors"
+                    href="/store"
+                    className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm font-medium text-yellow-400 hover:text-yellow-300 transition-colors"
                 >
                     <span className="uppercase tracking-wide">
-                        🔓 2025 N CASE UNLOCKED: <span className="text-white">Flat ₹199</span>
+                        🚨 Price Drop: <span className="text-white">Fantasy ₹99</span> | New Licensed Tiers Live 💎
                     </span>
-                    <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded">
+                    {/* Optional: Keep countdown if you want urgency, or remove for a static announcement */}
+                    {/* <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded">
                         <span className="text-white/80 font-normal">Ends in:</span>
                         <Countdown targetDate={saleEndDate} size="sm" className="font-mono text-white" />
-                    </div>
+                    </div> */}
                 </Link>
             )}
 

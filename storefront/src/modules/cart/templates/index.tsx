@@ -54,12 +54,11 @@ const CartTemplate = async ({
     const fantasyRes = await getFantasyProducts(cart, countryCode)
     fantasyProducts = fantasyRes.products
     fantasyCategoryHandle = fantasyRes.categoryHandle
-
-    const licensedRes = await getLicensedProducts(cart, countryCode)
-    licensedProducts = licensedRes.products
-    licensedCategoryHandle = licensedRes.categoryHandle
+  } else if (canCheckout) {
+    // const licensedRes = await getLicensedProducts(cart, countryCode)
+    // licensedProducts = licensedRes.products
+    // licensedCategoryHandle = licensedRes.categoryHandle
   }
-
   if (!region) {
     return null
   }
@@ -88,13 +87,13 @@ const CartTemplate = async ({
 
               <ItemsTemplate items={cart.items} />
 
-              {!canCheckout &&
+              {
                 (fantasyProducts.length > 0 || licensedProducts.length > 0) && (
                   <div className="mt-12">
                     <div className="flex gap-5 justify-between items-center">
                       <div>
                         <h3 className="text-xl font-semibold mb-4">
-                          Add Mainline Cars to Checkout
+                          {canCheckout ? "You might like these" : "Add Mainline Cars to Checkout"}
                         </h3>
                         <p className="text-sm text-red-600 mb-2">
                           {needsFantasy && needsMainlinesForPremium && (
@@ -137,6 +136,7 @@ const CartTemplate = async ({
                             Fantasy Picks
                           </h4>
                           <InteractiveLink
+                            target="_blank"
                             href={
                               fantasyCategoryHandle
                                 ? `/categories/${fantasyCategoryHandle}`
@@ -162,11 +162,11 @@ const CartTemplate = async ({
                     {/* Licensed suggestions */}
                     {licensedProducts.length > 0 && (
                       <div className="mt-10">
-                        <div className="flex justify-between items-center mb-4">
+                        <div className="flex justify-start items-center mb-4">
                           <h4 className="text-base font-semibold">
-                            Licensed Picks
+                            Mainline Licensed
                           </h4>
-                          <InteractiveLink
+                          {/* <InteractiveLink
                             href={
                               licensedCategoryHandle
                                 ? `/categories/${licensedCategoryHandle}`
@@ -174,7 +174,7 @@ const CartTemplate = async ({
                             }
                           >
                             View all Licensed
-                          </InteractiveLink>
+                          </InteractiveLink> */}
                         </div>
                         <ul className="grid grid-cols-2 small:grid-cols-3 gap-6">
                           {licensedProducts.map((product) => (
