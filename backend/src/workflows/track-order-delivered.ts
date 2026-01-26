@@ -7,23 +7,18 @@ const retrieveOrderFromFulfillmentStep = createStep(
     async ({ fulfillment_id }: { fulfillment_id: string }, { container }) => {
         const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
-        // We query the ORDER entity, but filter by the connected fulfillment ID
-        const { data: orders } = await query.graph({
-            entity: "order",
+        const { data: fulfillments } = await query.graph({
+            entity: "fulfillment",
             fields: [
-                "*",
-                "customer_id",
-                "currency_code",
-                "total"
+                "id",
+                "order.*",
             ],
             filters: {
-                fulfillments: {
-                    id: fulfillment_id,
-                },
+                id: fulfillment_id,
             },
         })
 
-        return orders[0]
+        return fulfillments[0]?.order
     }
 )
 
