@@ -5,6 +5,11 @@ export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
 export const FANTASY_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8"
 export const PREMIUM_CATEGORY_ID = "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"
 
+// 🏷️ New Tier Tags
+export const TIER_1_TAG_ID = "ptag_01KFWX61AE6Y7JRTZS571Y9ZQ6" // 2 Fantasy required
+export const TIER_2_TAG_ID = "ptag_01KFWX6CGNMXH7K0BG849V70MD" // 1 Fantasy required
+export const TIER_3_TAG_ID = "ptag_01KFWX79K93QV5ZKG3T6NB8E0T" // 0.5 Fantasy required
+
 export type HotWheelsRuleResult = {
     licensedCount: number
     fantasyCount: number
@@ -28,6 +33,11 @@ export async function evaluateHotWheelsRule(
     let premiumCount = 0
     let totalCount = 0
 
+    // 📊 Tier Counters
+    let tier1Count = 0
+    let tier2Count = 0
+    let tier3Count = 0
+
     let hasInvalidQuantity = false
 
     if (cart?.items) {
@@ -35,19 +45,18 @@ export async function evaluateHotWheelsRule(
             const quantity = item.quantity || 0
             totalCount += quantity
 
-            const categories = (item as any).product?.categories ?? []
+            const product = (item as any).product
+            const categories = product?.categories ?? []
             const categoryIds = categories.map((c: any) => c.id)
 
+            // Get Tags safely
+            const tags = product?.tags ?? []
+            const tagIds = tags.map((t: any) => t.id)
             const isFantasy = categoryIds.includes(FANTASY_CATEGORY_ID)
 
-            // 🚫 HARD RULE:
-            // Non-Fantasy cars cannot have quantity > 1
+            // 🚫 HARD RULE: Non-Fantasy max quantity = 1
             if (!isFantasy && quantity > 1) {
                 hasInvalidQuantity = true
-            }
-
-            if (categoryIds.includes(LICENSED_CATEGORY_ID)) {
-                licensedCount += quantity
             }
 
             if (isFantasy) {
@@ -57,40 +66,59 @@ export async function evaluateHotWheelsRule(
             if (categoryIds.includes(PREMIUM_CATEGORY_ID)) {
                 premiumCount += quantity
             }
+
+            // 🚗 Licensed Logic with Tiers
+            if (categoryIds.includes(LICENSED_CATEGORY_ID)) {
+                licensedCount += quantity
+
+                if (tagIds.includes(TIER_1_TAG_ID)) {
+                    tier1Count += quantity
+                } else if (tagIds.includes(TIER_2_TAG_ID)) {
+                    tier2Count += quantity
+                } else if (tagIds.includes(TIER_3_TAG_ID)) {
+                    tier3Count += quantity
+                } else {
+                    // Fallback: If Licensed but no Tag, treat as Tier 3 (Standard)
+                    tier3Count += quantity
+                }
+            }
         }
     }
 
     // Initialize "waterfall" variables
     let fantasyExtra = fantasyCount
 
-    // Note: Licensed cars are no longer used for Premium rule, so licensedExtra is just licensedCount
-    const licensedExtra = licensedCount
-
-    // 🔑 PREMIUM RULE
-    // Updated: Now requires 2 FANTASY cars per 1 Premium car
-    let missingMainlinesForPremium = 0 // Keeping variable name for compatibility, but tracks Fantasy now
+    // 🔑 PREMIUM RULE (Consumes Fantasy First)
+    // Requirement: 2 Fantasy per 1 Premium
+    let missingMainlinesForPremium = 0
 
     if (isPremiumRuleEnabled && premiumCount > 0) {
         const requiredFantasyForPremium = premiumCount * 2
 
-        // Calculate missing fantasy specifically for premium rule
         missingMainlinesForPremium = Math.max(
             0,
             requiredFantasyForPremium - fantasyCount
         )
 
-        // Deduct the fantasy cars used by this rule from the "Extra" pool
-        // so they aren't double-counted for the Licensed Rule below
+        // Deduct used fantasy cars from the pool
         const fantasyUsed = Math.min(fantasyCount, requiredFantasyForPremium)
         fantasyExtra -= fantasyUsed
     }
 
-    // 🔑 MAINLINE RULE (Licensed Rule)
-    // Checks remaining fantasy cars against licensed cars
+    // 🔑 LICENSED TIER RULE (Consumes Remaining Fantasy)
     let missingFantasy = 0
+
     if (isMainlineRuleEnabled) {
-        const requiredFantasy = Math.ceil(licensedExtra / 2)
-        missingFantasy = Math.max(0, requiredFantasy - fantasyExtra)
+        // Calculate total fantasy needed based on tiers
+        const requiredForTier1 = tier1Count * 2
+        const requiredForTier2 = tier2Count * 1
+        // Tier 3 is 0.5 per car (1 per 2 cars), rounded up
+        const requiredForTier3 = Math.ceil(tier3Count * 0.5)
+
+        const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
+
+        // Check against remaining fantasy cars (after Premium rule)
+        missingFantasy = Math.max(0, totalFantasyRequiredForLicensed - fantasyExtra)
     }
 
     // 🔑 BULK ORDER RULE
@@ -104,14 +132,11 @@ export async function evaluateHotWheelsRule(
 
     const messages: string[] = []
 
-    // 1. Bulk Order Message (Highest Priority)
     if (isBulkOrder) {
         messages.push(
             `You have ${totalCount} items. For orders with more than ${MAX_ITEMS_ALLOWED} items, please contact us for bulk orders.`
         )
-    }
-    // Only show other messages if it's NOT a bulk order
-    else {
+    } else {
         if (hasInvalidQuantity) {
             messages.push(
                 "Only Fantasy cars can be purchased with quantity more than 1. Please reduce quantity for other items."
@@ -121,15 +146,19 @@ export async function evaluateHotWheelsRule(
         if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
             messages.push(
                 `Add ${missingMainlinesForPremium} more Fantasy car${missingMainlinesForPremium === 1 ? "" : "s"
-                } (2 Fantasy required per Premium car).`
+                } for your Premium items (2 Fantasy required per Premium car).`
             )
         }
 
         if (isMainlineRuleEnabled && missingFantasy > 0) {
             messages.push(
-                `Add ${missingFantasy} Fantasy car${missingFantasy === 1 ? "" : "s"
-                } (1 required per 2 extra Licensed cars).`
+                `Add ${missingFantasy} more Fantasy car${missingFantasy === 1 ? "" : "s"}.`
             )
+
+            // Short & Sweet
+            if (tier1Count > 0 || tier2Count > 0) {
+                messages.push(`(High-demand cars require 1-2 Fantasy cars each)`)
+            }
         }
     }
 
