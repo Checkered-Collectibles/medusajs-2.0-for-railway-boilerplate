@@ -112,8 +112,10 @@ export async function evaluateHotWheelsRule(
         // Calculate total fantasy needed based on tiers
         const requiredForTier1 = tier1Count * 2
         const requiredForTier2 = tier2Count * 1
-        // Tier 3 is 0.5 per car (1 per 2 cars), rounded up
-        const requiredForTier3 = Math.ceil(tier3Count * 0.5)
+
+        // Tier 3 is 0.5 per car (1 per 2 cars), using Math.round()
+        // Note: Math.round(0.5) is 1 in JS. Math.round(1.5) is 2.
+        const requiredForTier3 = Math.floor(tier3Count * 0.5)
 
         const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
 
@@ -155,7 +157,6 @@ export async function evaluateHotWheelsRule(
                 `Add ${missingFantasy} more Fantasy car${missingFantasy === 1 ? "" : "s"}.`
             )
 
-            // Short & Sweet
             if (tier1Count > 0 || tier2Count > 0) {
                 messages.push(`(High-demand cars require 1-2 Fantasy cars each)`)
             }

@@ -47,7 +47,6 @@ export async function getFantasyProducts(
             if (v.allow_backorder) return true
             return (v.inventory_quantity || 0) > 0
         })
-        console.log("HASSTOCK", product.variants?.[0].inventory_quantity)
 
         return hasStock
     })
