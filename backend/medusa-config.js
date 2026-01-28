@@ -1,11 +1,19 @@
+// medusa-config.js
+import fs from "node:fs";
+import path from "node:path";
+
 import { loadEnv, Modules, defineConfig } from "@medusajs/utils";
 
 loadEnv(process.env.NODE_ENV || "production", process.cwd());
 
-// Env helpers (keep config resilient)
+/**
+ * Helpers
+ */
 const bool = (v) => v === "true" || v === "1" || v === "yes";
 
-// Core envs
+/**
+ * Core envs
+ */
 const ADMIN_CORS = process.env.ADMIN_CORS;
 const AUTH_CORS = process.env.AUTH_CORS;
 const STORE_CORS = process.env.STORE_CORS;
@@ -19,13 +27,21 @@ const BACKEND_URL =
 const DATABASE_URL = process.env.DATABASE_URL;
 const REDIS_URL = process.env.REDIS_URL;
 
-const JWT_SECRET = process.env.JWT_SECRET;
-const COOKIE_SECRET = process.env.COOKIE_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
+const COOKIE_SECRET = process.env.COOKIE_SECRET || "supersecret";
 
-const WORKER_MODE = process.env.MEDUSA_WORKER_MODE || "shared";
+const WORKER_MODE =
+  process.env.MEDUSA_WORKER_MODE === "shared" ||
+  process.env.MEDUSA_WORKER_MODE === "worker" ||
+  process.env.MEDUSA_WORKER_MODE === "server"
+    ? process.env.MEDUSA_WORKER_MODE
+    : "shared";
+
 const SHOULD_DISABLE_ADMIN = bool(process.env.MEDUSA_DISABLE_ADMIN);
 
-// Providers envs
+/**
+ * Providers envs
+ */
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY;
 const SENDGRID_FROM_EMAIL =
   process.env.SENDGRID_FROM_EMAIL || process.env.SENDGRID_FROM;
@@ -41,13 +57,260 @@ const MEILISEARCH_HOST = process.env.MEILISEARCH_HOST;
 const MEILISEARCH_ADMIN_KEY =
   process.env.MEILISEARCH_ADMIN_KEY || process.env.MEILISEARCH_MASTER_KEY;
 
-// (Optional) MinIO envs if you ever re-enable that block
-const MINIO_ENDPOINT = process.env.MINIO_ENDPOINT;
-const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY;
-const MINIO_SECRET_KEY = process.env.MINIO_SECRET_KEY;
-const MINIO_BUCKET = process.env.MINIO_BUCKET;
+/**
+ * PostHog (BACKEND) — IMPORTANT:
+ * Use these env vars on DigitalOcean:
+ * - POSTHOG_EVENTS_API_KEY
+ * - POSTHOG_HOST
+ */
+const POSTHOG_EVENTS_API_KEY = process.env.POSTHOG_EVENTS_API_KEY;
+const POSTHOG_HOST = process.env.POSTHOG_HOST;
 
-const medusaConfig = {
+/**
+ * Optional local module: loyalty
+ * Fixes DO App Platform crash when the folder isn't present in the deployed filesystem.
+ */
+const loyaltyPath = path.join(process.cwd(), "src", "modules", "loyalty");
+const hasLoyaltyModule =
+  fs.existsSync(loyaltyPath) ||
+  fs.existsSync(`${loyaltyPath}.js`) ||
+  fs.existsSync(`${loyaltyPath}.ts`) ||
+  fs.existsSync(path.join(loyaltyPath, "index.js")) ||
+  fs.existsSync(path.join(loyaltyPath, "index.ts"));
+
+/**
+ * Build modules array safely
+ */
+const modules = [
+  ...(hasLoyaltyModule ? [{ resolve: "./src/modules/loyalty" }] : []),
+
+  /**
+   * Analytics (PostHog)
+   */
+  ...(POSTHOG_EVENTS_API_KEY
+    ? [
+        {
+          resolve: "@medusajs/medusa/analytics",
+          options: {
+            providers: [
+              {
+                resolve: "@medusajs/analytics-posthog",
+                id: "posthog",
+                options: {
+                  posthogEventsKey: POSTHOG_EVENTS_API_KEY,
+                  posthogHost: POSTHOG_HOST, // optional
+                },
+              },
+            ],
+          },
+        },
+      ]
+    : []),
+
+  /**
+   * Payments (Razorpay)
+   */
+  {
+    resolve: "@medusajs/medusa/payment",
+    options: {
+      providers: [
+        {
+          resolve: "@devx-commerce/razorpay/providers/payment-razorpay",
+          id: "razorpay",
+          options: {
+            key_id: process.env.RAZORPAY_ID,
+            key_secret: process.env.RAZORPAY_SECRET,
+            razorpay_account: process.env.RAZORPAY_ACCOUNT,
+            automatic_expiry_period: 30,
+            manual_expiry_period: 20,
+            refund_speed: "normal",
+            webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
+            auto_capture: true,
+          },
+        },
+      ],
+    },
+  },
+
+  /**
+   * File storage — DigitalOcean Spaces (medusa-file-spaces)
+   */
+  {
+    key: Modules.FILE,
+    resolve: "medusa-file-spaces",
+    options: {
+      spaces_url: process.env.SPACE_URL,
+      bucket: process.env.SPACE_BUCKET,
+      region: process.env.SPACE_REGION,
+      endpoint: process.env.SPACE_ENDPOINT,
+      access_key_id: process.env.SPACE_ACCESS_KEY_ID,
+      secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
+    },
+  },
+
+  /**
+   * Redis-backed services (Event bus + workflow engine)
+   */
+  ...(REDIS_URL
+    ? [
+        {
+          key: Modules.EVENT_BUS,
+          resolve: "@medusajs/event-bus-redis",
+          options: {
+            redisUrl: REDIS_URL,
+          },
+        },
+        {
+          key: Modules.WORKFLOW_ENGINE,
+          resolve: "@medusajs/workflow-engine-redis",
+          options: {
+            redis: {
+              url: REDIS_URL,
+            },
+          },
+        },
+      ]
+    : []),
+
+  /**
+   * Notifications (SendGrid / Resend)
+   */
+  ...((SENDGRID_API_KEY && SENDGRID_FROM_EMAIL) ||
+  (RESEND_API_KEY && RESEND_FROM_EMAIL)
+    ? [
+        {
+          key: Modules.NOTIFICATION,
+          resolve: "@medusajs/notification",
+          options: {
+            providers: [
+              ...(SENDGRID_API_KEY && SENDGRID_FROM_EMAIL
+                ? [
+                    {
+                      resolve: "@medusajs/notification-sendgrid",
+                      id: "sendgrid",
+                      options: {
+                        channels: ["email"],
+                        api_key: SENDGRID_API_KEY,
+                        from: SENDGRID_FROM_EMAIL,
+                      },
+                    },
+                  ]
+                : []),
+
+              ...(RESEND_API_KEY && RESEND_FROM_EMAIL
+                ? [
+                    {
+                      resolve: "./src/modules/email-notifications",
+                      id: "resend",
+                      options: {
+                        channels: ["email"],
+                        api_key: RESEND_API_KEY,
+                        from: RESEND_FROM_EMAIL,
+                      },
+                    },
+                  ]
+                : []),
+            ],
+          },
+        },
+      ]
+    : []),
+
+  /**
+   * Stripe (optional)
+   */
+  ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET
+    ? [
+        {
+          key: Modules.PAYMENT,
+          resolve: "@medusajs/payment",
+          options: {
+            providers: [
+              {
+                resolve: "@medusajs/payment-stripe",
+                id: "stripe",
+                options: {
+                  apiKey: STRIPE_API_KEY,
+                  webhookSecret: STRIPE_WEBHOOK_SECRET,
+                },
+              },
+            ],
+          },
+        },
+      ]
+    : []),
+];
+
+/**
+ * Plugins
+ */
+const plugins = [
+  ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
+    ? [
+        {
+          resolve: "@rokmohar/medusa-plugin-meilisearch",
+          options: {
+            config: {
+              host: MEILISEARCH_HOST,
+              apiKey: MEILISEARCH_ADMIN_KEY,
+            },
+            settings: {
+              products: {
+                type: "products",
+                enabled: true,
+                fields: [
+                  "id",
+                  "title",
+                  "description",
+                  "handle",
+                  "categories.*",
+                  "tags.*",
+                  "variant_sku",
+                  "thumbnail",
+                ],
+                indexSettings: {
+                  searchableAttributes: [
+                    "title",
+                    "description",
+                    "variant_sku",
+                    "category_names",
+                    "tag_values",
+                  ],
+                  displayedAttributes: [
+                    "id",
+                    "handle",
+                    "title",
+                    "description",
+                    "variant_sku",
+                    "thumbnail",
+                    "collection_id",
+                    "category_ids",
+                    "category_names",
+                    "tag_ids",
+                    "tag_values",
+                  ],
+                  filterableAttributes: [
+                    "id",
+                    "handle",
+                    "collection_id",
+                    "category_ids",
+                    "tag_ids",
+                    "status",
+                  ],
+                },
+                primaryKey: "id",
+              },
+            },
+          },
+        },
+      ]
+    : []),
+];
+
+/**
+ * Export config
+ */
+export default defineConfig({
   projectConfig: {
     databaseUrl: DATABASE_URL,
     databaseLogging: false,
@@ -65,11 +328,16 @@ const medusaConfig = {
         },
       },
     },
-    build: {
-      rollupOptions: {
-        external: ["@medusajs/dashboard", "@medusajs/admin-shared"],
-      },
-    },
+
+    /**
+     * If you use DO Managed Postgres and hit SSL issues, uncomment:
+     * databaseDriverOptions: {
+     *   connection: {
+     *     ssl: { rejectUnauthorized: false },
+     *   },
+     *   pool: { min: 0, max: 15, idleTimeoutMillis: 30000, acquireTimeoutMillis: 60000 },
+     * },
+     */
   },
 
   admin: {
@@ -77,241 +345,6 @@ const medusaConfig = {
     disable: SHOULD_DISABLE_ADMIN,
   },
 
-  modules: [
-    {
-      resolve: "./src/modules/loyalty",
-    },
-
-    {
-      resolve: "@medusajs/medusa/analytics",
-      options: {
-        providers: [
-          {
-            resolve: "@medusajs/analytics-posthog",
-            id: "posthog",
-            options: {
-              posthogEventsKey: process.env.NEXT_PUBLIC_POSTHOG_KEY,
-              posthogHost: process.env.NEXT_PUBLIC_POSTHOG_HOST,
-            },
-          },
-        ],
-      },
-    },
-
-    {
-      resolve: "@medusajs/medusa/payment",
-      options: {
-        providers: [
-          {
-            resolve: "@devx-commerce/razorpay/providers/payment-razorpay",
-            id: "razorpay",
-            options: {
-              key_id: process.env.RAZORPAY_ID,
-              key_secret: process.env.RAZORPAY_SECRET,
-              razorpay_account: process.env.RAZORPAY_ACCOUNT,
-              automatic_expiry_period: 30,
-              manual_expiry_period: 20,
-              refund_speed: "normal",
-              webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
-              auto_capture: true,
-            },
-          },
-        ],
-      },
-    },
-
-    // If you want MinIO back later, uncomment this whole block:
-    // {
-    //   key: Modules.FILE,
-    //   resolve: "@medusajs/file",
-    //   options: {
-    //     providers: [
-    //       ...(MINIO_ENDPOINT && MINIO_ACCESS_KEY && MINIO_SECRET_KEY
-    //         ? [
-    //             {
-    //               resolve: "./src/modules/minio-file",
-    //               id: "minio",
-    //               options: {
-    //                 endPoint: MINIO_ENDPOINT,
-    //                 accessKey: MINIO_ACCESS_KEY,
-    //                 secretKey: MINIO_SECRET_KEY,
-    //                 bucket: MINIO_BUCKET || "medusa-media",
-    //               },
-    //             },
-    //           ]
-    //         : [
-    //             {
-    //               resolve: "@medusajs/file-local",
-    //               id: "local",
-    //               options: {
-    //                 upload_dir: "static",
-    //                 backend_url: `${BACKEND_URL}/static`,
-    //               },
-    //             },
-    //           ]),
-    //     ],
-    //   },
-    // },
-
-    // DigitalOcean Spaces (medusa-file-spaces)
-    {
-      key: Modules.FILE,
-      resolve: "medusa-file-spaces",
-      options: {
-        spaces_url: process.env.SPACE_URL,
-        bucket: process.env.SPACE_BUCKET,
-        region: process.env.SPACE_REGION,
-        endpoint: process.env.SPACE_ENDPOINT,
-        access_key_id: process.env.SPACE_ACCESS_KEY_ID,
-        secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
-      },
-    },
-
-    ...(REDIS_URL
-      ? [
-          {
-            key: Modules.EVENT_BUS,
-            resolve: "@medusajs/event-bus-redis",
-            options: {
-              redisUrl: REDIS_URL,
-            },
-          },
-          {
-            key: Modules.WORKFLOW_ENGINE,
-            resolve: "@medusajs/workflow-engine-redis",
-            options: {
-              redis: {
-                url: REDIS_URL,
-              },
-            },
-          },
-        ]
-      : []),
-
-    ...((SENDGRID_API_KEY && SENDGRID_FROM_EMAIL) ||
-    (RESEND_API_KEY && RESEND_FROM_EMAIL)
-      ? [
-          {
-            key: Modules.NOTIFICATION,
-            resolve: "@medusajs/notification",
-            options: {
-              providers: [
-                ...(SENDGRID_API_KEY && SENDGRID_FROM_EMAIL
-                  ? [
-                      {
-                        resolve: "@medusajs/notification-sendgrid",
-                        id: "sendgrid",
-                        options: {
-                          channels: ["email"],
-                          api_key: SENDGRID_API_KEY,
-                          from: SENDGRID_FROM_EMAIL,
-                        },
-                      },
-                    ]
-                  : []),
-                ...(RESEND_API_KEY && RESEND_FROM_EMAIL
-                  ? [
-                      {
-                        resolve: "./src/modules/email-notifications",
-                        id: "resend",
-                        options: {
-                          channels: ["email"],
-                          api_key: RESEND_API_KEY,
-                          from: RESEND_FROM_EMAIL,
-                        },
-                      },
-                    ]
-                  : []),
-              ],
-            },
-          },
-        ]
-      : []),
-
-    ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET
-      ? [
-          {
-            key: Modules.PAYMENT,
-            resolve: "@medusajs/payment",
-            options: {
-              providers: [
-                {
-                  resolve: "@medusajs/payment-stripe",
-                  id: "stripe",
-                  options: {
-                    apiKey: STRIPE_API_KEY,
-                    webhookSecret: STRIPE_WEBHOOK_SECRET,
-                  },
-                },
-              ],
-            },
-          },
-        ]
-      : []),
-  ],
-
-  plugins: [
-    ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
-      ? [
-          {
-            resolve: "@rokmohar/medusa-plugin-meilisearch",
-            options: {
-              config: {
-                host: MEILISEARCH_HOST,
-                apiKey: MEILISEARCH_ADMIN_KEY,
-              },
-              settings: {
-                products: {
-                  type: "products",
-                  enabled: true,
-                  fields: [
-                    "id",
-                    "title",
-                    "description",
-                    "handle",
-                    "categories.*",
-                    "tags.*",
-                    "variant_sku",
-                    "thumbnail",
-                  ],
-                  indexSettings: {
-                    searchableAttributes: [
-                      "title",
-                      "description",
-                      "variant_sku",
-                      "category_names",
-                      "tag_values",
-                    ],
-                    displayedAttributes: [
-                      "id",
-                      "handle",
-                      "title",
-                      "description",
-                      "variant_sku",
-                      "thumbnail",
-                      "collection_id",
-                      "category_ids",
-                      "category_names",
-                      "tag_ids",
-                      "tag_values",
-                    ],
-                    filterableAttributes: [
-                      "id",
-                      "handle",
-                      "collection_id",
-                      "category_ids",
-                      "tag_ids",
-                      "status",
-                    ],
-                  },
-                  primaryKey: "id",
-                },
-              },
-            },
-          },
-        ]
-      : []),
-  ],
-};
-
-export default defineConfig(medusaConfig);
+  modules,
+  plugins,
+});
