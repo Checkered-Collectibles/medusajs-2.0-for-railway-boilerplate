@@ -1,9 +1,4 @@
-import {
-  loadEnv,
-  Modules,
-  defineConfig,
-  ContainerRegistrationKeys,
-} from "@medusajs/utils";
+import { Modules, defineConfig } from "@medusajs/utils";
 import {
   ADMIN_CORS,
   AUTH_CORS,
@@ -27,9 +22,7 @@ import {
   MINIO_BUCKET,
   MEILISEARCH_HOST,
   MEILISEARCH_ADMIN_KEY,
-} from "./src/lib/constants";
-
-loadEnv(process.env.NODE_ENV, process.cwd());
+} from "./src/lib/constants.runtime.js";
 
 const medusaConfig = {
   projectConfig: {
@@ -44,9 +37,7 @@ const medusaConfig = {
       jwtSecret: JWT_SECRET,
       cookieSecret: COOKIE_SECRET,
       middleware: {
-        payload: {
-          limit: "50mb", // Adjust this value as needed
-        },
+        payload: { limit: "50mb" },
       },
     },
     build: {
@@ -55,14 +46,15 @@ const medusaConfig = {
       },
     },
   },
+
   admin: {
     backendUrl: BACKEND_URL,
     disable: SHOULD_DISABLE_ADMIN,
   },
+
   modules: [
-    {
-      resolve: "./src/modules/loyalty",
-    },
+    { resolve: "./src/modules/loyalty" },
+
     {
       resolve: "@medusajs/medusa/analytics",
       options: {
@@ -78,6 +70,7 @@ const medusaConfig = {
         ],
       },
     },
+
     {
       resolve: "@medusajs/medusa/payment",
       options: {
@@ -86,19 +79,21 @@ const medusaConfig = {
             resolve: "@devx-commerce/razorpay/providers/payment-razorpay",
             id: "razorpay",
             options: {
-              key_id: process?.env?.RAZORPAY_ID,
-              key_secret: process?.env?.RAZORPAY_SECRET,
-              razorpay_account: process?.env?.RAZORPAY_ACCOUNT,
+              key_id: process.env.RAZORPAY_ID,
+              key_secret: process.env.RAZORPAY_SECRET,
+              razorpay_account: process.env.RAZORPAY_ACCOUNT,
               automatic_expiry_period: 30,
               manual_expiry_period: 20,
               refund_speed: "normal",
-              webhook_secret: process?.env?.RAZORPAY_WEBHOOK_SECRET,
+              webhook_secret: process.env.RAZORPAY_WEBHOOK_SECRET,
               auto_capture: true,
             },
           },
         ],
       },
     },
+
+    // If you want MinIO back later, uncomment this block (it will work now)
     // {
     //   key: Modules.FILE,
     //   resolve: "@medusajs/file",
@@ -113,7 +108,7 @@ const medusaConfig = {
     //                 endPoint: MINIO_ENDPOINT,
     //                 accessKey: MINIO_ACCESS_KEY,
     //                 secretKey: MINIO_SECRET_KEY,
-    //                 bucket: MINIO_BUCKET, // Optional, default: medusa-media
+    //                 bucket: MINIO_BUCKET,
     //               },
     //             },
     //           ]
@@ -130,9 +125,11 @@ const medusaConfig = {
     //     ],
     //   },
     // },
+
+    // DigitalOcean Spaces
     {
       key: Modules.FILE,
-      resolve: `medusa-file-spaces`,
+      resolve: "medusa-file-spaces",
       options: {
         spaces_url: process.env.SPACE_URL,
         bucket: process.env.SPACE_BUCKET,
@@ -142,26 +139,22 @@ const medusaConfig = {
         secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
       },
     },
+
     ...(REDIS_URL
       ? [
           {
             key: Modules.EVENT_BUS,
             resolve: "@medusajs/event-bus-redis",
-            options: {
-              redisUrl: REDIS_URL,
-            },
+            options: { redisUrl: REDIS_URL },
           },
           {
             key: Modules.WORKFLOW_ENGINE,
             resolve: "@medusajs/workflow-engine-redis",
-            options: {
-              redis: {
-                url: REDIS_URL,
-              },
-            },
+            options: { redis: { url: REDIS_URL } },
           },
         ]
       : []),
+
     ...((SENDGRID_API_KEY && SENDGRID_FROM_EMAIL) ||
     (RESEND_API_KEY && RESEND_FROM_EMAIL)
       ? [
@@ -201,6 +194,7 @@ const medusaConfig = {
           },
         ]
       : []),
+
     ...(STRIPE_API_KEY && STRIPE_WEBHOOK_SECRET
       ? [
           {
@@ -222,6 +216,7 @@ const medusaConfig = {
         ]
       : []),
   ],
+
   plugins: [
     ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
       ? [
@@ -286,5 +281,4 @@ const medusaConfig = {
   ],
 };
 
-// console.log(JSON.stringify(medusaConfig, null, 2));
 export default defineConfig(medusaConfig);
