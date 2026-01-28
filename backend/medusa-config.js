@@ -99,35 +99,47 @@ const medusaConfig = {
         ],
       },
     },
+    // {
+    //   key: Modules.FILE,
+    //   resolve: "@medusajs/file",
+    //   options: {
+    //     providers: [
+    //       ...(MINIO_ENDPOINT && MINIO_ACCESS_KEY && MINIO_SECRET_KEY
+    //         ? [
+    //             {
+    //               resolve: "./src/modules/minio-file",
+    //               id: "minio",
+    //               options: {
+    //                 endPoint: MINIO_ENDPOINT,
+    //                 accessKey: MINIO_ACCESS_KEY,
+    //                 secretKey: MINIO_SECRET_KEY,
+    //                 bucket: MINIO_BUCKET, // Optional, default: medusa-media
+    //               },
+    //             },
+    //           ]
+    //         : [
+    //             {
+    //               resolve: "@medusajs/file-local",
+    //               id: "local",
+    //               options: {
+    //                 upload_dir: "static",
+    //                 backend_url: `${BACKEND_URL}/static`,
+    //               },
+    //             },
+    //           ]),
+    //     ],
+    //   },
+    // },
     {
       key: Modules.FILE,
-      resolve: "@medusajs/file",
+      resolve: `medusa-file-spaces`,
       options: {
-        providers: [
-          ...(MINIO_ENDPOINT && MINIO_ACCESS_KEY && MINIO_SECRET_KEY
-            ? [
-                {
-                  resolve: "./src/modules/minio-file",
-                  id: "minio",
-                  options: {
-                    endPoint: MINIO_ENDPOINT,
-                    accessKey: MINIO_ACCESS_KEY,
-                    secretKey: MINIO_SECRET_KEY,
-                    bucket: MINIO_BUCKET, // Optional, default: medusa-media
-                  },
-                },
-              ]
-            : [
-                {
-                  resolve: "@medusajs/file-local",
-                  id: "local",
-                  options: {
-                    upload_dir: "static",
-                    backend_url: `${BACKEND_URL}/static`,
-                  },
-                },
-              ]),
-        ],
+        spaces_url: process.env.SPACE_URL,
+        bucket: process.env.SPACE_BUCKET,
+        region: process.env.SPACE_REGION,
+        endpoint: process.env.SPACE_ENDPOINT,
+        access_key_id: process.env.SPACE_ACCESS_KEY_ID,
+        secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
       },
     },
     ...(REDIS_URL
