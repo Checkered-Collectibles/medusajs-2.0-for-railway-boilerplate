@@ -318,14 +318,7 @@ const plugins = [
 export default defineConfig({
   projectConfig: {
     databaseUrl: DATABASE_URL,
-    databaseDriverOptions: {
-      ssl: {
-        rejectUnauthorized: true,
-        ca: process.env.DATABASE_CA_CERT
-          ? fs.readFileSync(process.env.DATABASE_CA_CERT).toString()
-          : undefined,
-      },
-    },
+    database_extra: { ssl: { rejectUnauthorized: false } },
     databaseLogging: false,
     redisUrl: REDIS_URL,
     workerMode: WORKER_MODE,
