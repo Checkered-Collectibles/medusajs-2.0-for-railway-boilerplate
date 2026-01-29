@@ -68,6 +68,11 @@ COPY --from=builder --chown=medusa:nodejs /app/medusa-config.js ./medusa-config.
 # Copy scripts folder
 COPY --from=builder --chown=medusa:nodejs /app/src/scripts ./src/scripts
 
+# Copy Entrypoint Script
+COPY --chown=medusa:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
+RUN chmod +x ./docker-entrypoint.sh
+
 EXPOSE 9000
 
+ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["pnpm", "start"]
