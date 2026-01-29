@@ -9,31 +9,30 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
-# Install system dependencies (Required for Medusa/SWC/Sharp)
-# Added 'vips-dev' which is critical for Medusa image processing
-RUN apk add --no-cache libc6-compat python3 make g++ vips-dev
+# Install system dependencies (required for Medusa/SWC/Sharp)
+RUN apk add --no-cache libc6-compat python3 make g++
 
 WORKDIR /app
 
 # -------------------------------------------------------------------
 # Stage 2: Dependencies
-# Install dependencies
+# Install production dependencies only
 # -------------------------------------------------------------------
 FROM base AS deps
 COPY package.json pnpm-lock.yaml ./
-
-# ⚠️ CRITICAL FIX: Removed '--prod'
-# We install ALL deps here so the final image has the libraries needed
-# to compile TypeScript files (ts-node) at runtime.
-RUN pnpm install --frozen-lockfile
+# Install only production deps
+RUN pnpm install --prod --frozen-lockfile
 
 # -------------------------------------------------------------------
 # Stage 3: Builder
-# Build the application
+# Install all deps and build the application
 # -------------------------------------------------------------------
 FROM base AS builder
 COPY package.json pnpm-lock.yaml ./
-COPY --from=deps /app/node_modules ./node_modules
+# Install ALL deps (including devDeps)
+RUN pnpm install --frozen-lockfile
+
+# Copy source code
 COPY . .
 
 # Build the project
@@ -52,27 +51,23 @@ ENV NODE_ENV=production
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 medusa
 
-# Grant permissions
+# === PERMISSION FIX ===
+# Grant medusa user ownership of /app so 'init-backend' can write .env
 RUN chown medusa:nodejs /app
 
 USER medusa
 
-# Copy node_modules (Contains ALL deps now, fixing the TS error)
+# Copy production node_modules from deps stage
 COPY --from=deps --chown=medusa:nodejs /app/node_modules ./node_modules
 
-# Copy built application
+# Copy built application from builder stage
 COPY --from=builder --chown=medusa:nodejs /app/.medusa ./.medusa
 COPY --from=builder --chown=medusa:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=medusa:nodejs /app/medusa-config.js ./medusa-config.js
 
-# ⚠️ CRITICAL FIX: Copy 'src' so config can find modules
-COPY --from=builder --chown=medusa:nodejs /app/src ./src
-
-# Copy Entrypoint Script
-COPY --chown=medusa:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
-RUN chmod +x ./docker-entrypoint.sh
+# Copy scripts folder
+COPY --from=builder --chown=medusa:nodejs /app/src/scripts ./src/scripts
 
 EXPOSE 9000
 
-ENTRYPOINT ["./docker-entrypoint.sh"]
 CMD ["pnpm", "start"]
