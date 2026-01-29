@@ -82,7 +82,7 @@ const hasLoyaltyModule =
  * Build modules array safely
  */
 const modules = [
-  ...(hasLoyaltyModule ? [{ resolve: "./src/modules/loyalty" }] : []),
+  ...(hasLoyaltyModule ? [{ resolve: "./modules/loyalty" }] : []),
 
   /**
    * Analytics (PostHog)
