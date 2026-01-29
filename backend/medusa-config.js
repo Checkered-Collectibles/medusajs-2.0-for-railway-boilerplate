@@ -15,15 +15,27 @@ const bool = (v) => v === "true" || v === "1" || v === "yes";
  * Core envs
  */
 
-const DB_USERNAME = process.env.DB_USERNAME;
-const DB_PASSWORD = process.env.DB_PASSWORD;
-const DB_HOST = process.env.DB_HOST;
-const DB_PORT = process.env.DB_PORT;
-const DB_DATABASE = process.env.DB_DATABASE;
+// const DB_USERNAME = process.env.DB_USERNAME;
+// const DB_PASSWORD = process.env.DB_PASSWORD;
+// const DB_HOST = process.env.DB_HOST;
+// const DB_PORT = process.env.DB_PORT;
+// const DB_DATABASE = process.env.DB_DATABASE;
 
-const DATABASE_URL =
-  `postgres://${DB_USERNAME}:${DB_PASSWORD}` +
-  `@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?ssl_mode=disable&rejectUnauthorized=false'`;
+// const DATABASE_URL =
+//   `postgres://${DB_USERNAME}:${DB_PASSWORD}` +
+//   `@${DB_HOST}:${DB_PORT}/${DB_DATABASE}`;
+
+let DATABASE_URL = process.env.DATABASE_URL;
+
+const CA_CERT = process.env.CA_CERT;
+let caFile = null;
+
+if (CA_CERT) {
+  caFile = "ssl.ca";
+  fs.writeFileSync(caFile, CA_CERT);
+
+  DATABASE_URL = `${DATABASE_URL}&sslrootcert=${caFile}`;
+}
 
 const ADMIN_CORS = process.env.ADMIN_CORS;
 const AUTH_CORS = process.env.AUTH_CORS;
@@ -327,20 +339,6 @@ const plugins = [
 export default defineConfig({
   projectConfig: {
     databaseUrl: DATABASE_URL,
-    databaseDriverOptions: {
-      connection: { ssl: { rejectUnauthorized: false } },
-      pool: {
-        min: 0,
-        max: 15,
-        idleTimeoutMillis: 30000,
-        acquireTimeoutMillis: 60000,
-      },
-    },
-    databaseExtra: {
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    },
     databaseLogging: false,
     redisUrl: REDIS_URL,
     workerMode: WORKER_MODE,

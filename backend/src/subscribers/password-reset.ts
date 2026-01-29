@@ -1,7 +1,6 @@
 import { INotificationModuleService } from "@medusajs/framework/types"
 import { Modules } from "@medusajs/framework/utils"
 import { SubscriberArgs, SubscriberConfig } from "@medusajs/framework"
-import { BACKEND_URL } from "../lib/constants"
 import { EmailTemplates } from "../modules/email-notifications/templates"
 
 type PasswordResetEventData = {
@@ -33,7 +32,7 @@ export default async function passwordResetHandler({
                 ? `${STORE_URL}/reset?token=${encodeURIComponent(
                     token
                 )}&email=${encodeURIComponent(email)}`
-                : `${BACKEND_URL}/reset?token=${encodeURIComponent(
+                : `${process.env.BACKEND_PUBLIC_URL}/reset?token=${encodeURIComponent(
                     token
                 )}&email=${encodeURIComponent(email)}`
 
