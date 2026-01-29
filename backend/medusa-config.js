@@ -23,7 +23,7 @@ const DB_DATABASE = process.env.DB_DATABASE;
 
 const DATABASE_URL =
   `postgres://${DB_USERNAME}:${DB_PASSWORD}` +
-  `@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?ssl_mode=disable`;
+  `@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?ssl_mode=disable&rejectUnauthorized=false'`;
 
 const ADMIN_CORS = process.env.ADMIN_CORS;
 const AUTH_CORS = process.env.AUTH_CORS;
@@ -334,6 +334,11 @@ export default defineConfig({
         max: 15,
         idleTimeoutMillis: 30000,
         acquireTimeoutMillis: 60000,
+      },
+    },
+    databaseExtra: {
+      ssl: {
+        rejectUnauthorized: false,
       },
     },
     databaseLogging: false,
