@@ -43,6 +43,7 @@ COPY --from=builder --chown=medusa:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=medusa:nodejs /app/package.json ./package.json
 COPY --from=builder --chown=medusa:nodejs /app/medusa-config.js ./medusa-config.js
 COPY --from=builder --chown=medusa:nodejs /app/.medusa ./.medusa
+COPY --from=builder --chown=medusa:nodejs /app/src ./src
 COPY --chown=medusa:nodejs docker-entrypoint.sh ./docker-entrypoint.sh
 
 # Ensure entrypoint is executable

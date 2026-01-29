@@ -1,9 +1,8 @@
 import { MedusaRequest, MedusaResponse } from "@medusajs/framework"
 import Redis from "ioredis"
-import { REDIS_URL } from "src/lib/constants"
 
 const WATCHING_TTL_SECONDS = 60 * 60 * 24 // 24 hours
-const redis = new Redis(REDIS_URL!)
+const redis = new Redis(process.env.REDIS_URL!)
 
 /**
  * GET /store/product-watching/:id
