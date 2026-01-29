@@ -16,8 +16,8 @@
     "incremental": true,
     "baseUrl": "./src",
     "paths": {
-      "@lib/*": ["src/lib/*"],
-      "@modules/*": ["src/modules/*"],
+      "@lib/*": ["lib/*"],
+      "@modules/*": ["modules/*"],
       "@pages/*": ["pages/*"],
       "@images/*": ["../public/images/*"]
     },
