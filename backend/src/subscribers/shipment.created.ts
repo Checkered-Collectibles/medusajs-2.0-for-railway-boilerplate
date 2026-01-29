@@ -1,7 +1,7 @@
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
 import { trackOrderShippedWorkflow } from '../workflows/track-order-shipped'
 import { Modules, ContainerRegistrationKeys } from '@medusajs/framework/utils'
-import { EmailTemplates } from "src/modules/email-notifications/templates" // Adjust path if needed
+import { EmailTemplates } from "../modules/email-notifications/templates" // Adjust path if needed
 
 export default async function shipmentCreatedHandler({
     event: { data },
