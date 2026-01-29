@@ -14,13 +14,18 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    "baseUrl": "./src",
+
+    /* FIX: Set base to root */
+    "baseUrl": ".",
+
+    /* FIX: Point directly to folders without '..' */
     "paths": {
-      "@lib/*": ["lib/*"],
-      "@modules/*": ["modules/*"],
-      "@pages/*": ["pages/*"],
-      "@images/*": ["../public/images/*"]
+      "@lib/*": ["src/lib/*"],
+      "@modules/*": ["src/modules/*"],
+      "@pages/*": ["src/pages/*"],
+      "@images/*": ["public/images/*"]
     },
+
     "plugins": [
       {
         "name": "next"
