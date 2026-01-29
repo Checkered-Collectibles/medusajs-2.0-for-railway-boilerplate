@@ -14,13 +14,22 @@ const bool = (v) => v === "true" || v === "1" || v === "yes";
 /**
  * Core envs
  */
+
+const DB_USERNAME = process.env.DB_USERNAME;
+const DB_PASSWORD = process.env.DB_PASSWORD;
+const DB_HOST = process.env.DB_HOST;
+const DB_PORT = process.env.DB_PORT;
+const DB_DATABASE = process.env.DB_DATABASE;
+
+const DATABASE_URL =
+  `postgres://${DB_USERNAME}:${DB_PASSWORD}` +
+  `@${DB_HOST}:${DB_PORT}/${DB_DATABASE}?ssl_mode=disable`;
+
 const ADMIN_CORS = process.env.ADMIN_CORS;
 const AUTH_CORS = process.env.AUTH_CORS;
 const STORE_CORS = process.env.STORE_CORS;
 
 const BACKEND_URL = process.env.BACKEND_PUBLIC_URL;
-
-const DATABASE_URL = process.env.DATABASE_URL;
 const REDIS_URL = process.env.REDIS_URL;
 
 const JWT_SECRET = process.env.JWT_SECRET || "supersecret";
@@ -318,7 +327,9 @@ const plugins = [
 export default defineConfig({
   projectConfig: {
     databaseUrl: DATABASE_URL,
-    database_extra: { ssl: { rejectUnauthorized: false } },
+    databaseDriverOptions: {
+      connection: { ssl: { rejectUnauthorized: false } },
+    },
     databaseLogging: false,
     redisUrl: REDIS_URL,
     workerMode: WORKER_MODE,
