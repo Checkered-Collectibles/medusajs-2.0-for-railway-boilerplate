@@ -145,6 +145,7 @@ const modules = [
             region: process.env.SPACE_REGION,
             bucket: process.env.SPACE_BUCKET,
             endpoint: process.env.SPACE_ENDPOINT,
+            prefix: "uploads",
             // basic_auth: false // sometimes required for specific S3 providers, usually safe to omit for DO
           },
         },
