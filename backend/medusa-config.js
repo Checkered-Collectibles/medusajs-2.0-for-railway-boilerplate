@@ -136,7 +136,7 @@ const modules = [
     options: {
       providers: [
         {
-          resolve: "@medusajs/file-s3",
+          resolve: "@medusajs/medusa/file-s3",
           id: "s3",
           options: {
             file_url: process.env.SPACE_URL,
