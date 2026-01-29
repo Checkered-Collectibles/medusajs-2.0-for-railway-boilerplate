@@ -35,6 +35,11 @@ RUN pnpm install --frozen-lockfile
 # Copy source code
 COPY . .
 
+# ✅ FIX: Set Backend URL to relative path ("/") for the Admin build
+# This tells the Admin UI: "The API is on the same domain as I am"
+ENV MEDUSA_BACKEND_URL="/"
+ENV MEDUSA_ADMIN_BACKEND_URL="/"
+
 # Build the project
 RUN pnpm build
 
