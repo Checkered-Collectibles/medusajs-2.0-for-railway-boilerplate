@@ -57,6 +57,9 @@ importers:
       '@medusajs/ui':
         specifier: ^4.1.0
         version: 4.1.0(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3)
+      '@medusajs/utils':
+        specifier: ^2.13.1
+        version: 2.13.1(@types/node@20.19.25)(express@4.22.1)
       '@medusajs/workflow-engine-redis':
         specifier: 2.12.1
         version: 2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))
@@ -1301,6 +1304,10 @@ packages:
     resolution: {integrity: sha512-yZVs+HQz3Z9He98xKCYDRitJfBw+qp5AKC+7whdXq7RvedoH40xUlqMnAQerqUwVM4ntS05jipVLze1VzgAvPA==}
     engines: {node: '>=20'}
 
+  '@medusajs/deps@2.13.1':
+    resolution: {integrity: sha512-4ZQlgS0YEVTe3yOZHC0+tBpTRB4rIQCxUXonRjZLv/0NRHI/6NUnGP1M5Di29TKz9BRJetnEyqY96ZzYRTQ0eA==}
+    engines: {node: '>=20'}
+
   '@medusajs/draft-order@2.12.1':
     resolution: {integrity: sha512-59sdX3/pkGh6MqGmlbfstA4ZTAhfiVp2lc0Krm8/JBZdXz5nv/c5zYPdIohG7kqM1jyF+7IMu4vF5kmNi8n+VA==}
     engines: {node: '>=20'}
@@ -1606,6 +1613,12 @@ packages:
 
   '@medusajs/utils@2.12.1':
     resolution: {integrity: sha512-bAwtoRP5R7ir2BfddU5WCzCuf61bLgkfQ5rqchpqu5HC2FAQrs3fPZhTRBjbPyzVuAqEMg5ChWgMJplD8/JGhw==}
+    engines: {node: '>=20.0.0'}
+    peerDependencies:
+      express: ^4.21.0
+
+  '@medusajs/utils@2.13.1':
+    resolution: {integrity: sha512-pupEodNRHmU5+9CNa1n/8ao3mBeCboFTKmRBF/W03xd2QoRSpMAjasP5dtHeeVLETtL50ES/Jf5AVRrd/bn/PA==}
     engines: {node: '>=20.0.0'}
     peerDependencies:
       express: ^4.21.0
@@ -9394,6 +9407,33 @@ snapshots:
       - supports-color
       - tedious
 
+  '@medusajs/deps@2.13.1(@types/node@20.19.25)':
+    dependencies:
+      '@mikro-orm/cli': 6.4.16(pg@8.16.3)
+      '@mikro-orm/core': 6.4.16
+      '@mikro-orm/knex': 6.4.16(@mikro-orm/core@6.4.16)(pg@8.16.3)
+      '@mikro-orm/migrations': 6.4.16(@mikro-orm/core@6.4.16)(@types/node@20.19.25)(pg@8.16.3)
+      '@mikro-orm/postgresql': 6.4.16(@mikro-orm/core@6.4.16)
+      '@opentelemetry/api': 1.9.0
+      '@opentelemetry/instrumentation-pg': 0.52.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/resources': 2.2.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-node': 0.200.0(@opentelemetry/api@1.9.0)
+      '@opentelemetry/sdk-trace-node': 2.2.0(@opentelemetry/api@1.9.0)
+      awilix: 8.0.1
+      pg: 8.16.3
+      zod: 3.25.76
+    transitivePeerDependencies:
+      - '@types/node'
+      - better-sqlite3
+      - libsql
+      - mariadb
+      - mysql
+      - mysql2
+      - pg-native
+      - sqlite3
+      - supports-color
+      - tedious
+
   '@medusajs/draft-order@2.12.1(@medusajs/admin-sdk@2.12.1)(@medusajs/cli@2.12.1(@types/node@20.19.25))(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(@medusajs/icons@2.13.0(react@18.3.1))(@medusajs/test-utils@2.12.1(@medusajs/framework@2.12.1(@medusajs/cli@2.12.1(@types/node@20.19.25))(@types/node@20.19.25)(ioredis@5.8.2)(vite@5.4.21(@types/node@20.19.25)))(@medusajs/medusa@2.12.1))(@medusajs/ui@4.1.0(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(typescript@5.9.3))(@types/react-dom@18.3.7(@types/react@18.3.27))(@types/react@18.3.27)(react-dom@18.3.1(react@18.3.1))(react-router-dom@6.20.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)':
     dependencies:
       '@ariakit/react': 0.4.20(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -9863,6 +9903,36 @@ snapshots:
       pluralize: 8.0.0
       ulid: 2.4.0
       zod: 3.25.76
+    transitivePeerDependencies:
+      - '@types/node'
+      - better-sqlite3
+      - encoding
+      - libsql
+      - mariadb
+      - mysql
+      - mysql2
+      - pg-native
+      - sqlite3
+      - supports-color
+      - tedious
+
+  '@medusajs/utils@2.13.1(@types/node@20.19.25)(express@4.22.1)':
+    dependencies:
+      '@graphql-codegen/core': 4.0.2(graphql@16.12.0)
+      '@graphql-codegen/typescript': 4.1.6(graphql@16.12.0)
+      '@graphql-tools/merge': 9.1.6(graphql@16.12.0)
+      '@graphql-tools/schema': 10.0.30(graphql@16.12.0)
+      '@medusajs/deps': 2.13.1(@types/node@20.19.25)
+      '@types/pluralize': 0.0.33
+      bignumber.js: 9.3.1
+      dotenv: 16.6.1
+      dotenv-expand: 11.0.7
+      express: 4.22.1
+      graphql: 16.12.0
+      jsonwebtoken: 9.0.3
+      pg-connection-string: 2.9.1
+      pluralize: 8.0.0
+      ulid: 2.4.0
     transitivePeerDependencies:
       - '@types/node'
       - better-sqlite3
