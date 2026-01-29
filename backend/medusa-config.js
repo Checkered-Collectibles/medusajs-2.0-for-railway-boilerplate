@@ -136,15 +136,23 @@ const modules = [
    * File storage — DigitalOcean Spaces (medusa-file-spaces)
    */
   {
-    key: Modules.FILE,
-    resolve: "medusa-file-spaces",
+    resolve: "@medusajs/medusa/file",
     options: {
-      spaces_url: process.env.SPACE_URL,
-      bucket: process.env.SPACE_BUCKET,
-      region: process.env.SPACE_REGION,
-      endpoint: process.env.SPACE_ENDPOINT,
-      access_key_id: process.env.SPACE_ACCESS_KEY_ID,
-      secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
+      providers: [
+        {
+          resolve: "@medusajs/file-s3",
+          id: "s3",
+          options: {
+            file_url: process.env.SPACE_URL,
+            access_key_id: process.env.SPACE_ACCESS_KEY_ID,
+            secret_access_key: process.env.SPACE_SECRET_ACCESS_KEY,
+            region: process.env.SPACE_REGION,
+            bucket: process.env.SPACE_BUCKET,
+            endpoint: process.env.SPACE_ENDPOINT,
+            // basic_auth: false // sometimes required for specific S3 providers, usually safe to omit for DO
+          },
+        },
+      ],
     },
   },
 
