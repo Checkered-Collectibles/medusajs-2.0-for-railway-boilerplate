@@ -329,6 +329,12 @@ export default defineConfig({
     databaseUrl: DATABASE_URL,
     databaseDriverOptions: {
       connection: { ssl: { rejectUnauthorized: false } },
+      pool: {
+        min: 0,
+        max: 15,
+        idleTimeoutMillis: 30000,
+        acquireTimeoutMillis: 60000,
+      },
     },
     databaseLogging: false,
     redisUrl: REDIS_URL,
