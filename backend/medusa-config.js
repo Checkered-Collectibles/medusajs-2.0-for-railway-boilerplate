@@ -18,11 +18,7 @@ const ADMIN_CORS = process.env.ADMIN_CORS;
 const AUTH_CORS = process.env.AUTH_CORS;
 const STORE_CORS = process.env.STORE_CORS;
 
-const BACKEND_URL =
-  process.env.BACKEND_PUBLIC_URL ||
-  process.env.BACKEND_URL ||
-  process.env.RAILWAY_PUBLIC_DOMAIN_VALUE ||
-  "http://localhost:9000";
+const BACKEND_URL = process.env.BACKEND_PUBLIC_URL;
 
 const DATABASE_URL = process.env.DATABASE_URL;
 const REDIS_URL = process.env.REDIS_URL;
