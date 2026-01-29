@@ -1,6 +1,6 @@
 import { createWorkflow, createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
 import { Modules, ContainerRegistrationKeys } from "@medusajs/framework/utils"
-import { EmailTemplates } from "src/modules/email-notifications/templates"
+import { EmailTemplates } from "../modules/email-notifications/templates"
 
 // 1. CUSTOM STEP: Fetch Order via Fulfillment ID
 const retrieveOrderFromFulfillmentStep = createStep(
