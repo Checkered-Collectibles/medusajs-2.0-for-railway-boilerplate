@@ -7,7 +7,8 @@ FROM node:20-alpine AS base
 # Enable corepack so we can use pnpm
 ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable
+# RUN corepack enable
+RUN corepack enable && corepack prepare pnpm@9.9.0 --activate
 
 # Install system dependencies (required for Medusa/SWC/Sharp)
 RUN apk add --no-cache libc6-compat python3 make g++
