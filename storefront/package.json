@@ -7,6 +7,10 @@
   "keywords": [
     "medusa-storefront"
   ],
+  "packageManager": "pnpm@9.10.0",
+  "engines": {
+    "node": "20.x"
+  },
   "scripts": {
     "wait": "await-backend",
     "launcher": "launch-storefront",
