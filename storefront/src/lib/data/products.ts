@@ -125,7 +125,7 @@ export const getProductsListWithSort = cache(async function ({
     pageParam: 0,
     queryParams: {
       ...queryParams,
-      limit: 100,
+      limit: 500,
     },
     countryCode,
   })
