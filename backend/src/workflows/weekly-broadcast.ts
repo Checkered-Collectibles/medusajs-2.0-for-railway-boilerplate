@@ -220,6 +220,10 @@ const sendWeeklyBroadcastStep = createStep(
                 }),
             });
 
+            await resend.broadcasts.send(resendData.id, {
+                scheduledAt: 'in 1 min',
+            });
+
             if (error) throw new Error(error.message);
             logger.info(`✅ Weekly Broadcast Sent! ID: ${resendData?.id}`);
             return new StepResponse(resendData);
