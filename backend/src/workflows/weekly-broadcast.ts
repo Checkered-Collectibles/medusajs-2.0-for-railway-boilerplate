@@ -2,7 +2,6 @@ import {
     createWorkflow,
     createStep,
     StepResponse,
-    WorkflowResponse
 } from "@medusajs/framework/workflows-sdk";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
 import { getVariantAvailability } from "@medusajs/framework/utils";
@@ -38,11 +37,8 @@ const fetchIntelligentProductsStep = createStep(
         const { data: salesChannels } = await query.graph({
             entity: "sales_channel",
             fields: ["id"],
-            pagination: { // 👈 CHANGED from 'pagination' to 'options'
+            pagination: {
                 take: 1,
-                order: {
-                    created_at: "DESC"
-                },
             },
         });
         const salesChannelId = salesChannels[0]?.id;
@@ -68,7 +64,7 @@ const fetchIntelligentProductsStep = createStep(
                 "variants.prices.currency_code", // Fetch currency
             ],
             filters: { status: "published" },
-            pagination: { // 👈 CHANGED from 'pagination' to 'options'
+            pagination: {
                 take: 100,
                 order: {
                     created_at: "DESC"
@@ -114,7 +110,7 @@ const fetchIntelligentProductsStep = createStep(
             throw new Error("No valid products found for weekly email.");
         }
 
-        // 5. Freshness Logic (Last 7 Days)
+        // 5. Freshness Logic
         const ONE_WEEK_AGO = new Date();
         ONE_WEEK_AGO.setDate(ONE_WEEK_AGO.getDate() - 7);
 
@@ -127,7 +123,7 @@ const fetchIntelligentProductsStep = createStep(
             else classics.push(p);
         });
 
-        // 6. Selection Logic (Fresh first, then Random Classics)
+        // 6. Selection Logic
         let selectedProducts = [...freshDrops.slice(0, PRODUCTS_TO_SHOW)];
 
         if (selectedProducts.length < PRODUCTS_TO_SHOW) {
@@ -145,10 +141,13 @@ const fetchIntelligentProductsStep = createStep(
             emailSubhead = "We dug into the vault to find these favorites. Don't miss out.";
         }
 
-        // 8. Formatting (With Discount Logic)
+        // 8. Formatting (With Correct Discount Logic)
         const formattedProducts = selectedProducts.map((p) => {
-            const variant = p.variants[0];
-            const prices = variant.prices;
+            // Get the first variant that actually has prices
+            const variant = p.variants.find(v => v.prices?.length > 0) || p.variants[0];
+
+            // 🛑 FIX: Use 'prices' (Raw Array), NOT 'calculated_price'
+            const prices = variant.prices || [];
 
             // Find the main currency (e.g. INR)
             const currencyCode = prices[0]?.currency_code || 'INR';
@@ -156,23 +155,25 @@ const fetchIntelligentProductsStep = createStep(
             // Filter prices to ensure we only compare same currency
             const relevantPrices = prices.filter(pr => pr.currency_code === currencyCode);
 
-            // Find lowest (Sale) and highest (Original)
-            const minPrice = Math.min(...relevantPrices.map(pr => pr.amount));
-            const maxPrice = Math.max(...relevantPrices.map(pr => pr.amount));
+            let displayPrice = "N/A";
 
-            // Format Currency
-            const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
-                style: 'currency',
-                currency: currencyCode,
-                minimumFractionDigits: 0
-            }).format(amount);
+            if (relevantPrices.length > 0) {
+                // Find lowest (Sale) and highest (Original)
+                const minPrice = Math.min(...relevantPrices.map(pr => pr.amount));
+                const maxPrice = Math.max(...relevantPrices.map(pr => pr.amount));
 
-            let displayPrice = formatMoney(minPrice);
+                const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
+                    style: 'currency',
+                    currency: currencyCode,
+                    minimumFractionDigits: 0
+                }).format(amount);
 
-            // If there is a discount (e.g. Sale Price exists)
-            if (minPrice < maxPrice) {
-                // Returns string like: "₹999 (Was ₹1,299)"
-                displayPrice = `${formatMoney(minPrice)} (Was ${formatMoney(maxPrice)})`;
+                displayPrice = formatMoney(minPrice);
+
+                // If min < max, it means we have a cheaper price available (Discount)
+                if (minPrice < maxPrice) {
+                    displayPrice = `${formatMoney(minPrice)} (Was ${formatMoney(maxPrice)})`;
+                }
             }
 
             return {
