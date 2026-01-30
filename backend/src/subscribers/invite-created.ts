@@ -1,7 +1,6 @@
 import { INotificationModuleService, IUserModuleService } from '@medusajs/framework/types'
 import { Modules } from '@medusajs/framework/utils'
 import { SubscriberArgs, SubscriberConfig } from '@medusajs/framework'
-import { BACKEND_URL } from '../lib/constants'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 
 export default async function userInviteHandler({
@@ -25,7 +24,7 @@ export default async function userInviteHandler({
           replyTo: 'hello@checkered.in',
           subject: "You've been invited to Checkered Collectibles!"
         },
-        inviteLink: `${BACKEND_URL}/app/invite?token=${invite.token}`,
+        inviteLink: `${process.env.BACKEND_PUBLIC_URL}/app/invite?token=${invite.token}`,
         preview: 'The administration dashboard awaits...'
       }
     })
