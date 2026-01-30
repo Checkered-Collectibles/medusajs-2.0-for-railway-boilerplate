@@ -10,8 +10,8 @@ import WeeklyTrendingEmail from "../modules/email-notifications/templates/weekly
 import { jsx } from "react/jsx-runtime";
 
 // CONFIGURATION
-const EXCLUDED_CATEGORY_HANDLE = "mainline-fantasy";
-const PRODUCTS_TO_SHOW = 4;
+const EXCLUDED_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8";
+const PRODUCTS_TO_SHOW = 6;
 const STORE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in";
 
 // Helper: Fisher-Yates Shuffle to randomize array
@@ -31,6 +31,7 @@ const fetchIntelligentProductsStep = createStep(
 
         // 1. Fetch a larger pool of products (e.g., 100 most recent)
         // We fetch more than we need so we have a pool to shuffle from.
+        // 1. Fetch products with corrected syntax
         const { data: rawProducts } = await query.graph({
             entity: "product",
             fields: [
@@ -39,33 +40,74 @@ const fetchIntelligentProductsStep = createStep(
                 "handle",
                 "thumbnail",
                 "created_at",
-                "categories.handle",
+                "categories.id",      // Fetch ID specifically for filtering
+                "categories.handle",  // Fetch Handle just in case
                 "variants.inventory_quantity",
+                "variants.manage_inventory", // 👈 Vital for stock check
+                "variants.allow_backorder",  // 👈 Vital for stock check
                 "variants.prices.amount",
                 "variants.prices.currency_code",
             ],
             filters: { status: "published" },
-            pagination: {
+            pagination: { // 👈 CHANGED from 'pagination' to 'options'
                 take: 100,
                 order: {
-                    created_at: "DESC",
+                    created_at: "DESC"
                 },
             },
-        })
-
-        // 2. Filter: Must be In Stock & Not Fantasy
-        const validProducts = rawProducts.filter((product) => {
-            const isFantasy = product.categories?.some(
-                (c) => c.handle === EXCLUDED_CATEGORY_HANDLE
-            );
-            const hasStock = product.variants?.some((v) => v.inventory_quantity > 0);
-            const hasPrice = product.variants?.[0]?.prices?.[0];
-
-            return !isFantasy && hasStock && hasPrice;
         });
 
+        const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
+        logger.info(`🔍 Fetched ${rawProducts.length} raw products. Filtering...`);
+
+        // 2. Robust Filtering
+        const validProducts = rawProducts.filter((product) => {
+            // A. Category Check
+            // Ensure EXCLUDED_CATEGORY_ID is actually an ID (starts with 'pcat_')
+            // If you are using a handle (e.g. "mainline-fantasy"), change this to check c.handle
+            const isFantasy = product.categories?.some(
+                (c) => c.id === EXCLUDED_CATEGORY_ID
+            );
+
+            if (isFantasy) {
+                // logger.info(`Skipping ${product.title}: Fantasy Category`);
+                return false;
+            }
+
+            // B. Price Check
+            const hasPrice = product.variants?.some(
+                (v) => v.prices && v.prices.length > 0
+            );
+
+            if (!hasPrice) {
+                logger.warn(`Skipping ${product.title}: No Price`);
+                return false;
+            }
+
+            // C. Robust Stock Check
+            // It is valid if ANY variant:
+            // 1. Has explicit stock > 0
+            // 2. OR Does not manage inventory (infinite)
+            // 3. OR Allows backorders
+            const hasStock = product.variants?.some((v) => {
+                return (
+                    (v.inventory_quantity && v.inventory_quantity > 0) ||
+                    v.manage_inventory === false ||
+                    v.allow_backorder === true
+                );
+            });
+
+            if (!hasStock) {
+                logger.warn(`Skipping ${product.title}: Out of Stock (Qty: ${product.variants[0]?.inventory_quantity})`);
+                return false;
+            }
+
+            return true;
+        });
+
+        logger.info(`✅ Found ${validProducts.length} valid products after filtering.`);
+
         if (validProducts.length === 0) {
-            // Only error if literally NOTHING is in stock
             throw new Error("No valid products found for weekly email.");
         }
 
