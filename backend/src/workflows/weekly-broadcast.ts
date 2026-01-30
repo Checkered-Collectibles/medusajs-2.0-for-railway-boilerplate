@@ -190,6 +190,7 @@ const sendWeeklyBroadcastStep = createStep(
 
         try {
             const { data: resendData, error } = await resend.broadcasts.create({
+                name: "Weekly Marketing",
                 segmentId: AUDIENCE_ID as string,
                 from: "Checkered Collectibles <hello@checkered.in>",
                 subject: data.headline, // Use the dynamic headline as subject too
