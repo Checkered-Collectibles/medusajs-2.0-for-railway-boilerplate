@@ -42,14 +42,16 @@ const fetchIntelligentProductsStep = createStep(
                 "categories.handle",
                 "variants.inventory_quantity",
                 "variants.prices.amount",
-                "variants.prices.currency_code"
+                "variants.prices.currency_code",
             ],
             filters: { status: "published" },
             pagination: {
-                order: ["-created-at"],
                 take: 100,
+                order: {
+                    created_at: "DESC",
+                },
             },
-        });
+        })
 
         // 2. Filter: Must be In Stock & Not Fantasy
         const validProducts = rawProducts.filter((product) => {
