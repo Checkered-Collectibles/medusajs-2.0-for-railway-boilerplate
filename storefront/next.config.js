@@ -49,9 +49,10 @@ const nextConfig = {
         ),
       },
       {
-        // Note: can be removed after deleting demo products
         protocol: "https",
-        hostname: "medusa-public-images.s3.eu-west-1.amazonaws.com",
+        hostname: "checkered-assets.sgp1.cdn.digitaloceanspaces.com",
+        port: "",
+        pathname: "/**",
       },
       {
         // Note: can be removed after deleting demo products
