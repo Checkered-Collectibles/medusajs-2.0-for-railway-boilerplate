@@ -5,14 +5,16 @@ import {
     WorkflowResponse
 } from "@medusajs/framework/workflows-sdk";
 import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { getVariantAvailability } from "@medusajs/framework/utils";
 import { Resend } from "resend";
-import WeeklyTrendingEmail from "../modules/email-notifications/templates/weekly-trending";
 import { jsx } from "react/jsx-runtime";
+import WeeklyTrendingEmail from "../modules/email-notifications/templates/weekly-trending";
 
 // CONFIGURATION
+// Only products in these categories will be shown
 const INCLUDED_CATEGORY_IDS = [
-    "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK",
-    "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"
+    "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK", // Premium
+    "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"  // Hot
 ];
 const PRODUCTS_TO_SHOW = 6;
 const STORE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in";
@@ -31,10 +33,24 @@ const fetchIntelligentProductsStep = createStep(
     "fetch-intelligent-products",
     async (_, { container }) => {
         const query = container.resolve(ContainerRegistrationKeys.QUERY);
+        const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
 
-        // 1. Fetch a larger pool of products (e.g., 100 most recent)
+        // 1. Get Default Sales Channel (Required for availability check)
+        const { data: salesChannels } = await query.graph({
+            entity: "sales_channel",
+            fields: ["id"],
+            pagination: { // 👈 CHANGED from 'pagination' to 'options'
+                take: 1,
+            },
+        });
+        const salesChannelId = salesChannels[0]?.id;
+
+        if (!salesChannelId) {
+            throw new Error("No Sales Channel found! Cannot check inventory.");
+        }
+
+        // 2. Fetch a larger pool of products (e.g., 100 most recent)
         // We fetch more than we need so we have a pool to shuffle from.
-        // 1. Fetch products with corrected syntax
         const { data: rawProducts } = await query.graph({
             entity: "product",
             fields: [
@@ -43,11 +59,11 @@ const fetchIntelligentProductsStep = createStep(
                 "handle",
                 "thumbnail",
                 "created_at",
-                "categories.id",      // Fetch ID specifically for filtering
-                "categories.handle",  // Fetch Handle just in case
-                "variants.inventory_quantity",
-                "variants.manage_inventory", // 👈 Vital for stock check
-                "variants.allow_backorder",  // 👈 Vital for stock check
+                "categories.id",
+                "categories.handle",
+                "variants.id",               // Needed for availability check
+                "variants.manage_inventory",
+                "variants.allow_backorder",
                 "variants.prices.amount",
                 "variants.prices.currency_code",
             ],
@@ -60,42 +76,46 @@ const fetchIntelligentProductsStep = createStep(
             },
         });
 
-        const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
-        logger.info(`🔍 Fetched ${rawProducts.length} raw products. Filtering...`);
+        logger.info(`🔍 Fetched ${rawProducts.length} raw products. Calculating availability...`);
 
-        // 2. Robust Filtering
+        // 3. Collect all Variant IDs for bulk availability check
+        const allVariantIds = rawProducts.flatMap(p => p.variants.map(v => v.id));
+
+        // 4. Calculate TRUE Availability (Handles reservations & stock locations)
+        const availabilityMap = await getVariantAvailability(query, {
+            variant_ids: allVariantIds,
+            sales_channel_id: salesChannelId,
+        });
+
+        // 5. Robust Filtering
         const validProducts = rawProducts.filter((product) => {
+            // A. Category Check
             const isIncluded = product.categories?.some((c) =>
                 INCLUDED_CATEGORY_IDS.includes(c.id)
             );
-
             if (!isIncluded) return false;
 
             // B. Price Check
             const hasPrice = product.variants?.some(
                 (v) => v.prices && v.prices.length > 0
             );
-
             if (!hasPrice) {
-                logger.warn(`Skipping ${product.title}: No Price`);
+                // logger.warn(`Skipping ${product.title}: No Price`);
                 return false;
             }
 
-            // C. Robust Stock Check
-            // It is valid if ANY variant:
-            // 1. Has explicit stock > 0
-            // 2. OR Does not manage inventory (infinite)
-            // 3. OR Allows backorders
+            // C. Robust Stock Check using Availability Map
             const hasStock = product.variants?.some((v) => {
-                return (
-                    (v.inventory_quantity && v.inventory_quantity > 0) ||
-                    v.manage_inventory === false ||
-                    v.allow_backorder === true
-                );
+                // If inventory is not managed or backorders allowed, it's available
+                if (!v.manage_inventory || v.allow_backorder) return true;
+
+                // Check calculated availability
+                const stockInfo = availabilityMap[v.id];
+                return (stockInfo?.availability || 0) > 0;
             });
 
             if (!hasStock) {
-                logger.warn(`Skipping ${product.title}: Out of Stock (Qty: ${product.variants[0]?.inventory_quantity})`);
+                // logger.warn(`Skipping ${product.title}: Out of Stock`);
                 return false;
             }
 
@@ -108,7 +128,7 @@ const fetchIntelligentProductsStep = createStep(
             throw new Error("No valid products found for weekly email.");
         }
 
-        // 3. Split into "Fresh Drops" and "Classics"
+        // 6. Split into "Fresh Drops" and "Classics"
         const ONE_WEEK_AGO = new Date();
         ONE_WEEK_AGO.setDate(ONE_WEEK_AGO.getDate() - 7);
 
@@ -124,7 +144,7 @@ const fetchIntelligentProductsStep = createStep(
             }
         });
 
-        // 4. Selection Logic
+        // 7. Selection Logic
         let selectedProducts: typeof validProducts = [];
 
         // A. Add all fresh drops first (up to limit)
@@ -133,19 +153,14 @@ const fetchIntelligentProductsStep = createStep(
         // B. If we still need more, Shuffle the classics and fill the gaps
         if (selectedProducts.length < PRODUCTS_TO_SHOW) {
             const slotsNeeded = PRODUCTS_TO_SHOW - selectedProducts.length;
-
-            // Randomize the older stuff so it's not the same every week
             const shuffledClassics = shuffleArray(classics);
-
-            // Add the random picks
             selectedProducts = [
                 ...selectedProducts,
                 ...shuffledClassics.slice(0, slotsNeeded)
             ];
         }
 
-        // 5. Dynamic Headline Logic
-        // If we have mostly new stuff, say "Fresh Drops". If not, say "Hidden Gems".
+        // 8. Dynamic Headline Logic
         let emailHeadline = "🔥 Fresh Drops for the Weekend!";
         let emailSubhead = "These just landed. Secure yours before they're gone.";
 
@@ -154,7 +169,7 @@ const fetchIntelligentProductsStep = createStep(
             emailSubhead = "We dug into the vault to find these favorites. Don't miss out.";
         }
 
-        // 6. Format for Email
+        // 9. Format for Email
         const formattedProducts = selectedProducts.map((p) => {
             const priceObj = p.variants[0].prices[0];
             const formattedPrice = new Intl.NumberFormat('en-IN', {
@@ -186,14 +201,22 @@ const sendWeeklyBroadcastStep = createStep(
     async ({ data }: { data: any }, { container }) => {
         const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
         const resend = new Resend(process.env.RESEND_API_KEY);
-        const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID_TEST;
+        // Use TEST ID if available for safety, else Prod
+        const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID_TEST || process.env.RESEND_AUDIENCE_ID;
+
+        if (!process.env.RESEND_FROM) {
+            throw new Error("Missing RESEND_FROM in .env");
+        }
 
         try {
             const { data: resendData, error } = await resend.broadcasts.create({
-                name: "Weekly Marketing",
+                name: `Weekly Drop - ${new Date().toLocaleDateString()}`,
+                replyTo: 'hello@checkered.in',
+                // Use 'segmentId' for Resend v4+
                 segmentId: AUDIENCE_ID as string,
-                from: "Checkered Collectibles <hello@checkered.in>",
-                subject: data.headline, // Use the dynamic headline as subject too
+                from: process.env.RESEND_FROM,
+                subject: data.headline,
+                // Using 'react' property lets Resend handle the HTML generation
                 react: jsx(WeeklyTrendingEmail, {
                     products: data.products,
                     headline: data.headline,
