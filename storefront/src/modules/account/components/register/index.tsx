@@ -7,6 +7,8 @@ import { SubmitButton } from "@modules/checkout/components/submit-button"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { signup } from "@lib/data/customer"
 import { useActionState } from "react"
+// 1. Import UI components
+import { Checkbox, Label } from "@medusajs/ui"
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
@@ -14,17 +16,12 @@ type Props = {
 
 const Register = ({ setCurrentView }: Props) => {
 
-  // 1. Create the wrapper to set the Session Storage flag
   const signupWithFlag = async (currentState: any, formData: FormData) => {
     const result = await signup(currentState, formData)
 
-    // Check if success (Medusa returns a Customer Object on success, String on error)
     const isSuccess = typeof result !== "string"
 
     if (isSuccess) {
-      // 🚩 SET THE FLAG
-      // We don't fire the pixel here. We just mark the browser session.
-      // This survives the redirect/revalidateTag.
       if (typeof window !== "undefined") {
         sessionStorage.setItem("new_registration", "true")
       }
@@ -33,7 +30,6 @@ const Register = ({ setCurrentView }: Props) => {
     return result
   }
 
-  // 2. Use the wrapper in useActionState
   const [message, formAction] = useActionState(signupWithFlag, null)
 
   return (
@@ -89,7 +85,36 @@ const Register = ({ setCurrentView }: Props) => {
             data-testid="password-input"
           />
         </div>
+
+        {/* --- 2. MARKETING CHECKBOX --- */}
+        <label
+          htmlFor="marketing_opt_in"
+          className="group/input flex items-start space-x-3 mt-4 bg-green-100 p-1 rounded-md border border-green-300 overflow-hidden relative cursor-pointer hover:bg-green-50 transition-colors"
+        >
+          {/* Checkbox Wrapper */}
+          <div className="flex items-center h-5">
+            <Checkbox
+              id="marketing_opt_in"
+              name="marketing_opt_in"
+              value="true"
+            />
+          </div>
+
+          <div className="text-small-regular leading-5 text-ui-fg-base select-none z-10">
+            Want early access?
+            <br />
+            <span className="font-bold text-green-900">Yes, notify me</span> when new cars land.
+          </div>
+
+          {/* Star: Added pointer-events-none so it doesn't block clicks */}
+          <div className="absolute -right-2 -bottom-1 text-5xl opacity-30 pointer-events-none duration-200 group-hover/input:rotate-12">
+            ⭐️
+          </div>
+        </label>
+        {/* ----------------------------- */}
+
         <ErrorMessage error={message} data-testid="register-error" />
+
         <span className="text-center text-ui-fg-base text-small-regular mt-6">
           By creating an account, you agree to Checkered Collectibles&apos;{" "}
           <LocalizedClientLink

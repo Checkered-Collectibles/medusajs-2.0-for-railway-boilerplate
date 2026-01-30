@@ -100,11 +100,15 @@ export const updateCustomer = cache(async function (
 
 export async function signup(_currentState: unknown, formData: FormData) {
   const password = formData.get("password") as string
+  const marketingOptIn = formData.get("marketing_opt_in") === "true"
   const customerForm = {
     email: formData.get("email") as string,
     first_name: formData.get("first_name") as string,
     last_name: formData.get("last_name") as string,
     phone: formData.get("phone") as string,
+    metadata: {
+      marketing_opt_in: marketingOptIn
+    }
   }
 
   try {
