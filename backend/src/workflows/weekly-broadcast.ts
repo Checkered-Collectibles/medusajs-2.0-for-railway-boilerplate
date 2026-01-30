@@ -216,7 +216,7 @@ const sendWeeklyBroadcastStep = createStep(
                     headline: data.headline,
                     subHeadline: data.subHeadline,
                     shopAllLink: `${STORE_URL}/store`,
-                    unsubscribeUrl: "{{ unsubscribe_url }}",
+                    unsubscribeUrl: "{{{RESEND_UNSUBSCRIBE_URL}}}",
                 }),
             });
 
