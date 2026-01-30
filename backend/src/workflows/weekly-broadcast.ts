@@ -11,7 +11,6 @@ import { jsx } from "react/jsx-runtime";
 import WeeklyTrendingEmail from "../modules/email-notifications/templates/weekly-trending";
 
 // CONFIGURATION
-// Only products in these categories will be shown
 const INCLUDED_CATEGORY_IDS = [
     "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK", // Premium
     "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"  // Hot
@@ -19,7 +18,7 @@ const INCLUDED_CATEGORY_IDS = [
 const PRODUCTS_TO_SHOW = 6;
 const STORE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in";
 
-// Helper: Fisher-Yates Shuffle to randomize array
+// Helper: Fisher-Yates Shuffle
 function shuffleArray<T>(array: T[]): T[] {
     for (let i = array.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -35,12 +34,15 @@ const fetchIntelligentProductsStep = createStep(
         const query = container.resolve(ContainerRegistrationKeys.QUERY);
         const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
 
-        // 1. Get Default Sales Channel (Required for availability check)
+        // 1. Get Default Sales Channel
         const { data: salesChannels } = await query.graph({
             entity: "sales_channel",
             fields: ["id"],
             pagination: { // 👈 CHANGED from 'pagination' to 'options'
                 take: 1,
+                order: {
+                    created_at: "DESC"
+                },
             },
         });
         const salesChannelId = salesChannels[0]?.id;
@@ -49,8 +51,7 @@ const fetchIntelligentProductsStep = createStep(
             throw new Error("No Sales Channel found! Cannot check inventory.");
         }
 
-        // 2. Fetch a larger pool of products (e.g., 100 most recent)
-        // We fetch more than we need so we have a pool to shuffle from.
+        // 2. Fetch Products
         const { data: rawProducts } = await query.graph({
             entity: "product",
             fields: [
@@ -60,12 +61,11 @@ const fetchIntelligentProductsStep = createStep(
                 "thumbnail",
                 "created_at",
                 "categories.id",
-                "categories.handle",
-                "variants.id",               // Needed for availability check
+                "variants.id",
                 "variants.manage_inventory",
                 "variants.allow_backorder",
-                "variants.prices.amount",
-                "variants.prices.currency_code",
+                "variants.prices.amount",        // Fetch amount
+                "variants.prices.currency_code", // Fetch currency
             ],
             filters: { status: "published" },
             pagination: { // 👈 CHANGED from 'pagination' to 'options'
@@ -78,16 +78,15 @@ const fetchIntelligentProductsStep = createStep(
 
         logger.info(`🔍 Fetched ${rawProducts.length} raw products. Calculating availability...`);
 
-        // 3. Collect all Variant IDs for bulk availability check
+        // 3. Bulk Availability Check
         const allVariantIds = rawProducts.flatMap(p => p.variants.map(v => v.id));
 
-        // 4. Calculate TRUE Availability (Handles reservations & stock locations)
         const availabilityMap = await getVariantAvailability(query, {
             variant_ids: allVariantIds,
             sales_channel_id: salesChannelId,
         });
 
-        // 5. Robust Filtering
+        // 4. Robust Filtering
         const validProducts = rawProducts.filter((product) => {
             // A. Category Check
             const isIncluded = product.categories?.some((c) =>
@@ -96,39 +95,26 @@ const fetchIntelligentProductsStep = createStep(
             if (!isIncluded) return false;
 
             // B. Price Check
-            const hasPrice = product.variants?.some(
-                (v) => v.prices && v.prices.length > 0
-            );
-            if (!hasPrice) {
-                // logger.warn(`Skipping ${product.title}: No Price`);
-                return false;
-            }
+            const hasPrice = product.variants?.some(v => v.prices?.length > 0);
+            if (!hasPrice) return false;
 
-            // C. Robust Stock Check using Availability Map
+            // C. Stock Check
             const hasStock = product.variants?.some((v) => {
-                // If inventory is not managed or backorders allowed, it's available
                 if (!v.manage_inventory || v.allow_backorder) return true;
-
-                // Check calculated availability
                 const stockInfo = availabilityMap[v.id];
                 return (stockInfo?.availability || 0) > 0;
             });
 
-            if (!hasStock) {
-                // logger.warn(`Skipping ${product.title}: Out of Stock`);
-                return false;
-            }
+            if (!hasStock) return false;
 
             return true;
         });
-
-        logger.info(`✅ Found ${validProducts.length} valid products after filtering.`);
 
         if (validProducts.length === 0) {
             throw new Error("No valid products found for weekly email.");
         }
 
-        // 6. Split into "Fresh Drops" and "Classics"
+        // 5. Freshness Logic (Last 7 Days)
         const ONE_WEEK_AGO = new Date();
         ONE_WEEK_AGO.setDate(ONE_WEEK_AGO.getDate() - 7);
 
@@ -137,30 +123,20 @@ const fetchIntelligentProductsStep = createStep(
 
         validProducts.forEach(p => {
             const createdDate = new Date(p.created_at);
-            if (createdDate > ONE_WEEK_AGO) {
-                freshDrops.push(p);
-            } else {
-                classics.push(p);
-            }
+            if (createdDate > ONE_WEEK_AGO) freshDrops.push(p);
+            else classics.push(p);
         });
 
-        // 7. Selection Logic
-        let selectedProducts: typeof validProducts = [];
+        // 6. Selection Logic (Fresh first, then Random Classics)
+        let selectedProducts = [...freshDrops.slice(0, PRODUCTS_TO_SHOW)];
 
-        // A. Add all fresh drops first (up to limit)
-        selectedProducts = [...freshDrops.slice(0, PRODUCTS_TO_SHOW)];
-
-        // B. If we still need more, Shuffle the classics and fill the gaps
         if (selectedProducts.length < PRODUCTS_TO_SHOW) {
             const slotsNeeded = PRODUCTS_TO_SHOW - selectedProducts.length;
             const shuffledClassics = shuffleArray(classics);
-            selectedProducts = [
-                ...selectedProducts,
-                ...shuffledClassics.slice(0, slotsNeeded)
-            ];
+            selectedProducts = [...selectedProducts, ...shuffledClassics.slice(0, slotsNeeded)];
         }
 
-        // 8. Dynamic Headline Logic
+        // 7. Dynamic Headlines
         let emailHeadline = "🔥 Fresh Drops for the Weekend!";
         let emailSubhead = "These just landed. Secure yours before they're gone.";
 
@@ -169,19 +145,40 @@ const fetchIntelligentProductsStep = createStep(
             emailSubhead = "We dug into the vault to find these favorites. Don't miss out.";
         }
 
-        // 9. Format for Email
+        // 8. Formatting (With Discount Logic)
         const formattedProducts = selectedProducts.map((p) => {
-            const priceObj = p.variants[0].prices[0];
-            const formattedPrice = new Intl.NumberFormat('en-IN', {
+            const variant = p.variants[0];
+            const prices = variant.prices;
+
+            // Find the main currency (e.g. INR)
+            const currencyCode = prices[0]?.currency_code || 'INR';
+
+            // Filter prices to ensure we only compare same currency
+            const relevantPrices = prices.filter(pr => pr.currency_code === currencyCode);
+
+            // Find lowest (Sale) and highest (Original)
+            const minPrice = Math.min(...relevantPrices.map(pr => pr.amount));
+            const maxPrice = Math.max(...relevantPrices.map(pr => pr.amount));
+
+            // Format Currency
+            const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
                 style: 'currency',
-                currency: priceObj.currency_code || 'INR',
+                currency: currencyCode,
                 minimumFractionDigits: 0
-            }).format(priceObj.amount);
+            }).format(amount);
+
+            let displayPrice = formatMoney(minPrice);
+
+            // If there is a discount (e.g. Sale Price exists)
+            if (minPrice < maxPrice) {
+                // Returns string like: "₹999 (Was ₹1,299)"
+                displayPrice = `${formatMoney(minPrice)} (Was ${formatMoney(maxPrice)})`;
+            }
 
             return {
                 id: p.id,
                 name: p.title,
-                price: formattedPrice,
+                price: displayPrice,
                 imageUrl: p.thumbnail,
                 productUrl: `${STORE_URL}/products/${p.handle}`,
             };
@@ -201,22 +198,17 @@ const sendWeeklyBroadcastStep = createStep(
     async ({ data }: { data: any }, { container }) => {
         const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
         const resend = new Resend(process.env.RESEND_API_KEY);
-        // Use TEST ID if available for safety, else Prod
         const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID_TEST || process.env.RESEND_AUDIENCE_ID;
 
-        if (!process.env.RESEND_FROM) {
-            throw new Error("Missing RESEND_FROM in .env");
-        }
+        if (!process.env.RESEND_FROM) throw new Error("Missing RESEND_FROM in .env");
 
         try {
             const { data: resendData, error } = await resend.broadcasts.create({
                 name: `Weekly Drop - ${new Date().toLocaleDateString()}`,
                 replyTo: 'hello@checkered.in',
-                // Use 'segmentId' for Resend v4+
                 segmentId: AUDIENCE_ID as string,
                 from: process.env.RESEND_FROM,
                 subject: data.headline,
-                // Using 'react' property lets Resend handle the HTML generation
                 react: jsx(WeeklyTrendingEmail, {
                     products: data.products,
                     headline: data.headline,
@@ -237,7 +229,6 @@ const sendWeeklyBroadcastStep = createStep(
     }
 );
 
-// --- WORKFLOW DEFINITION ---
 export const weeklyBroadcastWorkflow = createWorkflow(
     "weekly-broadcast-workflow",
     () => {
