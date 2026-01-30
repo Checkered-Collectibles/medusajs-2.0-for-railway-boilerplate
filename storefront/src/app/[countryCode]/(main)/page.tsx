@@ -5,6 +5,7 @@ import FeaturedProducts from "@modules/home/components/featured-products"
 import Hero from "@modules/home/components/hero"
 import { getCollectionsWithProducts } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
+import FeaturedCategories from "@modules/home/components/featured-categories"
 
 export const metadata: Metadata = {
   // 🏆 SEO TITLE: Targets "Hot Wheels Cars" (165k vol) + "Buy Online India" (High Intent)
@@ -104,6 +105,9 @@ export default async function Home({
       />
 
       <Hero />
+      <div className="py-12">
+        <FeaturedCategories />
+      </div>
       <div className="py-12">
         <ul className="flex flex-col gap-x-6">
           <FeaturedProducts collections={collections} region={region} />
