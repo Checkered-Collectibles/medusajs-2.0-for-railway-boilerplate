@@ -183,7 +183,7 @@ const sendWeeklyBroadcastStep = createStep(
     async ({ data }: { data: any }, { container }) => {
         const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
         const resend = new Resend(process.env.RESEND_API_KEY);
-        const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID_TEST || process.env.RESEND_AUDIENCE_ID;
+        const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
 
         if (!process.env.RESEND_FROM) throw new Error("Missing RESEND_FROM in .env");
 
