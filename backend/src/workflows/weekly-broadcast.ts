@@ -3,7 +3,7 @@ import {
     createStep,
     StepResponse,
 } from "@medusajs/framework/workflows-sdk";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, QueryContext } from "@medusajs/framework/utils";
 import { getVariantAvailability } from "@medusajs/framework/utils";
 import { Resend } from "resend";
 import { jsx } from "react/jsx-runtime";
@@ -37,9 +37,7 @@ const fetchIntelligentProductsStep = createStep(
         const { data: salesChannels } = await query.graph({
             entity: "sales_channel",
             fields: ["id"],
-            pagination: {
-                take: 1,
-            },
+            pagination: { take: 1 },
         });
         const salesChannelId = salesChannels[0]?.id;
 
@@ -47,7 +45,7 @@ const fetchIntelligentProductsStep = createStep(
             throw new Error("No Sales Channel found! Cannot check inventory.");
         }
 
-        // 2. Fetch Products
+        // 2. Fetch Products with Calculated Prices
         const { data: rawProducts } = await query.graph({
             entity: "product",
             fields: [
@@ -60,10 +58,17 @@ const fetchIntelligentProductsStep = createStep(
                 "variants.id",
                 "variants.manage_inventory",
                 "variants.allow_backorder",
-                "variants.prices.amount",        // Fetch amount
-                "variants.prices.currency_code", // Fetch currency
+                "variants.calculated_price.*" // 👈 Fetch calculated price fields
             ],
             filters: { status: "published" },
+            context: {
+                variants: {
+                    calculated_price: QueryContext({
+                        region_id: "reg_01KC28ZR0B4MT6JQZR94589866", // Set your specific Region ID
+                        currency_code: "inr",                        // Set your specific Currency
+                    }),
+                },
+            },
             pagination: {
                 take: 100,
                 order: {
@@ -72,9 +77,9 @@ const fetchIntelligentProductsStep = createStep(
             },
         });
 
-        logger.info(`🔍 Fetched ${rawProducts.length} raw products. Calculating availability...`);
+        logger.info(`🔍 Fetched ${rawProducts.length} raw products. Calculating inventory availability...`);
 
-        // 3. Bulk Availability Check
+        // 3. Bulk Inventory Check
         const allVariantIds = rawProducts.flatMap(p => p.variants.map(v => v.id));
 
         const availabilityMap = await getVariantAvailability(query, {
@@ -90,8 +95,11 @@ const fetchIntelligentProductsStep = createStep(
             );
             if (!isIncluded) return false;
 
-            // B. Price Check
-            const hasPrice = product.variants?.some(v => v.prices?.length > 0);
+            // B. Price Check – must have a calculated_amount (Effective Price)
+            // We check if ANY variant has a valid price for this region
+            const hasPrice = product.variants?.some(
+                (v) => !!v.calculated_price?.calculated_amount
+            );
             if (!hasPrice) return false;
 
             // C. Stock Check
@@ -132,7 +140,7 @@ const fetchIntelligentProductsStep = createStep(
             selectedProducts = [...selectedProducts, ...shuffledClassics.slice(0, slotsNeeded)];
         }
 
-        // 7. Dynamic Headlines
+        // 7. Headlines
         let emailHeadline = "🔥 Fresh Drops for the Weekend!";
         let emailSubhead = "These just landed. Secure yours before they're gone.";
 
@@ -141,38 +149,31 @@ const fetchIntelligentProductsStep = createStep(
             emailSubhead = "We dug into the vault to find these favorites. Don't miss out.";
         }
 
-        // 8. Formatting (With Correct Discount Logic)
+        // 8. Formatting using Calculated Price
         const formattedProducts = selectedProducts.map((p) => {
-            // Get the first variant that actually has prices
-            const variant = p.variants.find(v => v.prices?.length > 0) || p.variants[0];
+            // Find the first variant with a valid price
+            const variant = p.variants.find(v => !!v.calculated_price?.calculated_amount) || p.variants[0];
+            const cp = variant.calculated_price;
 
-            // 🛑 FIX: Use 'prices' (Raw Array), NOT 'calculated_price'
-            const prices = variant.prices || [];
-
-            // Find the main currency (e.g. INR)
-            const currencyCode = prices[0]?.currency_code || 'INR';
-
-            // Filter prices to ensure we only compare same currency
-            const relevantPrices = prices.filter(pr => pr.currency_code === currencyCode);
+            // Helpers
+            const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
+                style: 'currency',
+                currency: 'INR',
+                minimumFractionDigits: 0
+            }).format(amount);
 
             let displayPrice = "N/A";
 
-            if (relevantPrices.length > 0) {
-                // Find lowest (Sale) and highest (Original)
-                const minPrice = Math.min(...relevantPrices.map(pr => pr.amount));
-                const maxPrice = Math.max(...relevantPrices.map(pr => pr.amount));
+            if (cp) {
+                const currentPrice = cp.calculated_amount; // The price they pay (Sale)
+                const originalPrice = cp.original_amount;   // The original price (List)
 
-                const formatMoney = (amount: number) => new Intl.NumberFormat('en-IN', {
-                    style: 'currency',
-                    currency: currencyCode,
-                    minimumFractionDigits: 0
-                }).format(amount);
+                displayPrice = formatMoney(currentPrice);
 
-                displayPrice = formatMoney(minPrice);
-
-                // If min < max, it means we have a cheaper price available (Discount)
-                if (minPrice < maxPrice) {
-                    displayPrice = `${formatMoney(minPrice)} (Was ${formatMoney(maxPrice)})`;
+                // Check for Discount: Is the original price higher than what they pay?
+                // Also ensures we don't show "Was 0" or equal prices
+                if (originalPrice && originalPrice > currentPrice) {
+                    displayPrice = `${formatMoney(currentPrice)} (Was ${formatMoney(originalPrice)})`;
                 }
             }
 
