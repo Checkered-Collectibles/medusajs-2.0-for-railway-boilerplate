@@ -57,7 +57,7 @@ const addCustomerToResendStep = createStep(
                 email: customer.email,
                 firstName: customer.first_name || "",
                 lastName: customer.last_name || "",
-                audienceId: AUDIENCE_ID,
+                segments: [{ id: AUDIENCE_ID }],
                 unsubscribed: false,
             });
 
