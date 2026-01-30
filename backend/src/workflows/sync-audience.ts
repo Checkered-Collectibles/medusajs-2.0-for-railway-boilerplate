@@ -10,6 +10,9 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 const AUDIENCE_ID = process.env.RESEND_AUDIENCE_ID;
 
+// Helper to pause execution (Rate Limiter)
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
 const syncCustomersStep = createStep(
     "sync-customers-step",
     async (_, { container }) => {
@@ -26,50 +29,63 @@ const syncCustomersStep = createStep(
             fields: ["email", "first_name", "last_name"],
         });
 
-        logger.info(`🔍 Found ${customers.length} customers to sync...`);
+        logger.info(`🔍 Found ${customers.length} customers. Starting rate-limited sync...`);
 
         let successCount = 0;
         let failCount = 0;
         const errors: any[] = [];
-        const chunkSize = 50;
 
-        // 3. Sync Loop
-        for (let i = 0; i < customers.length; i += chunkSize) {
-            const chunk = customers.slice(i, i + chunkSize);
+        // 3. Rate Limit Settings
+        // Resend Limit: 10 requests / second.
+        // We will do batches of 5, then wait 1 second to be safe.
+        const BATCH_SIZE = 5;
+        const DELAY_MS = 1100; // 1.1 seconds
 
+        for (let i = 0; i < customers.length; i += BATCH_SIZE) {
+            const chunk = customers.slice(i, i + BATCH_SIZE);
+
+            // Process the current batch in parallel
             await Promise.all(
                 chunk.map(async (customer) => {
                     if (!customer.email) return;
 
                     try {
-                        // ✅ THE ACTUAL WAY: Create/Update Contact
-                        // The Resend SDK uses camelCase for keys (firstName, audienceId)
+                        // Resend 'create' will UPDATE the contact if they already exist.
+                        // It will NOT create a duplicate.
                         const { error } = await resend.contacts.create({
                             email: customer.email,
                             firstName: customer.first_name || "",
                             lastName: customer.last_name || "",
-                            audienceId: AUDIENCE_ID, // 👈 REQUIRED: The ID from your Resend Dashboard URL
+                            audienceId: AUDIENCE_ID,
                             unsubscribed: false,
                         });
 
                         if (error) {
-                            // Resend often returns { name: 'validation_error', message: '...' }
-                            // This ensures we catch it.
-                            throw new Error(error.message || "Unknown Resend Error");
+                            // Ignore "already exists" errors if they happen (though usually it just updates)
+                            logger.warn(`⚠️ Issue with ${customer.email}: ${error.message}`);
+                            errors.push({ email: customer.email, error: error.message });
+                            failCount++;
+                        } else {
+                            successCount++;
                         }
-
-                        successCount++;
                     } catch (err: any) {
-                        // Log the specific error to help debug
-                        logger.error(`❌ Failed ${customer.email}: ${err.message}`);
+                        logger.error(`❌ Error ${customer.email}: ${err.message}`);
                         errors.push({ email: customer.email, error: err.message });
                         failCount++;
                     }
                 })
             );
+
+            // Log progress
+            logger.info(`Synced ${Math.min(i + BATCH_SIZE, customers.length)} / ${customers.length} customers...`);
+
+            // 4. WAIT before next batch to respect rate limits
+            if (i + BATCH_SIZE < customers.length) {
+                await sleep(DELAY_MS);
+            }
         }
 
-        logger.info(`✅ Sync Complete: ${successCount} added, ${failCount} failed.`);
+        logger.info(`✅ Sync Complete: ${successCount} updated/added, ${failCount} failed.`);
 
         return new StepResponse({ success: successCount, failed: failCount, errors });
     }
