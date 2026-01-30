@@ -12,6 +12,7 @@ type SearchResultsTemplateProps = {
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  inStock?: string // 👈 1. Accept new prop
 }
 
 const SearchResultsTemplate = ({
@@ -20,8 +21,12 @@ const SearchResultsTemplate = ({
   sortBy,
   page,
   countryCode,
+  inStock, // 👈 2. Destructure it
 }: SearchResultsTemplateProps) => {
   const pageNumber = page ? parseInt(page) : 1
+
+  // Convert string param to boolean for UI
+  const isStockFilterChecked = inStock === "true"
 
   return (
     <>
@@ -42,13 +47,21 @@ const SearchResultsTemplate = ({
       <div className="flex flex-col small:flex-row small:items-start p-6">
         {ids.length > 0 ? (
           <>
-            <RefinementList sortBy={sortBy || "created_at"} search />
+            {/* 3. Pass boolean to RefinementList to sync the checkbox */}
+            <RefinementList
+              sortBy={sortBy || "-created_at"}
+              search
+              inStock={isStockFilterChecked}
+            />
+
             <div className="content-container">
+              {/* 4. Pass string param to PaginatedProducts for filtering logic */}
               <PaginatedProducts
                 productsIds={ids}
                 sortBy={sortBy}
                 page={pageNumber}
                 countryCode={countryCode}
+                inStock={inStock}
               />
             </div>
           </>

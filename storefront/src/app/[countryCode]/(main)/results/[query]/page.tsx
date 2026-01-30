@@ -10,6 +10,7 @@ type Params = {
   searchParams: {
     sortBy?: SortOptions
     page?: string
+    inStock?: string
   }
 }
 
@@ -35,7 +36,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 
 export default async function SearchResults({ params, searchParams }: Params) {
   const { query } = params
-  const { sortBy, page } = searchParams
+  const { sortBy, page, inStock } = searchParams
 
   const hits = await search(query).then((data) => data)
 
@@ -80,6 +81,7 @@ export default async function SearchResults({ params, searchParams }: Params) {
         sortBy={sortBy}
         page={page}
         countryCode={params.countryCode}
+        inStock={inStock}
       />
     </>
   )

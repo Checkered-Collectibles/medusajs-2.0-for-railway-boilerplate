@@ -8,6 +8,7 @@ type Params = {
   searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
+    inStock?: string
   }>
   params: Promise<{
     countryCode: string
@@ -42,7 +43,7 @@ export async function generateMetadata({ searchParams, params }: Params): Promis
 }
 
 export default async function StorePage({ searchParams, params }: Params) {
-  const { sortBy, page } = await searchParams
+  const { sortBy, page, inStock } = await searchParams
   const { countryCode } = await params
 
   const pageNumber = page ? parseInt(page) : 1
@@ -109,6 +110,7 @@ export default async function StorePage({ searchParams, params }: Params) {
         sortBy={sortBy}
         page={page}
         countryCode={countryCode}
+        inStock={inStock}
       />
     </>
   )

@@ -21,6 +21,7 @@ export default async function PaginatedProducts({
   categoryId,
   productsIds,
   countryCode,
+  inStock
 }: {
   sortBy?: SortOptions
   page: number
@@ -28,6 +29,7 @@ export default async function PaginatedProducts({
   categoryId?: string
   productsIds?: string[]
   countryCode: string
+  inStock?: string
 }) {
   const queryParams: PaginatedProductsParams = {
     limit: 12,
@@ -58,15 +60,17 @@ export default async function PaginatedProducts({
     return null
   }
 
-  let {
+  // Convert string query param to boolean
+  const isStockFilterEnabled = inStock === "true"
+  const {
     response: { products, count },
   } = await getProductsListWithSort({
     page,
     queryParams,
     sortBy,
     countryCode,
+    inStock: isStockFilterEnabled, // 👈 Pass boolean to fetcher
   })
-
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
 
   return (

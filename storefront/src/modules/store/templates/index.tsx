@@ -10,20 +10,28 @@ const StoreTemplate = ({
   sortBy,
   page,
   countryCode,
+  inStock, // 👈 1. Receive the prop (from searchParams)
 }: {
   sortBy?: SortOptions
   page?: string
   countryCode: string
+  inStock?: string // 👈 2. Define type (URL params are strings)
 }) => {
   const pageNumber = page ? parseInt(page) : 1
   const sort = sortBy || "-created_at"
+
+  // Convert string "true" to boolean for UI components
+  const isStockFilterChecked = inStock === "true"
 
   return (
     <div
       className="flex flex-col small:flex-row small:items-start py-6 content-container"
       data-testid="category-container"
     >
-      <RefinementList sortBy={sort} />
+      {/* 3. Pass boolean to RefinementList so the Checkbox is checked */}
+      {/* You may need to update RefinementList to accept this prop if you haven't yet */}
+      <RefinementList sortBy={sort} inStock={isStockFilterChecked} />
+
       <div className="w-full">
         <div className="mb-8 text-2xl-semi">
           <h1 data-testid="store-page-title">All products</h1>
@@ -33,6 +41,7 @@ const StoreTemplate = ({
             sortBy={sort}
             page={pageNumber}
             countryCode={countryCode}
+            inStock={inStock} // 4. Pass the string value to the data fetcher
           />
         </Suspense>
       </div>

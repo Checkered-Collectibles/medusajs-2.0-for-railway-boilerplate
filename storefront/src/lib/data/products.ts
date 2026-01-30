@@ -5,6 +5,20 @@ import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
 
+// --- Helper: Filter Out-of-Stock Products ---
+const filterInStock = (products: HttpTypes.StoreProduct[]) => {
+  return products.filter((p) => {
+    if (!p.variants || p.variants.length === 0) return false
+    return p.variants.some((v) => {
+      if (!v.manage_inventory) return true
+      if (v.allow_backorder) return true
+      return (v.inventory_quantity || 0) > 0
+    })
+  })
+}
+
+// ... [getProductsById and getProductByHandle remain unchanged] ...
+
 export const getProductsById = cache(async function ({
   ids,
   regionId,
@@ -40,6 +54,8 @@ export const getProductByHandle = cache(async function (
     .then(({ products }) => products[0])
 })
 
+
+// --- Base Fetcher ---
 export const getProductsList = cache(async function ({
   pageParam = 1,
   queryParams,
@@ -62,12 +78,10 @@ export const getProductsList = cache(async function ({
     }
   }
 
-  // ✅ Ensure limit is a number (query params often come in as strings)
   const limit = Number(queryParams?.limit ?? 12)
   const validPageParam = Math.max(pageParam, 1)
   const offset = (validPageParam - 1) * limit
 
-  // ✅ Build base query, let caller override order if they want
   const baseQuery: HttpTypes.StoreProductListParams = {
     limit,
     offset,
@@ -77,9 +91,8 @@ export const getProductsList = cache(async function ({
     ...queryParams,
   }
 
-  // ✅ Default to newest-first if no order is provided
   if (!baseQuery.order) {
-    baseQuery.order = "-updated_at" // or "-created_at" if you prefer
+    baseQuery.order = "-updated_at"
   }
 
   return sdk.store.product
@@ -98,20 +111,19 @@ export const getProductsList = cache(async function ({
     })
 })
 
-/**
- * This will fetch 100 products to the Next.js cache and sort them based on the sortBy parameter.
- * It will then return the paginated products based on the page and limit parameters.
- */
+// --- Sorted & Filtered Fetcher ---
 export const getProductsListWithSort = cache(async function ({
-  page = 0,
+  page = 1,
   queryParams,
   sortBy = "-updated_at",
   countryCode,
+  inStock = false, // 👈 New Parameter
 }: {
   page?: number
   queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
   sortBy?: SortOptions
   countryCode: string
+  inStock?: boolean // 👈 New Type Definition
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
@@ -119,10 +131,11 @@ export const getProductsListWithSort = cache(async function ({
 }> {
   const limit = queryParams?.limit || 12
 
+  // 1. Fetch large batch
   const {
-    response: { products, count },
+    response: { products },
   } = await getProductsList({
-    pageParam: 0,
+    pageParam: 1,
     queryParams: {
       ...queryParams,
       limit: 500,
@@ -130,18 +143,28 @@ export const getProductsListWithSort = cache(async function ({
     countryCode,
   })
 
-  const sortedProducts = sortProducts(products, sortBy)
+  let processedProducts = products
 
+  // 2. INDEPENDENT FILTER: Filter if inStock is true
+  if (inStock) {
+    processedProducts = filterInStock(processedProducts)
+  }
+
+  // 3. Sort: Always sort based on the selected sortBy key
+  const sortedProducts = sortProducts(processedProducts, sortBy)
+
+  // 4. Paginate
   const pageParam = (page - 1) * limit
-
-  const nextPage = count > pageParam + limit ? pageParam + limit : null
-
   const paginatedProducts = sortedProducts.slice(pageParam, pageParam + limit)
+
+  // 5. Return count
+  const finalCount = sortedProducts.length
+  const nextPage = finalCount > pageParam + limit ? page + 1 : null
 
   return {
     response: {
       products: paginatedProducts,
-      count,
+      count: finalCount,
     },
     nextPage,
     queryParams,
