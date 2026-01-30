@@ -11,10 +11,44 @@ const retrieveOrderFromFulfillmentStep = createStep(
         const { data: fulfillments } = await query.graph({
             entity: "fulfillment",
             fields: [
-                "id",
-                "order.*",
+                "id", // Fulfillment ID
+
+                // --- 1. Basic Order Details ---
+                "order.id",
+                "order.currency_code",
+                "order.email", // Important for sending emails
+                "order.display_id", // Important for email subject/body
+
+                // --- 2. The Totals (Matched from your snippet) ---
+                "order.total",
+                "order.subtotal",
+                "order.tax_total",
+                "order.original_total",
+                "order.original_subtotal",
+                "order.original_tax_total",
+                "order.discount_total",
+                "order.discount_tax_total",
+                "order.shipping_total",
+                "order.shipping_subtotal",
+                "order.shipping_tax_total",
+                "order.original_shipping_total",
+                "order.original_shipping_subtotal",
+                "order.original_shipping_tax_total",
+                "order.item_total",
+                "order.item_tax_total",
+                "order.item_subtotal",
+                "order.original_item_total",
+                "order.original_item_tax_total",
+                "order.original_item_subtotal",
+                "order.gift_card_total",
+                "order.gift_card_tax_total",
+
+                // --- 3. Relations (Matched from your snippet) ---
+                "order.customer.*",
+                "order.items.*",
                 "order.shipping_address.*",
-                // 👇 Added requested fields
+
+                // --- 4. Extra Relations (Requested in previous steps) ---
                 "order.payment_collections.payments.*",
                 "order.fulfillments.labels.*"
             ],
@@ -23,7 +57,11 @@ const retrieveOrderFromFulfillmentStep = createStep(
             },
         })
 
-        return new StepResponse(fulfillments[0]?.order)
+        const order = fulfillments[0]?.order
+
+        // Safety: If for some reason totals are strings, Medusa usually handles this,
+        // but ensuring the structure is correct for the template.
+        return new StepResponse(order)
     }
 )
 
