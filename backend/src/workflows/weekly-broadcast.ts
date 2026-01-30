@@ -10,7 +10,10 @@ import WeeklyTrendingEmail from "../modules/email-notifications/templates/weekly
 import { jsx } from "react/jsx-runtime";
 
 // CONFIGURATION
-const EXCLUDED_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8";
+const INCLUDED_CATEGORY_IDS = [
+    "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK",
+    "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"
+];
 const PRODUCTS_TO_SHOW = 6;
 const STORE_URL = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in";
 
@@ -62,17 +65,11 @@ const fetchIntelligentProductsStep = createStep(
 
         // 2. Robust Filtering
         const validProducts = rawProducts.filter((product) => {
-            // A. Category Check
-            // Ensure EXCLUDED_CATEGORY_ID is actually an ID (starts with 'pcat_')
-            // If you are using a handle (e.g. "mainline-fantasy"), change this to check c.handle
-            const isFantasy = product.categories?.some(
-                (c) => c.id === EXCLUDED_CATEGORY_ID
+            const isIncluded = product.categories?.some((c) =>
+                INCLUDED_CATEGORY_IDS.includes(c.id)
             );
 
-            if (isFantasy) {
-                // logger.info(`Skipping ${product.title}: Fantasy Category`);
-                return false;
-            }
+            if (!isIncluded) return false;
 
             // B. Price Check
             const hasPrice = product.variants?.some(
