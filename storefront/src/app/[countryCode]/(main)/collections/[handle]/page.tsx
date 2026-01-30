@@ -73,7 +73,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   // ✅ FIX: Include countryCode in canonical to match actual URL structure
   const canonical = baseUrl
-    ? `${baseUrl}/${params.countryCode}/collections/${params.handle}`
+    ? `${baseUrl}/collections/${params.handle}`
     : undefined
 
   return {

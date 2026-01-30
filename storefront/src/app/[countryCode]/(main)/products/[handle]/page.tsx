@@ -72,7 +72,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const canonical = baseUrl
-    ? `${baseUrl}/${params.countryCode}/products/${handle}`
+    ? `${baseUrl}/products/${handle}`
     : undefined
 
   // 🧠 SMART TITLE LOGIC

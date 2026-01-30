@@ -68,7 +68,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
     const canonicalPath = params.category.join("/")
     // ✅ Fix: Include country code in canonical
-    const canonical = baseUrl ? `${baseUrl}/${params.countryCode}/categories/${canonicalPath}` : canonicalPath
+    const canonical = baseUrl ? `${baseUrl}/categories/${canonicalPath}` : canonicalPath
 
     return {
       title,
@@ -129,7 +129,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
   // 3. BUILD JSON-LD SCHEMA
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
   const categoryPath = params.category.join("/")
-  const currentUrl = `${baseUrl}/${params.countryCode}/categories/${categoryPath}`
+  const currentUrl = `${baseUrl}/categories/${categoryPath}`
 
   // A. Dynamic Breadcrumbs construction
   const breadcrumbItems = [
@@ -143,7 +143,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       "@type": "ListItem",
       "position": 2,
       "name": "Categories",
-      "item": `${baseUrl}/${params.countryCode}/store` // Fallback to store
+      "item": `${baseUrl}/store` // Fallback to store
     }
   ]
 
@@ -154,7 +154,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
       "position": index + 3,
       "name": cat.name,
       // Construct cumulative URL path
-      "item": `${baseUrl}/${params.countryCode}/categories/${product_categories.slice(0, index + 1).map((c: any) => c.handle).join("/")}`
+      "item": `${baseUrl}/categories/${product_categories.slice(0, index + 1).map((c: any) => c.handle).join("/")}`
     })
   })
 
@@ -177,7 +177,7 @@ export default async function CategoryPage({ params, searchParams }: Props) {
           "itemListElement": response?.products.map((product, index) => ({
             "@type": "ListItem",
             "position": index + 1,
-            "url": `${baseUrl}/${params.countryCode}/products/${product.handle}`,
+            "url": `${baseUrl}/products/${product.handle}`,
             "name": product.title,
             // ✅ Price Injection
             "offers": {
