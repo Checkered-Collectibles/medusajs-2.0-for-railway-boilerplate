@@ -33,6 +33,13 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:availability>${escape(item.availability)}</g:availability>` +
                 `<g:price>${escape(item.price)}</g:price>` +
                 (item.sale_price ? `<g:sale_price>${escape(item.sale_price)}</g:sale_price>` : "") +
+                `<g:country>IN</g:country>` +
+
+                `<g:shipping>` +
+                `<g:country>IN</g:country>` +
+                `<g:service>Standard</g:service>` +
+                `<g:price>0 INR</g:price>` +
+                `</g:shipping>` +
 
                 `<g:condition>${escape(item.condition || "new")}</g:condition>` +
                 `<g:brand>${escape(item.brand || "Hot Wheels")}</g:brand>` +
