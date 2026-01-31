@@ -6,6 +6,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Image from "next/image"
 import LogoImage from "@images/logo.png";
 import PaymentLogos from "./payments"
+import ReviewStars from "../stars"
 
 export default async function Footer() {
   // ⚡ Fetching 6 items is good, keeps the footer clean but crawlable
@@ -158,6 +159,7 @@ export default async function Footer() {
               © {new Date().getFullYear()} Checkered Collectibles India
             </Text>
             <PaymentLogos />
+            <ReviewStars />
           </div>
           <div className="flex flex-wrap gap-3">
             <LocalizedClientLink href="/contact"><Text className="text-xs hover:text-ui-fg-base">Contact Us</Text></LocalizedClientLink>

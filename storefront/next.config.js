@@ -32,6 +32,10 @@ const nextConfig = {
 
       {
         protocol: "https",
+        hostname: "cdn.trustpilot.net",
+      },
+      {
+        protocol: "https",
         hostname: "vl.imgix.net",
       },
       {

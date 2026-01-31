@@ -4,6 +4,7 @@ import LocalizedClientLink from "@modules/common/components/localized-client-lin
 import Image from "next/image"
 import logotypes from "@avto-dev/vehicle-logotypes/src/vehicle-logotypes.json"
 import { getBrandLogoFromTitle, logosMapToArray } from "@modules/cart/components/hw/get-logo"
+import ReviewStars from "@modules/layout/templates/stars"
 
 
 
@@ -55,6 +56,9 @@ const ProductInfo = async ({ product }: ProductInfoProps) => {
           >
             {product.title}
           </Heading>
+          <div className="w-full py-3 flex items-start">
+            <ReviewStars />
+          </div>
         </div>
         <Text
           className="text-medium text-ui-fg-subtle whitespace-pre-line"
