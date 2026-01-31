@@ -6,6 +6,7 @@ import Nav from "@modules/layout/templates/nav"
 import { getBaseURL } from "@lib/util/env"
 import Banner from "@modules/layout/templates/banner"
 import WhatsappContact from "@modules/layout/templates/whatsapp"
+import FacebookPixel from "@lib/meta/facebook-pixel"
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://checkered.in"),
@@ -117,6 +118,7 @@ export default async function PageLayout(props: { children: React.ReactNode }) {
       <WhatsappContact />
       {props.children}
       <Footer />
+      <FacebookPixel />
     </>
   )
 }

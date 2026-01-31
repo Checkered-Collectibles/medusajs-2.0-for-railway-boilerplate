@@ -1,4 +1,3 @@
-import FacebookPixel from "@lib/meta/facebook-pixel"
 import { getBaseURL } from "@lib/util/env"
 import { Metadata } from "next"
 import Script from "next/script"
@@ -50,7 +49,6 @@ export default function RootLayout(props: { children: React.ReactNode }) {
           <RegistrationFlusher />
         </Suspense>
       </body>
-      <FacebookPixel />
     </html>
   )
 }
