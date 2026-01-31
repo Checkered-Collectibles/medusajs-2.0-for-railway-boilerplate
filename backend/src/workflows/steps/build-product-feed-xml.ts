@@ -18,6 +18,18 @@ export const buildProductFeedXmlStep = createStep(
 
         const itemsXml = input.items.map((item) => {
             const gtin = item.ean || item.upc
+
+            // --- SHIPPING LOGIC START ---
+            // 1. Use sale_price if available, otherwise regular price
+            const effectivePriceString = item.sale_price || item.price || "0"
+
+            // 2. Clean string to ensure we get a clean number (removes " INR" etc)
+            const priceValue = parseFloat(effectivePriceString.replace(/[^\d.]/g, ''))
+
+            // 3. Logic: Free if > 1999, else 150
+            const shippingCost = priceValue > 1999 ? "0 INR" : "150 INR"
+            // --- SHIPPING LOGIC END ---
+
             return (
                 `<item>` +
                 `<g:id>${escape(item.id)}</g:id>` +
@@ -33,12 +45,12 @@ export const buildProductFeedXmlStep = createStep(
                 `<g:availability>${escape(item.availability)}</g:availability>` +
                 `<g:price>${escape(item.price)}</g:price>` +
                 (item.sale_price ? `<g:sale_price>${escape(item.sale_price)}</g:sale_price>` : "") +
-                `<g:country>IN</g:country>` +
 
+                // Updated Shipping Block
                 `<g:shipping>` +
                 `<g:country>IN</g:country>` +
                 `<g:service>Standard</g:service>` +
-                `<g:price>0 INR</g:price>` +
+                `<g:price>${shippingCost}</g:price>` +
                 `</g:shipping>` +
 
                 `<g:condition>${escape(item.condition || "new")}</g:condition>` +

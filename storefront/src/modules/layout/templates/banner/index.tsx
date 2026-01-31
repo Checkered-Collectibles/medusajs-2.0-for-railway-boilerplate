@@ -9,7 +9,7 @@ import Countdown from "./countdown"
  * Duration: 48 Hours
  */
 const DROP_DATE_IST = "2026-02-01T00:00:00+05:30" // Live Now (Started Midnight Feb 1)
-const SALE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 Hours
+const SALE_DURATION_MS = 51 * 60 * 60 * 1000 // 48 Hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)

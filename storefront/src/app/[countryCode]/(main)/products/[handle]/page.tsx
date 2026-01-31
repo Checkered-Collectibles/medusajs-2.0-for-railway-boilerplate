@@ -146,7 +146,7 @@ export default async function ProductPage({ params }: Props) {
   const currencyCode = priceObj?.currency_code?.toUpperCase() || "INR"
 
   // 🚚 DYNAMIC SHIPPING LOGIC
-  const shippingCost = priceValue > 1499 ? "0" : "150"
+  const shippingCost = priceValue > 1999 ? "0" : "150"
 
   // 📅 PRICE VALID UNTIL LOGIC
   const nextYear = new Date()
