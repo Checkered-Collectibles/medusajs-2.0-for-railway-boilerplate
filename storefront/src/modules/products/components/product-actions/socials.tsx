@@ -9,7 +9,8 @@ export default function Socials() {
     const handleJoin = () => {
         metaEvent("Lead", {
             content_name: "WhatsApp Group",
-            content_category: "Community"
+            content_category: "Community",
+            currency: "INR"
         })
     }
     return (

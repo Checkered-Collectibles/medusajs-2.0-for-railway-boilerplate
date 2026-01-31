@@ -25,6 +25,7 @@ export const PurchaseTracker = ({ order }: Props) => {
                 value: value,
                 num_items: order.items?.reduce((acc, item) => acc + item.quantity, 0) || 0,
                 order_id: order.id, // Helpful for deduplication matching
+                event_id: order.id
             })
         }
     }, [order])

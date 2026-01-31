@@ -13,7 +13,8 @@ export default function WhatsappContact() {
     const handleJoin = () => {
         metaEvent("Lead", {
             content_name: "WhatsApp Group",
-            content_category: "Community"
+            content_category: "Community",
+            currency: "INR"
         })
     }
 
