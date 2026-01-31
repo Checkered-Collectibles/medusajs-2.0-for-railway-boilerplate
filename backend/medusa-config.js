@@ -302,6 +302,10 @@ const modules = [
  * Plugins
  */
 const plugins = [
+  {
+    resolve: "@agilo/medusa-analytics-plugin",
+    options: {},
+  },
   ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
     ? [
         {
