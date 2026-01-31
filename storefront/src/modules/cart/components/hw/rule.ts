@@ -25,7 +25,7 @@ export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
-    const isPremiumRuleEnabled = true
+    const isPremiumRuleEnabled = false
     const MAX_ITEMS_ALLOWED = 30
 
     let licensedCount = 0
