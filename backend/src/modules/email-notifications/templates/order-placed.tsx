@@ -134,30 +134,30 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
         <div style={{ margin: "10px 0 20px" }}>
           <Text style={{ margin: "0 0 3px" }}>
-            Subtotal: {formatMoney(summary.subtotal, order.currency_code)}
+            Subtotal: {formatMoney(order.subtotal, order.currency_code)}
           </Text>
 
-          {Number(summary.discount_total) > 0 && (
+          {Number(order.discount_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
               Discount: -
-              {formatMoney(summary.discount_total, order.currency_code)}
+              {formatMoney(order.discount_total, order.currency_code)}
             </Text>
           )}
 
-          {Number(summary.shipping_total) > 0 && (
+          {Number(order.shipping_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
-              Shipping: {formatMoney(summary.shipping_total, order.currency_code)}
+              Shipping: {formatMoney(order.shipping_total, order.currency_code)}
             </Text>
           )}
 
-          {Number(summary.tax_total) > 0 && (
+          {Number(order.tax_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
-              Tax: {formatMoney(summary.tax_total, order.currency_code)}
+              Tax: {formatMoney(order.tax_total, order.currency_code)}
             </Text>
           )}
 
           <Text style={{ margin: "8px 0 0", fontWeight: "bold" }}>
-            Total: {formatMoney(summary.total, order.currency_code)}
+            Total: {formatMoney(order.total, order.currency_code)}
           </Text>
         </div>
 
