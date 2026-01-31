@@ -35,7 +35,8 @@ export default function Banner() {
             {isSaleLive && (
                 <Link
                     href="/store"
-                    className="flex flex-wrap items-center justify-center gap-x-3 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
+                    // Added gap-y-1 for better spacing when wrapping on mobile
+                    className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
                         🚨 48-HR FLASH SALE: <span className="text-yellow-300">10% OFF PREMIUMS</span>
@@ -45,8 +46,9 @@ export default function Banner() {
                         USE CODE: PREMIUM10
                     </span>
 
-                    <div className="hidden sm:flex items-center gap-1 bg-black/20 px-2 py-0.5 rounded ml-2">
-                        <span className="text-white/90 font-normal text-xs">Ends in:</span>
+                    {/* Removed 'hidden' class so it shows on mobile too. Changed bg to white/10 for visibility on black */}
+                    <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded ml-0 sm:ml-2">
+                        <span className="text-white/80 font-normal text-[10px] sm:text-xs">Ends in:</span>
                         <Countdown targetDate={saleEndDate} size="sm" className="font-mono text-white text-xs" />
                     </div>
                 </Link>
