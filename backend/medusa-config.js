@@ -80,8 +80,8 @@ const MEILISEARCH_ADMIN_KEY =
  * - POSTHOG_EVENTS_API_KEY
  * - POSTHOG_HOST
  */
-const POSTHOG_EVENTS_API_KEY = process.env.POSTHOG_EVENTS_API_KEY;
-const POSTHOG_HOST = process.env.POSTHOG_HOST;
+const POSTHOG_EVENTS_API_KEY = process.env.NEXT_PUBLIC_POSTHOG_KEY;
+const POSTHOG_HOST = process.env.NEXT_PUBLIC_POSTHOG_HOST;
 
 /**
  * Optional local module: loyalty
