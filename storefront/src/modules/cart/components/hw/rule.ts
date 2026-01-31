@@ -26,7 +26,7 @@ export async function evaluateHotWheelsRule(
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = true
-    const MAX_ITEMS_ALLOWED = 14
+    const MAX_ITEMS_ALLOWED = 30
 
     let licensedCount = 0
     let fantasyCount = 0

@@ -229,6 +229,71 @@ export async function setShippingMethod({
     })
     .catch(medusaError)
 }
+function stripCartForPayment(cart: HttpTypes.StoreCart): HttpTypes.StoreCart {
+  // 1. Clone the cart (Fastest way for simple objects)
+  const leanCart = JSON.parse(JSON.stringify(cart))
+
+  // 2. Remove Heavy Top-Level Objects
+  delete leanCart.customer // Contains groups, orders history context
+  delete leanCart.region // Contains list of countries and providers
+  delete leanCart.sales_channel // Not needed for payment init
+  delete leanCart.promotions // List of rules
+  delete leanCart.payment_sessions // Previous sessions
+
+  // 3. Clean Addresses (Keep fields, remove metadata)
+  if (leanCart.billing_address) delete leanCart.billing_address.metadata
+  if (leanCart.shipping_address) delete leanCart.shipping_address.metadata
+
+  // 4. Aggressively clean Items (The source of the bloat)
+  if (Array.isArray(leanCart.items)) {
+    leanCart.items = leanCart.items.map((item: any) => {
+      return {
+        // KEEP only what Payment Providers need (Math + Identity)
+        id: item.id,
+        quantity: item.quantity,
+        unit_price: item.unit_price,
+        amount: item.total,
+        total: item.total,
+        tax_total: item.tax_total,
+
+        // KEEP basic display info (Strings only)
+        title: item.title,
+        thumbnail: item.thumbnail,
+
+        // DELETE the heavy relations entirely
+        // Providers check line item totals, they don't read descriptions
+        product: undefined,
+        variant: undefined,
+
+        // Ensure no stray description fields exist on the item itself
+        product_description: undefined,
+        description: undefined,
+        metadata: undefined
+      }
+    })
+  }
+
+  return leanCart
+}
+// export async function initiatePaymentSession(
+//   cart: HttpTypes.StoreCart,
+//   input: {
+//     provider_id: string
+//     data?: Record<string, unknown>
+//   }
+// ) {
+//   const slimCart = stripCartForPayment(cart)
+//   console.log(
+//     "slimCart",
+//     JSON.stringify(slimCart));
+//   return sdk.store.payment
+//     .initiatePaymentSession(slimCart, input, {}, getAuthHeaders())
+//     .then((resp) => {
+//       revalidateTag("cart")
+//       return resp
+//     })
+//     .catch(medusaError)
+// }
 
 export async function initiatePaymentSession(
   cart: HttpTypes.StoreCart,
@@ -237,15 +302,59 @@ export async function initiatePaymentSession(
     data?: Record<string, unknown>
   }
 ) {
-  return sdk.store.payment
-    .initiatePaymentSession(cart, input, {}, getAuthHeaders())
-    .then((resp) => {
+  const headers = getAuthHeaders()
+  let paymentCollectionId = cart.payment_collection?.id
+
+  // ---------------------------------------------------------
+  // 1. SANITIZE DATA (The Culprit!)
+  // ---------------------------------------------------------
+  // Most providers don't need data at initialization. 
+  // We explicitly strip heavy fields if they were accidentally passed.
+  const cleanData = input.data || {}
+
+  // Safety: Delete common heavy keys if they exist in 'data'
+  delete (cleanData as any).cart
+  delete (cleanData as any).items
+  delete (cleanData as any).product
+  delete (cleanData as any).variants
+
+  // ---------------------------------------------------------
+  // 2. Create Payment Collection (If missing)
+  // ---------------------------------------------------------
+  if (!paymentCollectionId) {
+    try {
+      const { payment_collection } = await sdk.client.fetch<{
+        payment_collection: HttpTypes.StorePaymentCollection
+      }>(`/store/payment-collections`, {
+        method: "POST",
+        headers,
+        body: { cart_id: cart.id }, // <--- Send ONLY ID
+      })
+      paymentCollectionId = payment_collection.id
+    } catch (e) {
+      return medusaError(e)
+    }
+  }
+
+  // ---------------------------------------------------------
+  // 3. Create Payment Session
+  // ---------------------------------------------------------
+  return await sdk.client.fetch<{
+    payment_collection: HttpTypes.StorePaymentCollection
+  }>(`/store/payment-collections/${paymentCollectionId}/payment-sessions`, {
+    method: "POST",
+    headers,
+    body: {
+      provider_id: input.provider_id,
+      data: cleanData, // <--- Use the sanitized data
+    },
+  })
+    .then((result) => {
       revalidateTag("cart")
-      return resp
+      return result
     })
     .catch(medusaError)
 }
-
 export async function applyPromotions(codes: string[]) {
   try {
     const cartId = getCartId()
