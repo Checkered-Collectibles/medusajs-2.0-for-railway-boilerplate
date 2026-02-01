@@ -56,9 +56,9 @@ const ProductInfo = async ({ product }: ProductInfoProps) => {
           >
             {product.title}
           </Heading>
-          <div className="w-full py-3 flex items-start">
+          {/* <div className="w-full py-3 flex items-start">
             <ReviewStars />
-          </div>
+          </div> */}
         </div>
         <Text
           className="text-medium text-ui-fg-subtle whitespace-pre-line"
