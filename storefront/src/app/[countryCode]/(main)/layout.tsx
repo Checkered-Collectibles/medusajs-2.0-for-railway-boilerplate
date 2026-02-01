@@ -52,7 +52,7 @@ export const metadata: Metadata = {
     locale: 'en_IN',
     images: [
       {
-        url: "/images/og-image.jpg",
+        url: "https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/og-image.png",
         width: 1200,
         height: 630,
         alt: "Buy Hot Wheels Online in India - Checkered Collectibles",
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
     title: "Buy Hot Wheels Cars Online in India | Checkered Collectibles",
     description:
       "Shop Hot Wheels cars and die-cast collectibles online in India. Affordable, authentic, and collector-approved.",
-    images: ["/images/og-image.jpg"],
+    images: ["https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/og-image.png"],
   },
 
   robots: {
