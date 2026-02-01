@@ -242,7 +242,51 @@ export const OrderShippedTemplate: React.FC<OrderShippedTemplateProps> & {
           <Text style={{ margin: "20px 0 0", fontSize: "12px", color: "#888" }}>
             Order ID: #{order.display_id}
           </Text>
+          {/* SOCIAL LINKS SECTION */}
+          <Section style={{
+            marginTop: "30px",
+            marginBottom: "10px",
+            backgroundColor: "#f9f9f9",
+            padding: "20px",
+            borderRadius: "8px",
+            textAlign: "center"
+          }}>
+            <Text style={{ fontSize: "14px", color: "#444", fontWeight: "bold", marginBottom: "15px" }}>
+              Join the Collector's Community 🏎️
+            </Text>
 
+            {/* Social Icons Container */}
+            <Section>
+              <table align="center" border={0} cellPadding={0} cellSpacing={0}>
+                <tr>
+                  <td style={{ padding: "0 10px" }}>
+                    <a href="https://instagram.com/checkered.in" target="_blank">
+                      <Img
+                        src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/instagram-small-circle.png"
+                        alt="Instagram"
+                        width="40"
+                        height="40"
+                      />
+                    </a>
+                  </td>
+                  <td style={{ padding: "0 10px" }}>
+                    <a href="https://youtube.com/@CheckeredCollectibles" target="_blank">
+                      <Img
+                        src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/youtube-small-circle.png"
+                        alt="YouTube"
+                        width="40"
+                        height="40"
+                      />
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </Section>
+
+            <Text style={{ fontSize: "12px", color: "#888", marginTop: "15px" }}>
+              Follow us for unboxings, drops & giveaways.
+            </Text>
+          </Section>
           <Text style={{ margin: "10px 0 0" }}>
             If you have any issues with the delivery, please reply to this email.
           </Text>

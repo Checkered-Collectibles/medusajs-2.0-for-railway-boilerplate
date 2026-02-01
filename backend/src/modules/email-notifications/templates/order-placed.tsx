@@ -1,5 +1,5 @@
 import * as React from "react"
-import { Text, Section, Hr, Img, Button } from "@react-email/components" // Added Button import
+import { Text, Section, Hr, Img, Button } from "@react-email/components"
 import { Base } from "./base"
 import {
   BigNumberValue,
@@ -97,7 +97,7 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           it ships.
         </Text>
 
-        {/* CTA BUTTON - Added Here */}
+        {/* CTA BUTTON */}
         <Section style={{ textAlign: "center", margin: "30px 0" }}>
           <Button
             href={orderDetailsUrl}
@@ -291,7 +291,53 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           })}
         </div>
 
-        <Text style={{ margin: "20px 0 0" }}>
+        {/* SOCIAL LINKS SECTION */}
+        <Section style={{
+          marginTop: "30px",
+          marginBottom: "10px",
+          backgroundColor: "#f9f9f9",
+          padding: "20px",
+          borderRadius: "8px",
+          textAlign: "center"
+        }}>
+          <Text style={{ fontSize: "14px", color: "#444", fontWeight: "bold", marginBottom: "15px" }}>
+            Join the Collector's Community 🏎️
+          </Text>
+
+          {/* Social Icons Container */}
+          <Section>
+            <table align="center" border={0} cellPadding={0} cellSpacing={0}>
+              <tr>
+                <td style={{ padding: "0 10px" }}>
+                  <a href="https://instagram.com/checkered.in" target="_blank">
+                    <Img
+                      src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/instagram-small-circle.png"
+                      alt="Instagram"
+                      width="40"
+                      height="40"
+                    />
+                  </a>
+                </td>
+                <td style={{ padding: "0 10px" }}>
+                  <a href="https://youtube.com/@CheckeredCollectibles" target="_blank">
+                    <Img
+                      src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/youtube-small-circle.png"
+                      alt="YouTube"
+                      width="40"
+                      height="40"
+                    />
+                  </a>
+                </td>
+              </tr>
+            </table>
+          </Section>
+
+          <Text style={{ fontSize: "12px", color: "#888", marginTop: "15px" }}>
+            Follow us for unboxings, drops & giveaways.
+          </Text>
+        </Section>
+
+        <Text style={{ margin: "20px 0 0", textAlign: "center", color: "#666", fontSize: "12px" }}>
           If you have any questions about your order, just reply to this email.
         </Text>
       </Section>
@@ -301,7 +347,6 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
 
 /* -----------------------
    MOCK ORDER FOR PREVIEW
-   (No changes needed below this line, but included for completeness)
 ------------------------ */
 
 const mockOrder = {

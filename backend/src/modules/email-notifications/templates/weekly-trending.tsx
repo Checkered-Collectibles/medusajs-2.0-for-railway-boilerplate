@@ -165,7 +165,51 @@ export const WeeklyTrendingEmail = ({
                     View All New Arrivals
                 </Button>
             </Section>
+            {/* SOCIAL LINKS SECTION */}
+            <Section style={{
+                marginTop: "30px",
+                marginBottom: "10px",
+                backgroundColor: "#f9f9f9",
+                padding: "20px",
+                borderRadius: "8px",
+                textAlign: "center"
+            }}>
+                <Text style={{ fontSize: "14px", color: "#444", fontWeight: "bold", marginBottom: "15px" }}>
+                    Join the Collector's Community 🏎️
+                </Text>
 
+                {/* Social Icons Container */}
+                <Section>
+                    <table align="center" border={0} cellPadding={0} cellSpacing={0}>
+                        <tr>
+                            <td style={{ padding: "0 10px" }}>
+                                <a href="https://instagram.com/checkered.in" target="_blank">
+                                    <Img
+                                        src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/instagram-small-circle.png"
+                                        alt="Instagram"
+                                        width="40"
+                                        height="40"
+                                    />
+                                </a>
+                            </td>
+                            <td style={{ padding: "0 10px" }}>
+                                <a href="https://youtube.com/@CheckeredCollectibles" target="_blank">
+                                    <Img
+                                        src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/youtube-small-circle.png"
+                                        alt="YouTube"
+                                        width="40"
+                                        height="40"
+                                    />
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </Section>
+
+                <Text style={{ fontSize: "12px", color: "#888", marginTop: "15px" }}>
+                    Follow us for unboxings, drops & giveaways.
+                </Text>
+            </Section>
             {/* --- FOOTER / UNSUBSCRIBE --- */}
             <Section className="text-center mt-[40px]">
                 <Text className="text-[#888888] text-[12px] leading-[20px] m-0">

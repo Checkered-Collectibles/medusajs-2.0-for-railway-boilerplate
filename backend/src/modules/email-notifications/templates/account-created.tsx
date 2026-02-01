@@ -115,7 +115,7 @@ export const AccountCreatedTemplate: React.FC<AccountCreatedTemplateProps> & {
                                 <td style={{ padding: "0 10px" }}>
                                     <a href="https://instagram.com/checkered.in" target="_blank">
                                         <Img
-                                            src="https://cdn.tools.unlayer.com/social/icons/circle/instagram.png"
+                                            src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/instagram-small-circle.png"
                                             alt="Instagram"
                                             width="40"
                                             height="40"
@@ -125,7 +125,7 @@ export const AccountCreatedTemplate: React.FC<AccountCreatedTemplateProps> & {
                                 <td style={{ padding: "0 10px" }}>
                                     <a href="https://youtube.com/@CheckeredCollectibles" target="_blank">
                                         <Img
-                                            src="https://cdn.tools.unlayer.com/social/icons/circle/youtube.png"
+                                            src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/youtube-small-circle.png"
                                             alt="YouTube"
                                             width="40"
                                             height="40"
