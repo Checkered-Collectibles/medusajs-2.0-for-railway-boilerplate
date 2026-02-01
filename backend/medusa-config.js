@@ -330,6 +330,9 @@ const plugins = [
                   "thumbnail",
                 ],
                 indexSettings: {
+                  // 👇 ADD THIS: Tell Meilisearch to ignore these common words
+                  stopWords: ["hot", "wheels"],
+
                   searchableAttributes: [
                     "title",
                     "description",
