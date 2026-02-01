@@ -1,5 +1,5 @@
 import { createWorkflow, createStep, StepResponse } from "@medusajs/framework/workflows-sdk"
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils"
+import { ContainerRegistrationKeys, Modules } from "@medusajs/framework/utils"
 import { ACCOUNT_CREATED } from "../modules/email-notifications/templates/account-created"
 
 // 1. Step to fetch customer details
@@ -28,7 +28,7 @@ const fetchCustomerStep = createStep(
 const sendNotificationStep = createStep(
     "send-welcome-notification",
     async (customer: any, { container }) => {
-        const notificationModuleService = container.resolve("notification")
+        const notificationModuleService = container.resolve(Modules.NOTIFICATION)
 
         await notificationModuleService.createNotifications({
             to: customer.email,
