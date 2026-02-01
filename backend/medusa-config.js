@@ -303,7 +303,7 @@ const modules = [
  */
 const plugins = [
   {
-    resolve: "@agilo/medusa-analytics-plugin",
+    resolve: "@rsc-labs/medusa-store-analytics-v2",
     options: {},
   },
   ...(MEILISEARCH_HOST && MEILISEARCH_ADMIN_KEY
