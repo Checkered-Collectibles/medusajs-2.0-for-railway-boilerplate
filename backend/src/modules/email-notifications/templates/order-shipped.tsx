@@ -102,9 +102,9 @@ export const OrderShippedTemplate: React.FC<OrderShippedTemplateProps> & {
         <Section>
           {/* HEADER */}
           <Img
-            src="https://checkered.in/images/logo.png"
+            src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/logo-notext2.png"
             alt="Checkered Collectibles"
-            className="mx-auto w-28 mb-6"
+            className="mx-auto w-20 mb-8"
           />
           <Text
             style={{

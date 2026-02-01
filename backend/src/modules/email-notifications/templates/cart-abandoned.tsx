@@ -73,9 +73,9 @@ export const CartAbandonedEmail = ({
         <Base preview={preview}>
             <Section className="mt-[32px]">
                 <Img
-                    src="https://checkered.in/images/logo.png"
+                    src="https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/logo-notext2.png"
                     alt="Checkered Collectibles"
-                    className="mx-auto w-28"
+                    className="mx-auto w-20 mb-8"
                 />
             </Section>
 
