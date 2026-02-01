@@ -16,7 +16,7 @@ export const PurchaseTracker = ({ order }: Props) => {
             fired.current = true // 🛡️ Prevent double-firing in React Strict Mode
 
             // Medusa amounts are in cents (e.g., 1000 = 10.00), Pixel needs float
-            const value = order.total / 100
+            const value = order.total
 
             metaEvent("Purchase", {
                 content_ids: order.items?.map((item) => item.variant_id) || [],
