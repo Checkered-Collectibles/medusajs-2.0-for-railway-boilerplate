@@ -18,7 +18,7 @@ const Hero = () => {
               level="h1"
               className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-thin"
             >
-              MORE THAN METAL. <br className="sm:hidden block" /> MORE THAN SPEED.
+              SCALE 1:64.<br className="sm:hidden block" /> ADRENALINE 100%.
               {/* <Image
                 src={HWImage}
                 width={160}
@@ -36,7 +36,7 @@ const Hero = () => {
               level="h2"
               className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal mt-2"
             >
-              It's a love story written in gasoline.
+              Legends, not toys. Curated for the obsessed.
             </Heading>
             <p className="flex flex-wrap gap-2 items-center justify-center mt-3">
               Fuel your passion with the best<Image

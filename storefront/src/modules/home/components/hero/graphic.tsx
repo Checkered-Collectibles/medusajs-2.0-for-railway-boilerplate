@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import HeroImage from "@images/hero/team-transport.jpeg";
+import HeroImage from "@images/hero/mclaren-formula1.jpg";
 // import HeroImage2 from "@images/bugatti-hero.png";
 import EuroSpeed from "@images/euro-speed.png";
 import ExoticEnvy from "@images/exotic-envy.jpg";
@@ -33,7 +33,7 @@ export default function HeroGraphic() {
                 fill
                 draggable={false}
                 alt="Hero image 1"
-                className="hero-img drop-shadow-xl object-cover object-right"
+                className="hero-img drop-shadow-xl object-cover object-center"
             />
             <div className="absolute bottom-2 left-2 flex flex-wrap items-end gap-3">
                 {/* <p className="text-white bg-black px-2 py-1 italic">Some things never change</p> */}
