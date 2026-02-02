@@ -6,19 +6,19 @@ import { search } from "@modules/search/actions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 
 type Params = {
-  params: { query: string; countryCode: string }
-  searchParams: {
+  params: Promise<{ query: string; countryCode: string }>
+  searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
     inStock?: string
-  }
+  }>
 }
 
 // 2. DYNAMIC METADATA
 // We switch from 'export const metadata' to 'generateMetadata' to access the 'query'
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
   // Decode the URL (e.g. "nissan%20skyline" -> "nissan skyline")
-  const q = decodeURIComponent(params.query)
+  const q = decodeURIComponent((await params).query)
 
   return {
     title: `Search results for "${q}" | Checkered Collectibles`,
@@ -35,11 +35,15 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function SearchResults({ params, searchParams }: Params) {
-  const { query } = params
-  const { sortBy, page, inStock } = searchParams
+  const { query } = await params
+  const { sortBy, page, inStock } = await searchParams
+  // 1. Decode the URL characters first (converts %20 to real spaces)
+  const decodedQuery = decodeURIComponent(query);
 
-  const hits = await search(query).then((data) => data)
+  // 2. Now run the replace on the clean text
+  const newQuery = decodedQuery.replace(/hot wheels/gi, "").trim();
 
+  const hits = await search(newQuery).then((data) => data);
   // Filter valid IDs
   const ids = hits
     .map((h) => h.objectID || h.id)
@@ -80,7 +84,7 @@ export default async function SearchResults({ params, searchParams }: Params) {
         ids={ids}
         sortBy={sortBy}
         page={page}
-        countryCode={params.countryCode}
+        countryCode={(await params).countryCode}
         inStock={inStock}
       />
     </>
