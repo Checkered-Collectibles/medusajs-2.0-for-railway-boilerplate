@@ -90,8 +90,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const images = product.images?.length
     ? product.images.map((img) => ({
       url: img.url,
-      width: 1200,
-      height: 630,
+      width: 1024,
+      height: 1280,
       alt: `${fullTitle} - Buy Online India`,
     }))
     : []
