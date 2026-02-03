@@ -33,16 +33,22 @@ const sendNotificationStep = createStep(
         await notificationModuleService.createNotifications({
             to: customer.email,
             channel: "email",
-            template: ACCOUNT_CREATED, // The key we added to the registry
+            template: ACCOUNT_CREATED,
             data: {
+                // ✅ ADD THIS: The provider looks for 'subject' inside here
+                emailOptions: {
+                    replyTo: 'hello@checkered.in',
+                    subject: 'Welcome to the Checkered Crew! 🏁'
+                },
+                // Your existing data
                 customer: {
                     first_name: customer.first_name,
                     last_name: customer.last_name,
                     email: customer.email
-                }
+                },
+                preview: 'Welcome to the Checkered Crew! 🏁'
             }
         })
-
         return new StepResponse("Email sent")
     }
 )
