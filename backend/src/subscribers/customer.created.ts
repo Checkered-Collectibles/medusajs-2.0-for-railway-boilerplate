@@ -42,7 +42,7 @@ export default async function customerCreatedHandler({
 
     // 👇 UPDATED: Check email workflow status
     if (emailResult.status === 'rejected') {
-        logger.error(`❌ Welcome Email Workflow Failed: ${emailResult.reason}`)
+        logger.error(`❌ Welcome Email Workflow Failed: ${JSON.stringify(emailResult.reason)}`)
     }
 }
 
