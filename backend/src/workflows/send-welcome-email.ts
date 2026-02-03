@@ -35,18 +35,16 @@ const sendNotificationStep = createStep(
             channel: "email",
             template: ACCOUNT_CREATED,
             data: {
-                // ✅ ADD THIS: The provider looks for 'subject' inside here
                 emailOptions: {
                     replyTo: 'hello@checkered.in',
-                    subject: 'Welcome to the Checkered Crew! 🏁'
+                    subject: 'Welcome to the Grid! You\'re in 🏁'
                 },
-                // Your existing data
                 customer: {
                     first_name: customer.first_name,
                     last_name: customer.last_name,
                     email: customer.email
                 },
-                preview: 'Welcome to the Checkered Crew! 🏁'
+                preview: 'You\'re officially part of the Checkered Crew. Start your engines.'
             }
         })
         return new StepResponse("Email sent")

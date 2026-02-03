@@ -70,12 +70,12 @@ export default async function shipmentCreatedHandler({
             data: {
                 emailOptions: {
                     replyTo: 'hello@checkered.in',
-                    subject: 'Your order is on the way! 🚚'
+                    subject: 'Green Light! Your order is on the way 🚚'
                 },
                 order,
-                fulfillment, // Pass full fulfillment object (contains tracking/labels now)
+                fulfillment,
                 shippingAddress: order.shipping_address,
-                preview: 'Track your package now.'
+                preview: 'It has left the garage. Track your shipment now.'
             }
         })
     } catch (error) {

@@ -35,11 +35,11 @@ export default async function orderPlacedHandler({
       data: {
         emailOptions: {
           replyTo: 'hello@checkered.in',
-          subject: 'Your order has been placed'
+          subject: 'Order Confirmed: We\'ve got your order! ✅'
         },
         order,
-        shippingAddress: order.shipping_address, // Use relation directly
-        preview: 'Thank you for your order!'
+        shippingAddress: order.shipping_address,
+        preview: 'Our pit crew is getting to work. Sit tight.'
       }
     })
   } catch (error) {

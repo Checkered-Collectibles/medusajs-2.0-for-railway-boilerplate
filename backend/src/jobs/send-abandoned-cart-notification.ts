@@ -127,10 +127,10 @@ export default async function abandonedCartJob(container: MedusaContainer) {
                     data: {
                         emailOptions: {
                             replyTo: "hello@checkered.in",
-                            subject: "You left something in your cart",
+                            subject: "Don't let your ride drive away 🏎️",
                         },
                         cartLink,
-                        preview: "Your cart is waiting — complete your purchase.",
+                        preview: "Your garage is still empty. Secure your items before they sell out.",
                         customerName,
                         items,
                         total,

@@ -95,12 +95,11 @@ const sendDeliveryNotificationStep = createStep(
                 data: {
                     emailOptions: {
                         replyTo: 'hello@checkered.in',
-                        subject: 'Your order has been delivered! 📦'
+                        subject: 'Finish Line! Your package has arrived 🏁'
                     },
                     order,
-                    // Pass specific relations if your template needs them
                     shippingAddress: order.shipping_address,
-                    preview: 'Your package has arrived.'
+                    preview: 'The wait is over. Time to unbox your new legends.'
                 }
             })
             return new StepResponse(true)
