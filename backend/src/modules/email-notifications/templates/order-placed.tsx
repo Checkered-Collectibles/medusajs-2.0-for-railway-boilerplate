@@ -57,6 +57,7 @@ export const isOrderPlacedTemplateData = (
 export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
   PreviewProps: OrderPlacedTemplateProps
 } = ({ order, shippingAddress, preview = "Your order has been placed!" }) => {
+  // ✅ 1. Safe extraction of totals
   const summary: EmailOrderSummary = order.summary ?? {
     subtotal: order.subtotal ?? order.item_subtotal ?? 0,
     discount_total: order.discount_total ?? 0,
@@ -132,35 +133,35 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           Order Date: {new Date(order.created_at).toLocaleDateString()}
         </Text>
 
+        {/* ✅ 2. FIXED: Using 'summary' variable instead of 'order' for totals */}
         <div style={{ margin: "10px 0 20px" }}>
           <Text style={{ margin: "0 0 3px" }}>
-            Subtotal: {formatMoney(order.subtotal, order.currency_code)}
+            Subtotal: {formatMoney(summary.subtotal, order.currency_code)}
           </Text>
 
-          {Number(order.discount_total) > 0 && (
+          {Number(summary.discount_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
               Discount: -
-              {formatMoney(order.discount_total, order.currency_code)}
+              {formatMoney(summary.discount_total, order.currency_code)}
             </Text>
           )}
 
-          {Number(order.shipping_total) > 0 && (
+          {Number(summary.shipping_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
-              Shipping: {formatMoney(order.shipping_total, order.currency_code)}
+              Shipping: {formatMoney(summary.shipping_total, order.currency_code)}
             </Text>
           )}
 
-          {Number(order.tax_total) > 0 && (
+          {Number(summary.tax_total) > 0 && (
             <Text style={{ margin: "0 0 3px" }}>
-              Tax: {formatMoney(order.tax_total, order.currency_code)}
+              Tax: {formatMoney(summary.tax_total, order.currency_code)}
             </Text>
           )}
 
           <Text style={{ margin: "8px 0 0", fontWeight: "bold" }}>
-            Total: {formatMoney(order.total, order.currency_code)}
+            Total: {formatMoney(summary.total, order.currency_code)}
           </Text>
         </div>
-
         <Hr style={{ margin: "20px 0" }} />
 
         {/* SHIPPING ADDRESS */}
