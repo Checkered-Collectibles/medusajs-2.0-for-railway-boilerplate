@@ -428,6 +428,9 @@ export async function submitPromotionForm(
 }
 
 // TODO: Pass a POJO instead of a form entity here
+// Add this import if you haven't already
+import { getCustomer } from "@lib/data/customer"
+
 export async function setAddresses(currentState: unknown, formData: FormData) {
   try {
     if (!formData) {
@@ -470,29 +473,36 @@ export async function setAddresses(currentState: unknown, formData: FormData) {
         province: formData.get("billing_address.province"),
         phone: formData.get("billing_address.phone"),
       }
-    await updateCart(data)
+
+    // We update the cart first
     const updatedCart = await updateCart(data)
 
-    // ✅ Save address to customer account ONLY if logged in
-    // (guests will not have a customer session, so this would 401)
+    // ✅ Save address to customer account ONLY if logged in AND has no addresses
     if (updatedCart?.customer_id) {
-      const customerAddressForm = new FormData()
-      customerAddressForm.set("first_name", String(formData.get("shipping_address.first_name") || ""))
-      customerAddressForm.set("last_name", String(formData.get("shipping_address.last_name") || ""))
-      customerAddressForm.set("company", String(formData.get("shipping_address.company") || ""))
-      customerAddressForm.set("address_1", String(formData.get("shipping_address.address_1") || ""))
-      customerAddressForm.set("address_2", "")
-      customerAddressForm.set("city", String(formData.get("shipping_address.city") || ""))
-      customerAddressForm.set("postal_code", String(formData.get("shipping_address.postal_code") || ""))
-      customerAddressForm.set("province", String(formData.get("shipping_address.province") || ""))
-      customerAddressForm.set("country_code", String(formData.get("shipping_address.country_code") || ""))
-      customerAddressForm.set("phone", shippingPhone)
-
-      // don’t block checkout if saving address fails
       try {
-        // await addCustomerAddress(null, customerAddressForm)
-      } catch {
-        // ignore
+        // 1. Fetch current customer details to check existing addresses
+        const customer = await getCustomer().catch(() => null)
+
+        // 2. Only proceed if customer exists and has NO addresses
+        if (customer && (!customer.addresses || customer.addresses.length === 0)) {
+
+          const customerAddressForm = new FormData()
+          customerAddressForm.set("first_name", String(formData.get("shipping_address.first_name") || ""))
+          customerAddressForm.set("last_name", String(formData.get("shipping_address.last_name") || ""))
+          customerAddressForm.set("company", String(formData.get("shipping_address.company") || ""))
+          customerAddressForm.set("address_1", String(formData.get("shipping_address.address_1") || ""))
+          customerAddressForm.set("address_2", "")
+          customerAddressForm.set("city", String(formData.get("shipping_address.city") || ""))
+          customerAddressForm.set("postal_code", String(formData.get("shipping_address.postal_code") || ""))
+          customerAddressForm.set("province", String(formData.get("shipping_address.province") || ""))
+          customerAddressForm.set("country_code", String(formData.get("shipping_address.country_code") || ""))
+          customerAddressForm.set("phone", shippingPhone)
+
+          await addCustomerAddress(null, customerAddressForm)
+        }
+      } catch (err) {
+        console.warn("Failed to auto-save address to customer profile", err)
+        // ignore error so checkout flow isn't interrupted
       }
     }
   } catch (e: any) {
