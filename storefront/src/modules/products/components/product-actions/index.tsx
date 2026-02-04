@@ -195,7 +195,7 @@ export default function ProductActions({
         <div className="mt-3 flex flex-col gap-2 text-sm text-ui-fg-subtle">
           <div className="flex items-center gap-2">
             <span>✅</span>
-            <span>100% authentic Hot Wheels</span>
+            <span>100% authentic Products</span>
           </div>
 
           <div className="flex items-center gap-2">
