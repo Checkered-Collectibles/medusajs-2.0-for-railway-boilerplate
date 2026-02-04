@@ -2,6 +2,7 @@ import { sdk } from "@lib/config"
 import { cache } from "react"
 import { getProductsList } from "./products"
 import { HttpTypes } from "@medusajs/types"
+import { ACCESSORIES_CATEGORY_ID } from "@modules/cart/components/hw/rule"
 
 export const retrieveCollection = cache(async function (id: string) {
   return sdk.store.collection
@@ -15,7 +16,17 @@ export const getCollectionsList = cache(async function (
 ): Promise<{ collections: HttpTypes.StoreCollection[]; count: number }> {
   return sdk.store.collection
     .list({ limit, offset: 0, order: "-updated_at" }, { next: { tags: ["collections"] } })
-    .then(({ collections }) => ({ collections, count: collections.length }))
+    .then(({ collections }) => {
+      // 👇 Filter out the specific collection here
+      const filteredCollections = collections.filter(
+        (c) => c.id !== "pcol_01KGMKT09MFDGC6YQEHXYNKV09" // ACCESSORY COLLECTION ID
+      )
+
+      return {
+        collections: filteredCollections,
+        count: filteredCollections.length
+      }
+    })
 })
 
 export const getCollectionByHandle = cache(async function (
