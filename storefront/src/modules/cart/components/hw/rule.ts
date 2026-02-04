@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
 export const FANTASY_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8"
 export const PREMIUM_CATEGORY_ID = "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"
+export const ACCESSORIES_CATEGORY_ID = "pcat_01KGMKRAGX1Z6Z78C1T3M1VGYR"
 
 // 🏷️ New Tier Tags
 export const TIER_1_TAG_ID = "ptag_01KFWX61AE6Y7JRTZS571Y9ZQ6" // 2 Fantasy required
@@ -52,10 +53,13 @@ export async function evaluateHotWheelsRule(
             // Get Tags safely
             const tags = product?.tags ?? []
             const tagIds = tags.map((t: any) => t.id)
-            const isFantasy = categoryIds.includes(FANTASY_CATEGORY_ID)
 
-            // 🚫 HARD RULE: Non-Fantasy max quantity = 1
-            if (!isFantasy && quantity > 1) {
+            const isFantasy = categoryIds.includes(FANTASY_CATEGORY_ID)
+            const isLicensed = categoryIds.includes(LICENSED_CATEGORY_ID)
+            // const isAccessory = categoryIds.includes(ACCESSORIES_CATEGORY_ID) // No longer needed for this check
+
+            // 🚫 HARD RULE: Only Licensed cars are strictly limited to Qty 1
+            if (isLicensed && quantity > 1) {
                 hasInvalidQuantity = true
             }
 
@@ -68,7 +72,7 @@ export async function evaluateHotWheelsRule(
             }
 
             // 🚗 Licensed Logic with Tiers
-            if (categoryIds.includes(LICENSED_CATEGORY_ID)) {
+            if (isLicensed) {
                 licensedCount += quantity
 
                 if (tagIds.includes(TIER_1_TAG_ID)) {
@@ -113,8 +117,8 @@ export async function evaluateHotWheelsRule(
         const requiredForTier1 = tier1Count * 2
         const requiredForTier2 = tier2Count * 1
 
-        // Tier 3 is 0.5 per car (1 per 2 cars), using Math.round()
-        // Note: Math.round(0.5) is 1 in JS. Math.round(1.5) is 2.
+        // Tier 3 is 0.5 per car (1 per 2 cars), using Math.floor to be generous or Math.ceil to be strict.
+        // Logic: 1 car = 0 req, 2 cars = 1 req. => Math.floor(count * 0.5)
         const requiredForTier3 = Math.floor(tier3Count * 0.5)
 
         const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
@@ -141,7 +145,7 @@ export async function evaluateHotWheelsRule(
     } else {
         if (hasInvalidQuantity) {
             messages.push(
-                "Only Fantasy cars can be purchased with quantity more than 1. Please reduce quantity for other items."
+                "Licensed cars are limited to 1 per item. Please reduce quantity for these items."
             )
         }
 
