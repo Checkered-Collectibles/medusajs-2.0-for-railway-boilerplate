@@ -7,7 +7,7 @@ import { HttpTypes } from "@medusajs/types"
 import { evaluateHotWheelsRule } from "@modules/cart/components/hw/rule"
 import SkeletonRelatedProducts from "@modules/skeletons/templates/skeleton-related-products"
 import RelatedProducts from "@modules/products/components/related-products"
-import { getFantasyProducts, getRelatedProductsForCart } from "@modules/cart/components/hw/add-product"
+import { getAccessoryProducts, getFantasyProducts, getRelatedProductsForCart } from "@modules/cart/components/hw/add-product"
 // 👇 Import your new function (Update path if needed)
 import ProductPreviewInstant from "@modules/products/components/product-preview-instant"
 import InteractiveLink from "@modules/common/components/interactive-link"
@@ -47,6 +47,7 @@ const CartTemplate = async ({
 
   // 👇 New variable for related products
   let relatedProducts: HttpTypes.StoreProduct[] = []
+  let accessoryProducts: HttpTypes.StoreProduct[] = []
 
   if (!canCheckout) {
     // 1. If blocked, show Fantasy cars needed to unblock
@@ -56,6 +57,8 @@ const CartTemplate = async ({
   } else if (canCheckout) {
     // 2. If allowed, show "You might also like" (Related Products)
     relatedProducts = await getRelatedProductsForCart(cart, countryCode)
+    accessoryProducts = (await getAccessoryProducts(cart, countryCode)).products
+    console.log("accessoryProducts", accessoryProducts.length)
   }
 
   if (!region) {
@@ -172,7 +175,25 @@ const CartTemplate = async ({
                         </ul>
                       </div>
                     )}
-
+                    {accessoryProducts.length > 0 && (
+                      <div className="mt-10">
+                        <div className="flex justify-start items-center mb-4">
+                          <h4 className="text-base font-semibold">
+                            Essential Accessories
+                          </h4>
+                        </div>
+                        <ul className="grid grid-cols-2 small:grid-cols-3 gap-6">
+                          {accessoryProducts.map((product) => (
+                            <li key={product.id}>
+                              <ProductPreviewInstant
+                                product={product}
+                                countryCode={countryCode}
+                              />
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
                     {/* 2. Related suggestions (Shown when Can Checkout) */}
                     {relatedProducts.length > 0 && (
                       <div className="mt-10">
