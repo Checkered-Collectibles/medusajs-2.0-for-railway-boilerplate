@@ -4,63 +4,60 @@ import Link from "next/link"
 import Countdown from "./countdown"
 
 /**
- * UPDATED: Hot Wheels Premium Flash Sale
- * Start: Feb 1, 2026
- * Duration: 48 Hours
+ * UPDATED: Formula 1 McLaren Drop
+ * Start: Feb 5, 2026 @ 9:00 PM IST
  */
-const DROP_DATE_IST = "2026-02-01T00:00:00+05:30" // Live Now (Started Midnight Feb 1)
-const SALE_DURATION_MS = 51 * 60 * 60 * 1000 // 48 Hours
+const DROP_DATE_IST = "2026-02-05T21:00:00+05:30"
+// How long the "LIVE" banner stays active before switching to "Post-Drop" default
+const HYPE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 Hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
-    const saleEndDate = new Date(dropDate.getTime() + SALE_DURATION_MS)
+    const hypeEndDate = new Date(dropDate.getTime() + HYPE_DURATION_MS)
 
     const now = Date.now()
     const dropTs = dropDate.getTime()
-    const saleEndTs = saleEndDate.getTime()
+    const hypeEndTs = hypeEndDate.getTime()
 
     const isPreDrop = now < dropTs
-    const isSaleLive = now >= dropTs && now < saleEndTs
-    const isPostSale = now >= saleEndTs
+    const isDropLive = now >= dropTs && now < hypeEndTs
+    const isPostDrop = now >= hypeEndTs
 
     return (
         <section className="w-full bg-black text-white py-2 text-center sm:text-md text-sm">
             {isPreDrop && (
-                <div className="text-xs sm:text-sm opacity-90 font-medium">
-                    🔥 Premium Flash Sale starting in{" "}
-                    <Countdown targetDate={dropDate} size="sm" className="px-1 inline font-medium text-yellow-300" />
+                <div className="text-xs sm:text-sm opacity-90 font-medium flex items-center justify-center gap-x-2">
+                    <span className="uppercase tracking-wide">
+                        🏎️ F1 McLaren Collection Dropping Tonight
+                    </span>
+                    <div className="hidden sm:flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded text-yellow-300 font-mono">
+                        <Countdown targetDate={dropDate} size="sm" />
+                    </div>
                 </div>
             )}
 
-            {isSaleLive && (
+            {isDropLive && (
                 <Link
-                    href="/store"
-                    // Added gap-y-1 for better spacing when wrapping on mobile
+                    href="/collections/hot-wheels-premium-f1-2025-mclaren-team"
                     className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
-                        🚨 48-HR FLASH SALE: <span className="text-yellow-300">10% OFF PREMIUMS</span>
+                        🏁 LIGHTS OUT! <span className="text-ui-tag-orange-icon">MCLAREN F1 IS LIVE</span>
                     </span>
 
-                    <span className="bg-white/10 text-red-600 px-2 py-0.5 rounded text-xs font-extrabold tracking-wider">
-                        USE CODE: PREMIUM10
-                    </span>
-
-                    {/* Removed 'hidden' class so it shows on mobile too. Changed bg to white/10 for visibility on black */}
-                    <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded ml-0 sm:ml-2">
-                        <span className="text-white/80 font-normal text-[10px] sm:text-xs">Ends in:</span>
-                        <Countdown targetDate={saleEndDate} size="sm" className="font-mono text-white text-xs" />
-                    </div>
+                    {/* <span className="bg-white/10 text-white px-2 py-0.5 rounded text-xs font-medium tracking-wider">
+                        SHOP THE GRID &rarr;
+                    </span> */}
                 </Link>
             )}
 
-            {isPostSale && (
+            {isPostDrop && (
                 <Link
                     href="/store"
                     className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm font-medium text-yellow-300 hover:text-yellow-200 transition-colors"
                 >
                     <span className="uppercase tracking-wide text-white">
-                        Price Drop: <span className="font-bold text-yellow-300">Fantasy ₹99</span> | New Licensed Tiers Live 💎
+                        New Arrivals: <span className="font-bold text-ui-tag-orange-icon">F1 McLaren & Premium Sets</span> In Stock 🏎️
                     </span>
                 </Link>
             )}
