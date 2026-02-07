@@ -19,6 +19,11 @@ import {
 } from "./order-delivered"
 // 👇 ADDED IMPORT
 import {
+  OrderCanceledTemplate,
+  ORDER_CANCELED,
+  isOrderCanceledTemplateData,
+} from "./order-canceled"
+import {
   AccountCreatedTemplate,
   ACCOUNT_CREATED,
   isAccountCreatedTemplateData,
@@ -39,7 +44,8 @@ export const EmailTemplates = {
   ORDER_PLACED,
   ORDER_SHIPPED,
   ORDER_DELIVERED,
-  ACCOUNT_CREATED, // 👈 Added Key
+  ORDER_CANCELED, // 👈 Added Key
+  ACCOUNT_CREATED,
   PASSWORD_RESET,
   CART_ABANDONED,
 } as const
@@ -88,6 +94,15 @@ export function generateEmailTemplate(
       return <OrderDeliveredTemplate {...data} />
 
     // 👇 ADDED NEW CASE
+    case EmailTemplates.ORDER_CANCELED:
+      if (!isOrderCanceledTemplateData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.ORDER_CANCELED}"`
+        )
+      }
+      return <OrderCanceledTemplate {...data} />
+
     case EmailTemplates.ACCOUNT_CREATED:
       if (!isAccountCreatedTemplateData(data)) {
         throw new MedusaError(
@@ -128,7 +143,8 @@ export {
   OrderPlacedTemplate,
   OrderShippedTemplate,
   OrderDeliveredTemplate,
-  AccountCreatedTemplate, // 👈 Added Export
+  OrderCanceledTemplate, // 👈 Added Export
+  AccountCreatedTemplate,
   PasswordResetEmail,
   CartAbandonedEmail,
 }

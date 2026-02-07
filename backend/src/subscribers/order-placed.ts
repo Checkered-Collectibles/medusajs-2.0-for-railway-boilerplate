@@ -1,16 +1,15 @@
-import { Modules } from '@medusajs/framework/utils'
-// import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
+import { Modules, ContainerRegistrationKeys } from '@medusajs/framework/utils'
 import { SubscriberArgs } from '@medusajs/medusa'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
-import { trackOrderPlacedWorkflow } from '../workflows/track-order-placed' // Fix path if needed
+import { trackOrderPlacedWorkflow } from '../workflows/track-order-placed'
 
 export default async function orderPlacedHandler({
   event: { data },
   container,
 }: SubscriberArgs<any>) {
 
-  // Fix: Pass container inside .run()
+  // 1. Run workflows
   await handleOrderPointsWorkflow(container).run({
     input: { order_id: data.id },
   })
@@ -19,14 +18,44 @@ export default async function orderPlacedHandler({
     input: { order_id: data.id },
   })
 
+  // 2. Resolve Services
   const notificationModuleService = container.resolve(Modules.NOTIFICATION)
-  const orderModuleService = container.resolve(Modules.ORDER)
+  const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
-  // Retrieve order with necessary relations
-  const order = await orderModuleService.retrieveOrder(data.id, {
-    relations: ['items', 'summary', 'shipping_address']
+  // 3. Retrieve Order using Query to get calculated totals
+  // The 'fields' array must explicitly request the computed total fields
+  const { data: orders } = await query.graph({
+    entity: "order",
+    fields: [
+      "id",
+      "currency_code",
+      "email",
+      "display_id",
+      "created_at",
+      // Totals
+      "total",
+      "subtotal",
+      "tax_total",
+      "discount_total",
+      "shipping_total",
+      // Relations
+      "items.*",
+      "shipping_address.*",
+      "summary.*", // Fallback if totals are stored here in your version
+    ],
+    filters: {
+      id: data.id,
+    },
   })
 
+  const order = orders[0]
+
+  if (!order) {
+    console.error(`Order with id ${data.id} not found.`)
+    return
+  }
+
+  // 4. Send Notification
   try {
     await notificationModuleService.createNotifications({
       to: order.email,
