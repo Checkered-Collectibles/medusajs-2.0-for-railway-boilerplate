@@ -24,7 +24,7 @@ const CheckoutSummary = ({ cart }: { cart: any }) => {
         <div className="my-6">
           <DiscountCode cart={cart} />
         </div>
-        <LoyaltyPoints cart={cart} />
+        {/* <LoyaltyPoints cart={cart} /> */}
       </div>
     </div>
   )

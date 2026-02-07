@@ -432,6 +432,11 @@ export async function submitPromotionForm(
 import { getCustomer } from "@lib/data/customer"
 
 export async function setAddresses(currentState: unknown, formData: FormData) {
+  const customer = await getCustomer().catch(() => null)
+
+  if (!customer) {
+    redirect("/account?nextPath=/checkout?step=address")
+  }
   try {
     if (!formData) {
       throw new Error("No form data found when setting addresses")
