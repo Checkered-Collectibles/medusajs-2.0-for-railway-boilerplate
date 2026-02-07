@@ -346,7 +346,7 @@ export async function initiatePaymentSession(
     headers,
     body: {
       provider_id: input.provider_id,
-      data: cleanData, // <--- Use the sanitized data
+      data: input.data, // <--- Use the sanitized data
     },
   })
     .then((result) => {
