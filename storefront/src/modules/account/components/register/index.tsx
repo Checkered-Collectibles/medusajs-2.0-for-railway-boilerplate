@@ -17,6 +17,12 @@ type Props = {
 const Register = ({ setCurrentView }: Props) => {
 
   const signupWithFlag = async (currentState: any, formData: FormData) => {
+    // ⬇️ Force email to lowercase before sending to backend
+    const email = formData.get("email")
+    if (email) {
+      formData.set("email", email.toString().toLowerCase())
+    }
+
     const result = await signup(currentState, formData)
 
     const isSuccess = typeof result !== "string"

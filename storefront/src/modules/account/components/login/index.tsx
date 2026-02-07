@@ -1,3 +1,5 @@
+"use client"
+
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
 import Input from "@modules/common/components/input"
 import ErrorMessage from "@modules/checkout/components/error-message"
@@ -10,7 +12,18 @@ type Props = {
 }
 
 const Login = ({ setCurrentView }: Props) => {
-  const [message, formAction] = useActionState(login, null)
+
+  // ⬇️ Wrapper to force email to lowercase
+  const loginWithNormalization = async (currentState: any, formData: FormData) => {
+    const email = formData.get("email")
+    if (email) {
+      formData.set("email", email.toString().toLowerCase())
+    }
+    return login(currentState, formData)
+  }
+
+  // ⬇️ Use the wrapper here instead of the raw 'login'
+  const [message, formAction] = useActionState(loginWithNormalization, null)
 
   return (
     <div
