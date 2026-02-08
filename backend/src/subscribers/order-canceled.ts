@@ -8,25 +8,23 @@ export default async function orderCanceledHandler({
     container,
 }: SubscriberArgs<{ id: string }>) {
 
-    // 1. Run tracking workflow
+    // 1. Run tracking workflow (Standard practice)
     await trackOrderCanceledWorkflow(container).run({
-        input: {
-            order_id: data.id,
-        },
-    })
+        input: { order_id: data.id },
+    }).catch(e => console.error("Tracking workflow failed", e))
 
     // 2. Resolve Services
     const notificationModuleService = container.resolve(Modules.NOTIFICATION)
     const query = container.resolve(ContainerRegistrationKeys.QUERY)
 
-    // 3. Retrieve Order using Query to get calculated totals
+    // 3. Retrieve Order
     const { data: orders } = await query.graph({
         entity: "order",
         fields: [
             "id",
-            "currency_code",
             "email",
             "display_id",
+            "currency_code",
             "created_at",
             // Totals
             "total",
@@ -39,9 +37,7 @@ export default async function orderCanceledHandler({
             "shipping_address.*",
             "summary.*",
         ],
-        filters: {
-            id: data.id,
-        },
+        filters: { id: data.id },
     })
 
     const order = orders[0]
@@ -49,6 +45,17 @@ export default async function orderCanceledHandler({
     if (!order) {
         console.error(`Order with id ${data.id} not found.`)
         return
+    }
+
+    // 🛑 THE FIX: Handle missing shipping address
+    // Test orders often have no address, which causes the Template to crash
+    const shippingAddress = order.shipping_address || {
+        first_name: "Customer",
+        last_name: "",
+        address_1: "",
+        city: "",
+        country_code: "",
+        postal_code: ""
     }
 
     // 4. Send Cancellation Email
@@ -60,13 +67,14 @@ export default async function orderCanceledHandler({
             data: {
                 emailOptions: {
                     replyTo: 'hello@checkered.in',
-                    subject: 'Order Canceled: Your order has been canceled 🛑'
+                    subject: `Order #${order.display_id} Canceled 🛑`
                 },
                 order,
-                shippingAddress: order.shipping_address,
+                shippingAddress, // 👈 Passing the safe, non-null object
                 preview: 'Your order has been canceled.'
             }
         })
+        console.log(`Canceled email sent to ${order.email}`)
     } catch (error) {
         console.error('Error sending order cancellation notification:', error)
     }
