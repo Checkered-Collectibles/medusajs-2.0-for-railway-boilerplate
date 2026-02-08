@@ -133,7 +133,7 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           Order Date: {new Date(order.created_at).toLocaleDateString()}
         </Text>
 
-        {/* ✅ 2. FIXED: Using 'summary' variable instead of 'order' for totals */}
+        {/* ✅ 2. FIXED: Using 'summary' variable instead of 'order' for totals
         <div style={{ margin: "10px 0 20px" }}>
           <Text style={{ margin: "0 0 3px" }}>
             Subtotal: {formatMoney(summary.subtotal, order.currency_code)}
@@ -161,7 +161,7 @@ export const OrderPlacedTemplate: React.FC<OrderPlacedTemplateProps> & {
           <Text style={{ margin: "8px 0 0", fontWeight: "bold" }}>
             Total: {formatMoney(summary.total, order.currency_code)}
           </Text>
-        </div>
+        </div> */}
         <Hr style={{ margin: "20px 0" }} />
 
         {/* SHIPPING ADDRESS */}

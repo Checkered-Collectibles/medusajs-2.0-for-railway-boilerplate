@@ -137,7 +137,7 @@ export const OrderCanceledTemplate: React.FC<OrderCanceledTemplateProps> & {
                     Order Date: {new Date(order.created_at).toLocaleDateString()}
                 </Text>
 
-                {/* Totals Section */}
+                {/* Totals Section
                 <div style={{ margin: "10px 0 20px" }}>
                     <Text style={{ margin: "0 0 3px" }}>
                         Subtotal: {formatMoney(summary.subtotal, order.currency_code)}
@@ -165,7 +165,7 @@ export const OrderCanceledTemplate: React.FC<OrderCanceledTemplateProps> & {
                     <Text style={{ margin: "8px 0 0", fontWeight: "bold" }}>
                         Total: {formatMoney(summary.total, order.currency_code)}
                     </Text>
-                </div>
+                </div> */}
                 <Hr style={{ margin: "20px 0" }} />
 
                 {/* CANCELED ITEMS */}

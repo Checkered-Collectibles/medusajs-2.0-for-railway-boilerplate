@@ -15,32 +15,12 @@ export default async function orderCanceledHandler({
 
     // 2. Resolve Services
     const notificationModuleService = container.resolve(Modules.NOTIFICATION)
-    const query = container.resolve(ContainerRegistrationKeys.QUERY)
+    const orderModuleService = container.resolve(Modules.ORDER)
 
-    // 3. Retrieve Order
-    const { data: orders } = await query.graph({
-        entity: "order",
-        fields: [
-            "id",
-            "email",
-            "display_id",
-            "currency_code",
-            "created_at",
-            // Totals
-            "total",
-            "subtotal",
-            "tax_total",
-            "discount_total",
-            "shipping_total",
-            // Relations
-            "items.*",
-            "shipping_address.*",
-            "summary.*",
-        ],
-        filters: { id: data.id },
+    // Retrieve order with necessary relations
+    const order = await orderModuleService.retrieveOrder(data.id, {
+        relations: ['items', 'summary', 'shipping_address']
     })
-
-    const order = orders[0]
 
     if (!order) {
         console.error(`Order with id ${data.id} not found.`)
