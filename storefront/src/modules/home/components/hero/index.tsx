@@ -6,11 +6,11 @@ import HeroGraphic from "./graphic";
 
 const Hero = () => {
   return (
-    <div className="md:p-0 p-0 bg-black h-[calc(100vh-6rem)] md:min-h-[60rem] min-h-[45rem] relative">
+    <div className="md:p-0 p-0 bg-white h-[calc(100vh-6rem)] md:min-h-[62rem] min-h-[62rem] relative">
       <div className="content-container w-full flex flex-col gap-y-10 -bg-ui-bg-subtle md:pt-32 pt-16 overflow-hidden">
         <div className="inset-0 z-10 flex flex-col justify-start items-center text-center gap-6">
           <span className="px-2">
-            {/* 🏆 H1 SEO STRATEGY: 
+            {/* 🏆 H1 SEO STRATEGY:
                Google reads this as: "Buy Hot Wheels Cars Online in India"
                This hits your #1 keyword (165k searches) immediately.
             */}
@@ -18,7 +18,7 @@ const Hero = () => {
               level="h1"
               className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-thin"
             >
-              SCALE 1:64.<br className="sm:hidden block" /> ADRENALINE 100%.
+              YOUR DESK NEEDS <br className="sm:hidden block" /> MORE HORSEPOWER.
               {/* <Image
                 src={HWImage}
                 width={160}
@@ -36,7 +36,7 @@ const Hero = () => {
               level="h2"
               className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal mt-2"
             >
-              Legends, not toys. Curated for the obsessed.
+              Icons of speed. Park them on your desk.
             </Heading>
             <p className="flex flex-wrap gap-2 items-center justify-center mt-3">
               Fuel your passion with the best<Image
@@ -51,7 +51,7 @@ const Hero = () => {
 
           <Link href="/store">
             <Button variant="primary" className="mt-4">
-              Browse the 2026 Catalog {"->"}
+              Enter the Garage {"->"}
             </Button>
           </Link>
         </div>

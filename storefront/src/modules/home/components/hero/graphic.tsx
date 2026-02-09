@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import HeroImage from "@images/hero/mclaren-formula1.jpg";
+import HeroImage from "@images/hero/audi-quattro.jpg";
 // import HeroImage2 from "@images/bugatti-hero.png";
 import EuroSpeed from "@images/euro-speed.png";
 import ExoticEnvy from "@images/exotic-envy.jpg";
@@ -24,7 +24,17 @@ export default function HeroGraphic() {
     // }, { scope: container });
 
     return (
-        <div ref={container} className="w-full flex justify-center items-end">
+        <div ref={container} className="w-full flex justify-center items-end rounded-xl">
+            <Image
+                src={HeroImage}
+                // width={1200}
+                priority
+                fetchPriority="high"
+                fill
+                draggable={false}
+                alt="Hero image 1"
+                className="hero-img drop-shadow-xl object-cover object-center"
+            />
             <Image
                 src={HeroImage}
                 // width={1200}
