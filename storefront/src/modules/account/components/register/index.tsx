@@ -1,20 +1,90 @@
 "use client"
 
-import Input from "@modules/common/components/input"
 import { LOGIN_VIEW } from "@modules/account/templates/login-template"
+import Input from "@modules/common/components/input"
 import ErrorMessage from "@modules/checkout/components/error-message"
 import { SubmitButton } from "@modules/checkout/components/submit-button"
 import LocalizedClientLink from "@modules/common/components/localized-client-link"
 import { signup } from "@lib/data/customer"
-import { useActionState } from "react"
-// 1. Import UI components
-import { Checkbox, Label } from "@medusajs/ui"
+import { useActionState, useState } from "react"
+import { Checkbox } from "@medusajs/ui"
+
+// ------------------------------------
+// 1. TYPO CHECKER UTILITY
+// ------------------------------------
+const commonDomains = [
+  "gmail.com",
+  "yahoo.com",
+  "hotmail.com",
+  "outlook.com",
+  "icloud.com",
+  "rediffmail.com", // Popular in India
+]
+
+const suggestEmail = (email: string): string | null => {
+  if (!email || !email.includes("@")) return null
+
+  const [user, domain] = email.split("@")
+  if (!domain) return null
+
+  // Check for exact match (if valid, return null)
+  if (commonDomains.includes(domain)) return null
+
+  // Find close match (simple Levenshtein-like logic or simpler check)
+  for (const common of commonDomains) {
+    // If the domain is very similar (e.g. gamil vs gmail)
+    // We check if it starts with the same letter and has similar length
+    if (
+      domain !== common &&
+      Math.abs(domain.length - common.length) <= 2 &&
+      (domain.includes(common.replace(".com", "")) || common.includes(domain.replace(".com", "")))
+    ) {
+      // This is a basic check. For production, libraries like 'mailcheck' are more robust.
+      // But for specifically "gamil", "yaho", etc, we can hardcode specific maps:
+    }
+  }
+
+  // Hardcoded map for most common Indian typos
+  const typoMap: Record<string, string> = {
+    "gamil.com": "gmail.com",
+    "gmial.com": "gmail.com",
+    "gmai.com": "gmail.com",
+    "gmil.com": "gmail.com",
+    "yaho.com": "yahoo.com",
+    "yahoo.co": "yahoo.com",
+    "outlok.com": "outlook.com",
+    "hotmil.com": "hotmail.com"
+  }
+
+  if (typoMap[domain]) {
+    return `${user}@${typoMap[domain]}`
+  }
+
+  return null
+}
+
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Register = ({ setCurrentView }: Props) => {
+  // 2. State for Email Suggestion
+  const [emailInput, setEmailInput] = useState("")
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value.toLowerCase()
+    setEmailInput(val)
+    setSuggestion(suggestEmail(val))
+  }
+
+  const applySuggestion = () => {
+    if (suggestion) {
+      setEmailInput(suggestion)
+      setSuggestion(null)
+    }
+  }
 
   const signupWithFlag = async (currentState: any, formData: FormData) => {
     // ⬇️ Force email to lowercase before sending to backend
@@ -24,13 +94,10 @@ const Register = ({ setCurrentView }: Props) => {
     }
 
     const result = await signup(currentState, formData)
-
     const isSuccess = typeof result !== "string"
 
-    if (isSuccess) {
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("new_registration", "true")
-      }
+    if (isSuccess && typeof window !== "undefined") {
+      sessionStorage.setItem("new_registration", "true")
     }
 
     return result
@@ -66,14 +133,36 @@ const Register = ({ setCurrentView }: Props) => {
             autoComplete="family-name"
             data-testid="last-name-input"
           />
-          <Input
-            label="Email"
-            name="email"
-            required
-            type="email"
-            autoComplete="email"
-            data-testid="email-input"
-          />
+
+          {/* 3. MODIFIED EMAIL INPUT */}
+          <div>
+            <Input
+              label="Email"
+              name="email"
+              required
+              type="email"
+              autoComplete="email"
+              data-testid="email-input"
+              value={emailInput}
+              onChange={handleEmailChange} // Hook up the change handler
+            />
+            {/* 4. SUGGESTION ALERT */}
+            {suggestion && (
+              <div
+                className="mt-1 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 flex items-center justify-between animate-in fade-in slide-in-from-top-1"
+              >
+                <span>Did you mean <strong>{suggestion}</strong>?</span>
+                <button
+                  type="button"
+                  onClick={applySuggestion}
+                  className="bg-yellow-100 hover:bg-yellow-200 text-yellow-900 px-2 py-0.5 rounded font-bold ml-2 transition-colors"
+                >
+                  Yes, fix it
+                </button>
+              </div>
+            )}
+          </div>
+
           <Input
             label="Phone"
             name="phone"
@@ -92,32 +181,26 @@ const Register = ({ setCurrentView }: Props) => {
           />
         </div>
 
-        {/* --- 2. MARKETING CHECKBOX --- */}
-        <label
-          htmlFor="marketing_opt_in"
-          className="group/input flex items-start space-x-3 mt-4 bg-green-100 p-1 rounded-md border border-green-300 overflow-hidden relative cursor-pointer hover:bg-green-50 transition-colors"
-        >
-          {/* Checkbox Wrapper */}
-          <div className="flex items-center h-5">
+        {/* MARKETING CHECKBOX */}
+        <div className="group/input flex items-start space-x-3 mt-4 bg-green-50/50 p-2 rounded-md border border-green-200/60 overflow-hidden relative cursor-pointer hover:bg-green-50 transition-colors">
+          <div className="flex items-center h-5 mt-0.5">
             <Checkbox
               id="marketing_opt_in"
               name="marketing_opt_in"
               value="true"
             />
           </div>
-
-          <div className="text-small-regular leading-5 text-ui-fg-base select-none z-10">
-            Want early access?
-            <br />
-            <span className="font-bold text-green-900">Yes, notify me</span> when new cars land.
-          </div>
-
-          {/* Star: Added pointer-events-none so it doesn't block clicks */}
-          <div className="absolute -right-2 -bottom-1 text-5xl opacity-30 pointer-events-none duration-200 group-hover/input:rotate-12">
+          <label
+            htmlFor="marketing_opt_in"
+            className="text-small-regular leading-5 text-ui-fg-base select-none z-10 cursor-pointer w-full"
+          >
+            Want early access? <br />
+            <span className="font-bold text-green-700">Yes, notify me</span> when new cars land.
+          </label>
+          <div className="absolute -right-2 -bottom-2 text-4xl opacity-20 pointer-events-none group-hover/input:rotate-12 transition-transform duration-300">
             ⭐️
           </div>
-        </label>
-        {/* ----------------------------- */}
+        </div>
 
         <ErrorMessage error={message} data-testid="register-error" />
 
