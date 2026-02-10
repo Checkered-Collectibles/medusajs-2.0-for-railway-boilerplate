@@ -4,19 +4,16 @@ import {
     StepResponse,
     WorkflowResponse
 } from "@medusajs/framework/workflows-sdk";
-import { ContainerRegistrationKeys } from "@medusajs/framework/utils";
+import { ContainerRegistrationKeys, QueryContext } from "@medusajs/framework/utils"; // 👈 ADDED IMPORT
 import { Resend } from "resend";
-import { NewCollectionDropEmail } from "../modules/email-notifications/templates";
-// Note: In Next.js/React email, we usually use 'render' or pass the component to the provider.
-// If using Resend SDK directly with React, ensure your build supports it.
-// Alternatively, render to HTML string if needed.
+import { NewCollectionDropEmail } from "../modules/email-notifications/templates/new-drop";
 
 // --- INPUT TYPE ---
 type NewDropWorkflowInput = {
-    collection_id: string; // The ID of the Product Collection (e.g., "pcol_...")
+    collection_id: string;
     headline: string;
     subHeadline: string;
-    audience_id?: string; // Optional override for Resend Audience ID
+    audience_id?: string;
 }
 
 // --- STEP 1: Fetch & Select Products ---
@@ -25,8 +22,7 @@ const fetchCollectionDataStep = createStep(
     async (input: NewDropWorkflowInput, { container }) => {
         const query = container.resolve(ContainerRegistrationKeys.QUERY);
 
-        // 1. Fetch Collection & Products
-        // We limit to 4 products for the email highlights grid
+        // 1. Fetch Collection & Products with Pricing Context
         const { data: products } = await query.graph({
             entity: "product",
             fields: [
@@ -35,14 +31,22 @@ const fetchCollectionDataStep = createStep(
                 "handle",
                 "thumbnail",
                 "collection_id",
-                "variants.calculated_price.*" // Needed if you want to show price
+                "variants.calculated_price.*"
             ],
             filters: {
                 collection_id: input.collection_id,
                 status: "published"
             },
+            // 👇 THIS IS THE FIX: Provide Currency Context
+            context: {
+                variants: {
+                    calculated_price: QueryContext({
+                        currency_code: "inr" // Or fetch your region's currency dynamically
+                    })
+                }
+            },
             pagination: {
-                take: 4, // Only need 4 highlights
+                take: 4,
                 order: { created_at: "DESC" }
             }
         });
@@ -55,13 +59,11 @@ const fetchCollectionDataStep = createStep(
         const highlights = products.map((p) => ({
             id: p.id,
             name: p.title,
-            imageUrl: p.thumbnail || "", // Fallback if missing
+            imageUrl: p.thumbnail || "",
             productUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${p.handle}?utm_source=newsletter&utm_medium=email&utm_campaign=new-drop`,
         }));
 
         // 3. Construct Collection URL
-        // Assuming your storefront uses /collections/[id] or /collections/[handle]
-        // We will fetch the collection handle to be safe
         const { data: collections } = await query.graph({
             entity: "product_collection",
             fields: ["handle"],
@@ -85,7 +87,6 @@ const sendDropBroadcastStep = createStep(
     async (data: any, { container }) => {
         const logger = container.resolve(ContainerRegistrationKeys.LOGGER);
 
-        // Initialize Resend
         const apiKey = process.env.RESEND_API_KEY;
         const fromEmail = process.env.RESEND_FROM || "onboarding@resend.dev";
         const audienceId = data.audience_id || process.env.RESEND_AUDIENCE_ID;
@@ -97,17 +98,12 @@ const sendDropBroadcastStep = createStep(
         const resend = new Resend(apiKey);
 
         try {
-            // 1. Send via Resend Broadcasts API
-            // Note: This relies on the Resend 'Broadcasts' feature (Marketing)
-            // If you don't have this, you might need to loop through subscribers (batch sending).
-            // Here we assume Broadcasts is enabled.
-
             const emailProps = {
                 headline: data.headline,
                 subHeadline: data.subHeadline,
                 collectionUrl: data.collectionUrl,
                 highlights: data.highlights,
-                unsubscribeUrl: "{{{RESEND_UNSUBSCRIBE_URL}}}", // Resend magic tag
+                unsubscribeUrl: "{{{RESEND_UNSUBSCRIBE_URL}}}",
             };
 
             const { data: broadcastData, error } = await resend.broadcasts.create({
@@ -115,7 +111,7 @@ const sendDropBroadcastStep = createStep(
                 from: fromEmail,
                 audienceId: audienceId,
                 subject: `🚨 ${data.headline}`,
-                react: NewCollectionDropEmail(emailProps), // Pass component directly
+                react: NewCollectionDropEmail(emailProps),
             });
 
             if (error) {
@@ -123,7 +119,6 @@ const sendDropBroadcastStep = createStep(
                 throw new Error(error.message);
             }
 
-            // 2. Send Immediately
             await resend.broadcasts.send(broadcastData.id);
 
             logger.info(`✅ New Drop Broadcast Sent! ID: ${broadcastData.id}`);
