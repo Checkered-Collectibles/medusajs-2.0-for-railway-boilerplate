@@ -46,7 +46,7 @@ const fetchCollectionDataStep = createStep(
                 }
             },
             pagination: {
-                take: 4,
+                take: 2,
                 order: { created_at: "DESC" }
             }
         });
@@ -60,7 +60,7 @@ const fetchCollectionDataStep = createStep(
             id: p.id,
             name: p.title,
             imageUrl: p.thumbnail || "",
-            productUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/products/${p.handle}?utm_source=newsletter&utm_medium=email&utm_campaign=new-drop`,
+            productUrl: `https://checkered.in/products/${p.handle}?utm_source=newsletter&utm_medium=email&utm_campaign=new-drop`,
         }));
 
         // 3. Construct Collection URL
@@ -71,7 +71,7 @@ const fetchCollectionDataStep = createStep(
         });
 
         const collectionHandle = collections[0]?.handle || input.collection_id;
-        const collectionUrl = `${process.env.NEXT_PUBLIC_BASE_URL}/collections/${collectionHandle}`;
+        const collectionUrl = `https://checkered.in/collections/${collectionHandle}`;
 
         return new StepResponse({
             highlights,
