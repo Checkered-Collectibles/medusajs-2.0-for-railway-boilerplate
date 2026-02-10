@@ -22,7 +22,6 @@ import {
   ORDER_DELIVERED,
   isOrderDeliveredTemplateData,
 } from "./order-delivered"
-// 👇 ADDED IMPORT
 import {
   OrderCanceledTemplate,
   ORDER_CANCELED,
@@ -43,6 +42,12 @@ import {
   CART_ABANDONED,
   isCartAbandonedData,
 } from "./cart-abandoned"
+// 👇 ADDED IMPORT
+import {
+  NewCollectionDropEmail,
+  NEW_COLLECTION_DROP,
+  isNewCollectionDropData,
+} from "./new-drop"
 
 export const EmailTemplates = {
   INVITE_USER,
@@ -54,6 +59,7 @@ export const EmailTemplates = {
   ACCOUNT_CREATED,
   PASSWORD_RESET,
   CART_ABANDONED,
+  NEW_COLLECTION_DROP, // 👈 ADDED KEY
 } as const
 
 export type EmailTemplateType = keyof typeof EmailTemplates
@@ -98,6 +104,7 @@ export function generateEmailTemplate(
         )
       }
       return <OrderDeliveredTemplate {...data} />
+
     case EmailTemplates.REFUND_CREATED:
       if (!isRefundCreatedTemplateData(data)) {
         throw new MedusaError(
@@ -106,7 +113,7 @@ export function generateEmailTemplate(
         )
       }
       return <RefundCreatedTemplate {...data} />
-    // 👇 ADDED NEW CASE
+
     case EmailTemplates.ORDER_CANCELED:
       if (!isOrderCanceledTemplateData(data)) {
         throw new MedusaError(
@@ -143,6 +150,16 @@ export function generateEmailTemplate(
       }
       return <CartAbandonedEmail {...data} />
 
+    // 👇 ADDED NEW CASE
+    case EmailTemplates.NEW_COLLECTION_DROP:
+      if (!isNewCollectionDropData(data)) {
+        throw new MedusaError(
+          MedusaError.Types.INVALID_DATA,
+          `Invalid data for template "${EmailTemplates.NEW_COLLECTION_DROP}"`
+        )
+      }
+      return <NewCollectionDropEmail {...data} />
+
     default:
       throw new MedusaError(
         MedusaError.Types.INVALID_DATA,
@@ -157,8 +174,9 @@ export {
   OrderShippedTemplate,
   OrderDeliveredTemplate,
   RefundCreatedTemplate,
-  OrderCanceledTemplate, // 👈 Added Export
+  OrderCanceledTemplate,
   AccountCreatedTemplate,
   PasswordResetEmail,
   CartAbandonedEmail,
+  NewCollectionDropEmail, // 👈 ADDED EXPORT
 }
