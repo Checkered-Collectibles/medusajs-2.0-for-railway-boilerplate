@@ -1,5 +1,5 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Textarea, Button, toast, Text } from "@medusajs/ui"
+import { Container, Heading, Textarea, Button, toast, Text, StatusBadge } from "@medusajs/ui"
 import { ExclamationCircle } from "@medusajs/icons"
 import { useState, useEffect } from "react"
 import { sdk } from "../lib/sdk"
@@ -41,16 +41,18 @@ const CustomerPinnedNote = ({ data }: { data: Customer }) => {
     }
 
     return (
-        <Container className="p-4 flex flex-col gap-3 bg-amber-50/30 border-amber-200">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-amber-700">
-                    <ExclamationCircle />
-                    <Heading level="h2" className="text-amber-900">Important Note</Heading>
+        <Container className="p-0 overflow-hidden">
+            {/* Header: Uses standard background but adds an icon for visual distinction */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-ui-border-base bg-ui-bg-subtle">
+                <div className="flex items-center gap-2">
+                    {/* Orange icon to signify importance without forcing background colors */}
+                    <ExclamationCircle className="text-orange-500" />
+                    <Heading level="h2">Important Note</Heading>
                 </div>
                 {hasChanges && (
                     <Button
                         size="small"
-                        variant="secondary"
+                        variant="primary" // Changed to primary for better visibility when saving
                         onClick={handleSave}
                         isLoading={isSaving}
                     >
@@ -59,24 +61,31 @@ const CustomerPinnedNote = ({ data }: { data: Customer }) => {
                 )}
             </div>
 
-            <Textarea
-                placeholder="Add critical info here (e.g., 'Pack with extra bubble wrap')..."
-                value={note}
-                onChange={(e) => {
-                    setNote(e.target.value)
-                    setHasChanges(true)
-                }}
-                className="bg-white min-h-[80px]"
-            />
-            <Text size="small" className="text-ui-fg-subtle">
-                This note is pinned to the top of the customer profile.
-            </Text>
+            <div className="p-4 flex flex-col gap-3">
+                <Textarea
+                    placeholder="Add critical info here (e.g., 'Pack with extra bubble wrap')..."
+                    value={note}
+                    onChange={(e) => {
+                        setNote(e.target.value)
+                        setHasChanges(true)
+                    }}
+                    // Removed bg-white; Medusa handles the theme automatically
+                    className="min-h-[80px]"
+                />
+
+                {/* Helper text */}
+                <div className="flex gap-2 items-center">
+                    <Text size="xsmall" className="text-ui-fg-subtle">
+                        This note is pinned to the top of the customer profile.
+                    </Text>
+                </div>
+            </div>
         </Container>
     )
 }
 
 export const config = defineWidgetConfig({
-    zone: "customer.details.side.before", // 👈 Also top, usually stacks below Metrics
+    zone: "customer.details.side.before",
 })
 
 export default CustomerPinnedNote

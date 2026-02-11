@@ -43,9 +43,10 @@ const OrderInternalNote = ({ data }: { data: { id: string } }) => {
     }
 
     return (
-        <Container className="p-4 flex flex-col gap-3 bg-yellow-50/50 border-yellow-200/60">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-ui-fg-base">
+        <Container className="p-0 overflow-hidden">
+            {/* Header Area */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-ui-border-base bg-ui-bg-subtle">
+                <div className="flex items-center gap-2">
                     <ChatBubbleLeftRight className="text-ui-fg-subtle" />
                     <Heading level="h2">Staff Note</Heading>
                 </div>
@@ -59,22 +60,26 @@ const OrderInternalNote = ({ data }: { data: { id: string } }) => {
                 </Button>
             </div>
 
-            <Textarea
-                placeholder="Add internal instructions for this order..."
-                value={note}
-                onChange={(e) => setNote(e.target.value)}
-                className="bg-white min-h-[100px] text-sm"
-            />
+            {/* Content Area */}
+            <div className="p-4 flex flex-col gap-3">
+                <Textarea
+                    placeholder="Add internal instructions for this order..."
+                    value={note}
+                    onChange={(e) => setNote(e.target.value)}
+                    // Removed bg-white; Medusa's Textarea handles dark mode automatically
+                    className="min-h-[100px]"
+                />
 
-            <Text size="xsmall" className="text-ui-fg-subtle">
-                Only visible to admin staff. Not shown to customers.
-            </Text>
+                <Text size="xsmall" className="text-ui-fg-subtle">
+                    Only visible to admin staff. Not shown to customers.
+                </Text>
+            </div>
         </Container>
     )
 }
 
 export const config = defineWidgetConfig({
-    zone: "order.details.side.before", // 👈 Sidebar placement
+    zone: "order.details.side.before",
 })
 
 export default OrderInternalNote

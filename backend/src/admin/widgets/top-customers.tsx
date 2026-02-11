@@ -1,5 +1,5 @@
 import { defineWidgetConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Table, Text, Avatar, clx } from "@medusajs/ui"
+import { Container, Heading, Table, Text, Avatar, clx, StatusBadge } from "@medusajs/ui"
 import { Trophy } from "@medusajs/icons"
 import { useQuery } from "@tanstack/react-query"
 import { sdk } from "../lib/sdk"
@@ -28,25 +28,18 @@ type AggregatedCustomer = {
 
 const TopCustomersWidget = () => {
 
-    // 1. Fetch Orders (Filtered by "Shipped")
+    // 1. Fetch Orders (Filtered by "Delivered")
     const { data, isLoading } = useQuery({
         queryFn: async () => {
             const { orders } = await sdk.client.fetch<{ orders: any[] }>("/admin/orders", {
                 query: {
                     limit: 200,
-                    fields:
-                        "total,currency_code,customer.first_name,customer.last_name,customer.email,customer.id,fulfillment_status",
+                    fields: "total,currency_code,customer.first_name,customer.last_name,customer.email,customer.id,fulfillment_status",
                     order: "-created_at",
-                    // status: "completed",
-                    // payment_status: "captured",
                 },
             })
-
-            const deliveredOrders = orders.filter(
-                (o) => o.fulfillment_status === "delivered"
-            )
-
-            return deliveredOrders
+            // Client-side filtering as per your logic
+            return orders.filter((o) => o.fulfillment_status === "delivered" || o.fulfillment_status === "shipped")
         },
         queryKey: ["top-customers-delivered"],
     })
@@ -84,9 +77,10 @@ const TopCustomersWidget = () => {
 
     return (
         <Container className="p-0 overflow-hidden mb-4">
+            {/* Header with Semantic Colors */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-ui-border-base bg-ui-bg-subtle">
                 <div className="flex items-center gap-2">
-                    <Trophy className="text-amber-500" />
+                    <Trophy className="text-orange-500" />
                     <Heading level="h2">Top Spenders</Heading>
                 </div>
                 <Text size="small" className="text-ui-fg-muted">
@@ -125,14 +119,14 @@ const TopCustomersWidget = () => {
                                 className="cursor-pointer hover:bg-ui-bg-base-hover group"
                                 onClick={() => window.location.assign(`/app/customers/${customer.id}`)}
                             >
-                                {/* Rank */}
+                                {/* Rank Circle - Dark Mode Compatible */}
                                 <Table.Cell className="w-[50px]">
                                     <div className={clx(
-                                        "flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold",
-                                        index === 0 ? "bg-amber-100 text-amber-700" :
-                                            index === 1 ? "bg-ui-bg-base-pressed text-ui-fg-base" :
-                                                index === 2 ? "bg-orange-50 text-orange-700" :
-                                                    "bg-ui-bg-subtle text-ui-fg-subtle"
+                                        "flex items-center justify-center h-6 w-6 rounded-full text-xs font-bold border",
+                                        index === 0 ? "bg-orange-100/20 text-orange-600 border-orange-200/50" : // Gold-ish
+                                            index === 1 ? "bg-ui-bg-base-pressed text-ui-fg-base border-ui-border-base" : // Silver
+                                                index === 2 ? "bg-orange-50/10 text-orange-700/80 border-orange-100/30" : // Bronze-ish
+                                                    "bg-ui-bg-subtle text-ui-fg-subtle border-transparent"
                                     )}>
                                         {index + 1}
                                     </div>
@@ -156,16 +150,16 @@ const TopCustomersWidget = () => {
                                     </div>
                                 </Table.Cell>
 
-                                {/* Order Count */}
+                                {/* Order Count Badge */}
                                 <Table.Cell>
-                                    <div className="inline-flex items-center px-2 py-0.5 rounded-md bg-green-50 text-green-700 text-xs border border-green-200">
+                                    <StatusBadge color="green" className="inline-flex">
                                         {customer.orderCount} orders
-                                    </div>
+                                    </StatusBadge>
                                 </Table.Cell>
 
                                 {/* Total Spent */}
                                 <Table.Cell className="text-right">
-                                    <Text weight="plus" className="font-mono">
+                                    <Text weight="plus" className="font-mono text-ui-fg-base">
                                         {customer.totalSpent.toLocaleString()} {customer.currency}
                                     </Text>
                                 </Table.Cell>
