@@ -4,6 +4,7 @@ import { HttpTypes } from "@medusajs/types"
 export const LICENSED_CATEGORY_ID = "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK"
 export const FANTASY_CATEGORY_ID = "pcat_01KC3ZZ9RWEQ12WS8B2NZ8MGQ8"
 export const PREMIUM_CATEGORY_ID = "pcat_01KD8CKD5Y31RHVWR8FNRVD78J"
+export const SILVER_CATEGORY_ID = "pcat_01KH6BBGRVY2DR3259SDTKW116"
 export const ACCESSORIES_CATEGORY_ID = "pcat_01KGMKRAGX1Z6Z78C1T3M1VGYR"
 
 // 🏷️ New Tier Tags
@@ -15,9 +16,11 @@ export type HotWheelsRuleResult = {
     licensedCount: number
     fantasyCount: number
     premiumCount: number
+    silverCount: number // Added to return type
     totalCount: number
     missingFantasy: number
     missingMainlinesForPremium: number
+    missingFantasyForSilver: number // Added to return type
     canCheckout: boolean
     restrictionMessage: string | null
 }
@@ -27,11 +30,13 @@ export async function evaluateHotWheelsRule(
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = false
-    const MAX_ITEMS_ALLOWED = 30
+    const isSilverRuleEnabled = true // 🆕 Enabled Silver Rule
+    const MAX_ITEMS_ALLOWED = 100
 
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
+    let silverCount = 0 // 🆕 Track Silver items
     let totalCount = 0
 
     // 📊 Tier Counters
@@ -56,7 +61,7 @@ export async function evaluateHotWheelsRule(
 
             const isFantasy = categoryIds.includes(FANTASY_CATEGORY_ID)
             const isLicensed = categoryIds.includes(LICENSED_CATEGORY_ID)
-            // const isAccessory = categoryIds.includes(ACCESSORIES_CATEGORY_ID) // No longer needed for this check
+            const isSilver = categoryIds.includes(SILVER_CATEGORY_ID)
 
             // 🚫 HARD RULE: Only Licensed cars are strictly limited to Qty 1
             if (isLicensed && quantity > 1) {
@@ -69,6 +74,11 @@ export async function evaluateHotWheelsRule(
 
             if (categoryIds.includes(PREMIUM_CATEGORY_ID)) {
                 premiumCount += quantity
+            }
+
+            // 🆕 Silver Logic
+            if (isSilver) {
+                silverCount += quantity
             }
 
             // 🚗 Licensed Logic with Tiers
@@ -109,6 +119,27 @@ export async function evaluateHotWheelsRule(
         fantasyExtra -= fantasyUsed
     }
 
+    // 🔑 SILVER RULE (Consumes Fantasy Next)
+    // Requirement: 1 Fantasy per 1 Silver (1:1 Ratio)
+    let missingFantasyForSilver = 0
+
+    if (isSilverRuleEnabled && silverCount > 0) {
+        // 1 Silver = 1 Fantasy.
+        // Using Math.ceil to ensure we "round up" if the logic ever changes to non-integers,
+        // though for 1:1 it's just silverCount.
+        const requiredFantasyForSilver = Math.ceil(silverCount * 1)
+
+        // Calculate if we have enough "extra" fantasy cars remaining after Premium
+        missingFantasyForSilver = Math.max(
+            0,
+            requiredFantasyForSilver - fantasyExtra
+        )
+
+        // Deduct used fantasy cars from the pool so they can't be used for Licensed items
+        const fantasyUsedForSilver = Math.min(fantasyExtra, requiredFantasyForSilver)
+        fantasyExtra -= fantasyUsedForSilver
+    }
+
     // 🔑 LICENSED TIER RULE (Consumes Remaining Fantasy)
     let missingFantasy = 0
 
@@ -117,13 +148,12 @@ export async function evaluateHotWheelsRule(
         const requiredForTier1 = tier1Count * 2
         const requiredForTier2 = tier2Count * 1
 
-        // Tier 3 is 0.5 per car (1 per 2 cars), using Math.floor to be generous or Math.ceil to be strict.
-        // Logic: 1 car = 0 req, 2 cars = 1 req. => Math.floor(count * 0.5)
+        // Tier 3 is 0.5 per car (1 per 2 cars)
         const requiredForTier3 = Math.floor(tier3Count * 0.5)
 
         const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
 
-        // Check against remaining fantasy cars (after Premium rule)
+        // Check against remaining fantasy cars (after Premium & Silver rules)
         missingFantasy = Math.max(0, totalFantasyRequiredForLicensed - fantasyExtra)
     }
 
@@ -134,7 +164,8 @@ export async function evaluateHotWheelsRule(
         !hasInvalidQuantity &&
         !isBulkOrder &&
         (!isMainlineRuleEnabled || missingFantasy === 0) &&
-        (!isPremiumRuleEnabled || missingMainlinesForPremium === 0)
+        (!isPremiumRuleEnabled || missingMainlinesForPremium === 0) &&
+        (!isSilverRuleEnabled || missingFantasyForSilver === 0) // 🆕 Check Silver requirement
 
     const messages: string[] = []
 
@@ -156,9 +187,17 @@ export async function evaluateHotWheelsRule(
             )
         }
 
+        // 🆕 Silver Error Message
+        if (isSilverRuleEnabled && missingFantasyForSilver > 0) {
+            messages.push(
+                `Add ${missingFantasyForSilver} more Fantasy car${missingFantasyForSilver === 1 ? "" : "s"
+                } for your Silver Series items (1 Fantasy required per Silver Series car).`
+            )
+        }
+
         if (isMainlineRuleEnabled && missingFantasy > 0) {
             messages.push(
-                `Add ${missingFantasy} more Fantasy car${missingFantasy === 1 ? "" : "s"}.`
+                `Add ${missingFantasy} more Fantasy car${missingFantasy === 1 ? "" : "s"} for your Licensed Mainlines.`
             )
 
             if (tier1Count > 0 || tier2Count > 0) {
@@ -171,9 +210,11 @@ export async function evaluateHotWheelsRule(
         licensedCount,
         fantasyCount,
         premiumCount,
+        silverCount, // 🆕
         totalCount,
         missingFantasy,
         missingMainlinesForPremium,
+        missingFantasyForSilver, // 🆕
         canCheckout,
         restrictionMessage: messages.length ? messages.join(" ") : null,
     }
