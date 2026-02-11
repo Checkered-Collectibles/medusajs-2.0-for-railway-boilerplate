@@ -5,7 +5,7 @@ import {
     EllipsisHorizontal,
     PencilSquare,
     Eye,
-    ArrowUpDown // Icon for the Sort Button
+    ArrowUpDown
 } from "@medusajs/icons"
 import {
     Container,
@@ -19,16 +19,17 @@ import {
     DropdownMenu,
     IconButton,
     toast,
+    Tooltip, // 👈 Added Tooltip
     clx,
     Button
 } from "@medusajs/ui"
 import {
-    useQuery,
-    keepPreviousData
+    keepPreviousData,
+    useQuery
 } from "@tanstack/react-query"
 import { useMemo, useState, useEffect } from "react"
 import { sdk } from "../../lib/sdk"
-import { Link } from "react-router-dom"
+import { Link, useNavigate } from "react-router-dom"
 
 // --- Types ---
 type AdminCart = {
@@ -49,6 +50,28 @@ type AdminCartsResponse = {
 }
 
 const PAGE_SIZE = 15
+
+// --- HELPER: Relative Time ---
+function getRelativeTime(dateString: string) {
+    if (!dateString) return ""
+    const date = new Date(dateString)
+    const now = new Date()
+    const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / 1000)
+
+    if (diffInSeconds < 60) return "just now"
+    if (diffInSeconds < 3600) return `${Math.floor(diffInSeconds / 60)}m ago`
+    if (diffInSeconds < 86400) return `${Math.floor(diffInSeconds / 3600)}h ago`
+    if (diffInSeconds < 604800) return `${Math.floor(diffInSeconds / 86400)}d ago`
+    return new Date(dateString).toLocaleDateString()
+}
+
+// --- HELPER: Full Date Tooltip ---
+function formatDateTime(dateString: string) {
+    if (!dateString) return ""
+    return new Date(dateString).toLocaleString("en-US", {
+        month: "short", day: "numeric", hour: "numeric", minute: "numeric"
+    })
+}
 
 // --- 1. Actions Component (Row Actions) ---
 const CartActions = ({ cart }: { cart: AdminCart }) => {
@@ -82,7 +105,7 @@ const CartActions = ({ cart }: { cart: AdminCart }) => {
     )
 }
 
-// --- 2. Custom Sort Menu (Matches Screenshot) ---
+// --- 2. Custom Sort Menu ---
 const SortMenu = ({
     sorting,
     setSorting
@@ -91,7 +114,7 @@ const SortMenu = ({
     setSorting: (s: any[]) => void
 }) => {
     // Current sort state
-    const currentSort = sorting[0] || { id: "created_at", desc: true }
+    const currentSort = sorting[0] || { id: "updated_at", desc: true }
 
     const sortOptions = [
         { label: "Created", id: "created_at" },
@@ -101,12 +124,10 @@ const SortMenu = ({
     ]
 
     const handleSortField = (id: string) => {
-        // Keep current direction, change field
         setSorting([{ id, desc: currentSort.desc }])
     }
 
     const handleSortDir = (desc: boolean) => {
-        // Keep current field, change direction
         setSorting([{ id: currentSort.id, desc }])
     }
 
@@ -182,10 +203,20 @@ const useColumns = () => {
                 </Text>
             ),
         }),
+        // 👇 UPDATED: Uses Relative Time + Tooltip
         columnHelper.accessor("created_at", {
             header: "Date",
             sortable: true,
-            cell: ({ getValue }) => new Date(getValue()).toLocaleDateString(),
+            cell: ({ getValue }) => {
+                const dateStr = getValue()
+                return (
+                    <Tooltip content={formatDateTime(dateStr)}>
+                        <Text className="cursor-default text-ui-fg-subtle">
+                            {getRelativeTime(dateStr)}
+                        </Text>
+                    </Tooltip>
+                )
+            },
         }),
         columnHelper.accessor("completed_at", {
             header: "Status",
@@ -193,7 +224,7 @@ const useColumns = () => {
                 const isCompleted = !!getValue()
                 return (
                     <StatusBadge color={isCompleted ? "green" : "orange"}>
-                        {isCompleted ? "Completed" : "Active"}
+                        {isCompleted ? "Ordered" : "Active"}
                     </StatusBadge>
                 )
             },
@@ -218,7 +249,7 @@ const useColumns = () => {
     ], [])
 }
 
-// --- 4. Filters Hook (Populates the "Add filter" menu) ---
+// --- 4. Filters Hook ---
 const filterHelper = createDataTableFilterHelper<AdminCart>()
 const useFilters = () => {
     return useMemo(() => [
@@ -245,6 +276,7 @@ const useFilters = () => {
 const CartListTable = () => {
     const columns = useColumns()
     const filters = useFilters()
+    const navigate = useNavigate()
 
     // State
     const [pagination, setPagination] = useState({
@@ -252,17 +284,17 @@ const CartListTable = () => {
         pageIndex: 0,
     })
 
-    // Search (Debounced)
     const [searchValue, setSearchValue] = useState<string>("")
     const [debouncedSearch, setDebouncedSearch] = useState<string>("")
 
-    const [sorting, setSorting] = useState([{ id: "created_at", desc: true }])
+    // ⚡ CHANGED: Default sort to 'updated_at' DESC
+    const [sorting, setSorting] = useState([{ id: "updated_at", desc: true }])
     const [filtering, setFiltering] = useState({})
 
     useEffect(() => {
         const timer = setTimeout(() => {
             setDebouncedSearch(searchValue)
-        }, 300) // 300ms delay feels snappier
+        }, 300)
         return () => clearTimeout(timer)
     }, [searchValue])
 
@@ -288,7 +320,7 @@ const CartListTable = () => {
                 },
             }),
         queryKey: ["carts", PAGE_SIZE, offset, debouncedSearch, order, filtering],
-        placeholderData: keepPreviousData, // ✅ No Skeletons on search/sort
+        placeholderData: keepPreviousData,
     })
 
     const carts = data?.carts || []
@@ -303,7 +335,7 @@ const CartListTable = () => {
         rowCount: count,
         isLoading,
         filters,
-        search: true, // Enable search features
+        search: true,
         pagination: {
             state: pagination,
             onPaginationChange: setPagination,
@@ -317,25 +349,24 @@ const CartListTable = () => {
             onFilteringChange: setFiltering,
         },
         onRowClick: (e, row) => {
+            // Prevent navigation if clicking actions
             if ((e.target as HTMLElement).closest("button, a")) return
-            window.location.assign(`/app/carts/${row.id}`)
+            navigate(`/carts/${row.id}`)
         }
     })
 
     return (
         <Container className="divide-y p-0 h-full flex flex-col overflow-hidden">
             <DataTable instance={table}>
-                {/* TOOLBAR Layout matching Screenshot */}
+                {/* TOOLBAR */}
                 <div className="flex items-center justify-between px-6 py-4">
 
-                    {/* LEFT: Add Filter Button */}
+                    {/* LEFT */}
                     <div className="flex items-center gap-2">
-                        {/* <DataTable.FilterMenu tooltip="Add filter" /> */}
                         <Heading>Carts</Heading>
                     </div>
 
-
-                    {/* RIGHT: Search + Sort */}
+                    {/* RIGHT */}
                     <div className="flex items-center gap-2">
                         <DataTable.Search
                             placeholder="Search..."

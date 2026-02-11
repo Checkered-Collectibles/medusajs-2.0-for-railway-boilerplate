@@ -16,6 +16,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
                 "currency_code",
                 // cart-level totals
                 "completed_at",
+                "created_at",
+                "updated_at",
                 "total",
                 "subtotal",
                 "tax_total",

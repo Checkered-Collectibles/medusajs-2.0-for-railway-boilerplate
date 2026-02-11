@@ -28,8 +28,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
     }
 
     // 3. Build Sort Object
-    // Medusa Admin sends order as "-created_at" (desc) or "created_at" (asc)
-    let orderObj: Record<string, "ASC" | "DESC"> = { created_at: "DESC" } // Default
+    // ⚡ CHANGED: Default sort is now 'updated_at' DESC (Most recently active first)
+    let orderObj: Record<string, "ASC" | "DESC"> = { updated_at: "DESC" }
 
     if (order && typeof order === "string") {
         if (order.startsWith("-")) {
@@ -47,8 +47,8 @@ export const GET = async (req: MedusaRequest, res: MedusaResponse) => {
             "email",
             "total",
             "currency_code",
-            "created_at",
-            "updated_at",
+            "created_at", // Required for frontend date display
+            "updated_at", // Required for frontend date display
             "items.*",
             "items.product.*",
             "shipping_address.*",
