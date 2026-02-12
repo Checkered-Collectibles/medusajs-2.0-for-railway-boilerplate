@@ -18,7 +18,8 @@ const Hero = () => {
               level="h1"
               className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-thin"
             >
-              YOUR DESK NEEDS <br className="sm:hidden block" /> MORE HORSEPOWER.
+              REMEMBER THE THRILL.
+              {/* <br className="sm:hidden block" /> */}
               {/* <Image
                 src={HWImage}
                 width={160}
@@ -36,7 +37,7 @@ const Hero = () => {
               level="h2"
               className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal mt-2"
             >
-              Icons of speed. Park them on your desk.
+              From Dreams to Desktop.
             </Heading>
             <p className="flex flex-wrap gap-2 items-center justify-center mt-3">
               Fuel your passion with the best<Image
