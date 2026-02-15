@@ -16,11 +16,11 @@ export type HotWheelsRuleResult = {
     licensedCount: number
     fantasyCount: number
     premiumCount: number
-    silverCount: number // Added to return type
+    silverCount: number
     totalCount: number
     missingFantasy: number
     missingMainlinesForPremium: number
-    missingFantasyForSilver: number // Added to return type
+    missingFantasyForSilver: number
     canCheckout: boolean
     restrictionMessage: string | null
 }
@@ -30,13 +30,16 @@ export async function evaluateHotWheelsRule(
 ): Promise<HotWheelsRuleResult> {
     const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = false
-    const isSilverRuleEnabled = true // 🆕 Enabled Silver Rule
+    const isSilverRuleEnabled = true
+
+    // ⚙️ QUANTITY LIMITS
     const MAX_ITEMS_ALLOWED = 100
+    const MIN_ITEMS_ALLOWED = 0 // 🆕 Minimum items required to checkout
 
     let licensedCount = 0
     let fantasyCount = 0
     let premiumCount = 0
-    let silverCount = 0 // 🆕 Track Silver items
+    let silverCount = 0
     let totalCount = 0
 
     // 📊 Tier Counters
@@ -76,7 +79,6 @@ export async function evaluateHotWheelsRule(
                 premiumCount += quantity
             }
 
-            // 🆕 Silver Logic
             if (isSilver) {
                 silverCount += quantity
             }
@@ -103,7 +105,6 @@ export async function evaluateHotWheelsRule(
     let fantasyExtra = fantasyCount
 
     // 🔑 PREMIUM RULE (Consumes Fantasy First)
-    // Requirement: 2 Fantasy per 1 Premium
     let missingMainlinesForPremium = 0
 
     if (isPremiumRuleEnabled && premiumCount > 0) {
@@ -114,28 +115,21 @@ export async function evaluateHotWheelsRule(
             requiredFantasyForPremium - fantasyCount
         )
 
-        // Deduct used fantasy cars from the pool
         const fantasyUsed = Math.min(fantasyCount, requiredFantasyForPremium)
         fantasyExtra -= fantasyUsed
     }
 
     // 🔑 SILVER RULE (Consumes Fantasy Next)
-    // Requirement: 1 Fantasy per 1 Silver (1:1 Ratio)
     let missingFantasyForSilver = 0
 
     if (isSilverRuleEnabled && silverCount > 0) {
-        // 1 Silver = 1 Fantasy.
-        // Using Math.ceil to ensure we "round up" if the logic ever changes to non-integers,
-        // though for 1:1 it's just silverCount.
         const requiredFantasyForSilver = Math.ceil(silverCount * 1)
 
-        // Calculate if we have enough "extra" fantasy cars remaining after Premium
         missingFantasyForSilver = Math.max(
             0,
             requiredFantasyForSilver - fantasyExtra
         )
 
-        // Deduct used fantasy cars from the pool so they can't be used for Licensed items
         const fantasyUsedForSilver = Math.min(fantasyExtra, requiredFantasyForSilver)
         fantasyExtra -= fantasyUsedForSilver
     }
@@ -144,34 +138,36 @@ export async function evaluateHotWheelsRule(
     let missingFantasy = 0
 
     if (isMainlineRuleEnabled) {
-        // Calculate total fantasy needed based on tiers
         const requiredForTier1 = tier1Count * 2
         const requiredForTier2 = tier2Count * 1
-
-        // Tier 3 is 0.5 per car (1 per 2 cars)
         const requiredForTier3 = Math.floor(tier3Count * 0.5)
 
         const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
 
-        // Check against remaining fantasy cars (after Premium & Silver rules)
         missingFantasy = Math.max(0, totalFantasyRequiredForLicensed - fantasyExtra)
     }
 
-    // 🔑 BULK ORDER RULE
+    // 🔑 QUANTITY RULES
     const isBulkOrder = totalCount > MAX_ITEMS_ALLOWED
+    const isBelowMinimum = totalCount < MIN_ITEMS_ALLOWED // 🆕 Check minimum
 
     const canCheckout =
         !hasInvalidQuantity &&
         !isBulkOrder &&
+        !isBelowMinimum && // 🆕 Added validation
         (!isMainlineRuleEnabled || missingFantasy === 0) &&
         (!isPremiumRuleEnabled || missingMainlinesForPremium === 0) &&
-        (!isSilverRuleEnabled || missingFantasyForSilver === 0) // 🆕 Check Silver requirement
+        (!isSilverRuleEnabled || missingFantasyForSilver === 0)
 
     const messages: string[] = []
 
     if (isBulkOrder) {
         messages.push(
             `You have ${totalCount} items. For orders with more than ${MAX_ITEMS_ALLOWED} items, please contact us for bulk orders.`
+        )
+    } else if (isBelowMinimum) { // 🆕 Message
+        messages.push(
+            `Minimum order quantity is ${MIN_ITEMS_ALLOWED} items. Please add ${MIN_ITEMS_ALLOWED - totalCount} more item(s) to checkout.`
         )
     } else {
         if (hasInvalidQuantity) {
@@ -183,15 +179,14 @@ export async function evaluateHotWheelsRule(
         if (isPremiumRuleEnabled && missingMainlinesForPremium > 0) {
             messages.push(
                 `Add ${missingMainlinesForPremium} more Fantasy car${missingMainlinesForPremium === 1 ? "" : "s"
-                } for your Premium items (2 Fantasy required per Premium car).`
+                } for your Premium items.`
             )
         }
 
-        // 🆕 Silver Error Message
         if (isSilverRuleEnabled && missingFantasyForSilver > 0) {
             messages.push(
                 `Add ${missingFantasyForSilver} more Fantasy car${missingFantasyForSilver === 1 ? "" : "s"
-                } for your Silver Series items (1 Fantasy required per Silver Series car).`
+                } for your Silver Series items.`
             )
         }
 
@@ -199,10 +194,6 @@ export async function evaluateHotWheelsRule(
             messages.push(
                 `Add ${missingFantasy} more Fantasy car${missingFantasy === 1 ? "" : "s"} for your Licensed Mainlines.`
             )
-
-            if (tier1Count > 0 || tier2Count > 0) {
-                messages.push(`(High-demand cars require 1-2 Fantasy cars each)`)
-            }
         }
     }
 
@@ -210,11 +201,11 @@ export async function evaluateHotWheelsRule(
         licensedCount,
         fantasyCount,
         premiumCount,
-        silverCount, // 🆕
+        silverCount,
         totalCount,
         missingFantasy,
         missingMainlinesForPremium,
-        missingFantasyForSilver, // 🆕
+        missingFantasyForSilver,
         canCheckout,
         restrictionMessage: messages.length ? messages.join(" ") : null,
     }
