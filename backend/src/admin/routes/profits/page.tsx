@@ -487,7 +487,7 @@ const ProfitsPage = () => {
 export const config = defineRouteConfig({
     label: "Profits",
     icon: CurrencyDollarSolid,
-    rank: 0,
+    rank: 2,
 })
 
 export default ProfitsPage

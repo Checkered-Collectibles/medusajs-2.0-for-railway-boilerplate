@@ -395,6 +395,7 @@ const CartsPage = () => {
 export const config = defineRouteConfig({
     label: "Carts",
     icon: ShoppingCart,
+    rank: 0
 })
 
 export default CartsPage
