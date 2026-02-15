@@ -2,7 +2,7 @@ import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Text, StatusBadge, Table, Button, clx, Select, IconButton } from "@medusajs/ui"
 import { CurrencyDollarSolid, ReceiptPercent, ChevronLeft, ChevronRight } from "@medusajs/icons"
 import { useQuery } from "@tanstack/react-query"
-import { sdk } from "../../lib/sdk" // Adjust path if needed
+import { sdk } from "../../lib/sdk"
 import { useMemo, useState } from "react"
 
 // --- CONSTANTS ---
@@ -47,7 +47,6 @@ const getDateRange = (range: string) => {
 
     switch (range) {
         case "24hours":
-            // Exact 24h rolling window
             return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
         case "today":
             return start.toISOString()
@@ -64,14 +63,11 @@ const getDateRange = (range: string) => {
             start.setDate(now.getDate() - 90)
             return start.toISOString()
         case "quarter":
-            // Calculate previous full quarter
             const currentQuarter = Math.floor(now.getMonth() / 3)
             const prevQuarterStartMonth = (currentQuarter - 1) * 3
-
-            // Handle Q1 -> Prev Year Q4
             if (prevQuarterStartMonth < 0) {
                 start.setFullYear(now.getFullYear() - 1)
-                start.setMonth(9) // October
+                start.setMonth(9)
                 start.setDate(1)
             } else {
                 start.setMonth(prevQuarterStartMonth)
@@ -85,11 +81,10 @@ const getDateRange = (range: string) => {
 
 const ProfitsPage = () => {
     const [range, setRange] = useState("today")
-    const [currentPage, setCurrentPage] = useState(0) // 0-indexed
+    const [currentPage, setCurrentPage] = useState(0)
 
     const startDate = getDateRange(range)
 
-    // Reset pagination when range changes
     useMemo(() => {
         setCurrentPage(0)
     }, [range])
@@ -100,11 +95,10 @@ const ProfitsPage = () => {
             const { orders } = await sdk.client.fetch<{ orders: Order[] }>("/admin/orders", {
                 query: {
                     created_at: { $gt: startDate },
-                    limit: 1000, // Fetch up to 1000 items for the summary stats
+                    limit: 1000,
                     fields: "id,display_id,created_at,total,currency_code,items.unit_price,items.quantity,items.variant.product.title,items.variant.product.categories.id,items.variant.product.metadata,payment_status",
                 },
             })
-            // Strict Filter: Only captured payments
             return orders.filter((o) => o.payment_status === "captured")
         },
         queryKey: ["profits-page", range],
@@ -118,7 +112,9 @@ const ProfitsPage = () => {
         let totalCogs = 0
 
         const rows = orders.map(order => {
-            let orderRevenue = order.total
+            // FIX: Initialize revenue to 0 instead of order.total
+            // This ensures we only count ITEM revenue, excluding shipping/tax
+            let orderRevenue = 0
             let orderCogs = 0
 
             order.items.forEach(item => {
@@ -127,6 +123,10 @@ const ProfitsPage = () => {
                 const metadata = product?.metadata || {}
                 const qty = item.quantity
 
+                // 1. Revenue Calculation (Item Price * Qty)
+                orderRevenue += item.unit_price * qty
+
+                // 2. COGS Calculation
                 let unitCost = 0
                 const isFixedCost = categories.some(cat => FIXED_COST_CATEGORIES.includes(cat.id))
 
@@ -147,6 +147,8 @@ const ProfitsPage = () => {
 
             return {
                 ...order,
+                // Override the total with item-only revenue for the table display
+                itemRevenue: orderRevenue,
                 cogs: orderCogs,
                 profit: orderProfit,
                 margin: orderMargin
@@ -198,7 +200,7 @@ const ProfitsPage = () => {
                         <Heading level="h1">Profit Analytics</Heading>
                     </div>
                     <Text size="small" className="text-ui-fg-muted">
-                        Real-time margin analysis for paid orders.
+                        Real-time margin analysis (Excl. Shipping).
                     </Text>
                 </div>
 
@@ -237,7 +239,7 @@ const ProfitsPage = () => {
 
                 {/* Revenue */}
                 <div className="p-6 flex flex-col gap-2 h-[100px] justify-center">
-                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Revenue</Text>
+                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Item Revenue</Text>
                     {isLoading ? (
                         <div className="h-7 w-24 bg-ui-bg-subtle animate-pulse rounded" />
                     ) : (
@@ -287,7 +289,7 @@ const ProfitsPage = () => {
                                 <Table.Row>
                                     <Table.HeaderCell>Order</Table.HeaderCell>
                                     <Table.HeaderCell>Date</Table.HeaderCell>
-                                    <Table.HeaderCell className="text-right">Revenue</Table.HeaderCell>
+                                    <Table.HeaderCell className="text-right">Item Revenue</Table.HeaderCell>
                                     <Table.HeaderCell className="text-right">Cost</Table.HeaderCell>
                                     <Table.HeaderCell className="text-right">Profit</Table.HeaderCell>
                                     <Table.HeaderCell className="text-right">Margin</Table.HeaderCell>
@@ -316,7 +318,8 @@ const ProfitsPage = () => {
                                         <Table.Row key={row.id} className="cursor-pointer hover:bg-ui-bg-base-hover" onClick={() => window.location.assign(`/app/orders/${row.id}`)}>
                                             <Table.Cell><Text weight="plus" size="small">#{row.display_id}</Text></Table.Cell>
                                             <Table.Cell><Text size="small" className="text-ui-fg-subtle">{new Date(row.created_at).toLocaleString()}</Text></Table.Cell>
-                                            <Table.Cell className="text-right">{formatMoney(row.total)}</Table.Cell>
+                                            {/* Update: Show itemRevenue instead of total */}
+                                            <Table.Cell className="text-right">{formatMoney(row.itemRevenue)}</Table.Cell>
                                             <Table.Cell className="text-right text-ui-fg-subtle">{formatMoney(row.cogs)}</Table.Cell>
                                             <Table.Cell className="text-right"><Text weight="plus" className={row.profit >= 0 ? "text-green-600" : "text-red-600"}>{formatMoney(row.profit)}</Text></Table.Cell>
                                             <Table.Cell className="text-right"><StatusBadge color={row.margin > 20 ? "green" : row.margin > 0 ? "orange" : "red"}>{row.margin.toFixed(0)}%</StatusBadge></Table.Cell>
