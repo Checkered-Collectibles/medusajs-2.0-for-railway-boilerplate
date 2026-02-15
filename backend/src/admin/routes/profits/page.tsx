@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
-import { Container, Heading, Text, StatusBadge, Table, Button, clx, Select, IconButton } from "@medusajs/ui"
-import { CurrencyDollarSolid, ReceiptPercent, ChevronLeft, ChevronRight } from "@medusajs/icons"
+import { Container, Heading, Text, StatusBadge, Table, clx, Select, IconButton, Checkbox, Label } from "@medusajs/ui"
+import { CurrencyDollarSolid, ReceiptPercent, ChevronLeft, ChevronRight, ArrowUpRightMini, ArrowDownRightMini, Meta } from "@medusajs/icons"
 import { useQuery } from "@tanstack/react-query"
 import { sdk } from "../../lib/sdk"
 import { useMemo, useState } from "react"
@@ -12,6 +12,7 @@ const FIXED_COST_CATEGORIES = [
 ]
 const FIXED_COST_AMOUNT = 167
 const ITEMS_PER_PAGE = 15
+const DAILY_AD_SPEND = 500
 
 // --- TYPES ---
 type OrderItem = {
@@ -37,151 +38,231 @@ type Order = {
     payment_status: string
 }
 
-// --- DATE HELPER ---
-const getDateRange = (range: string) => {
+// --- HELPERS ---
+const getRangeParams = (range: string) => {
     const now = new Date()
-    const start = new Date()
+    const currentStart = new Date()
+    const prevStart = new Date()
+    let daysMultiplier = 1
 
-    // Default: Reset to start of day for clean comparisons
-    start.setHours(0, 0, 0, 0)
+    const setStartOfDay = (d: Date) => d.setHours(0, 0, 0, 0)
 
     switch (range) {
         case "24hours":
-            return new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+            currentStart.setTime(now.getTime() - (24 * 60 * 60 * 1000))
+            prevStart.setTime(currentStart.getTime() - (24 * 60 * 60 * 1000))
+            daysMultiplier = 1
+            break
         case "today":
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            prevStart.setTime(currentStart.getTime() - (24 * 60 * 60 * 1000))
+            daysMultiplier = 1
+            break
+        case "yesterday":
+            setStartOfDay(currentStart)
+            currentStart.setDate(currentStart.getDate() - 1)
+            prevStart.setTime(currentStart.getTime() - (24 * 60 * 60 * 1000))
+            daysMultiplier = 1
+            break
         case "7days":
-            start.setDate(now.getDate() - 7)
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            currentStart.setDate(currentStart.getDate() - 7)
+            prevStart.setDate(currentStart.getDate() - 7)
+            daysMultiplier = 7
+            break
         case "30days":
-            start.setDate(now.getDate() - 30)
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            currentStart.setDate(currentStart.getDate() - 30)
+            prevStart.setDate(currentStart.getDate() - 30)
+            daysMultiplier = 30
+            break
         case "month":
-            start.setDate(1) // 1st of current month
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            currentStart.setDate(1)
+            prevStart.setMonth(prevStart.getMonth() - 1)
+            prevStart.setDate(1)
+            prevStart.setHours(0, 0, 0, 0)
+            daysMultiplier = new Date().getDate() // Days passed in current month
+            break
         case "3months":
-            start.setDate(now.getDate() - 90)
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            currentStart.setDate(currentStart.getDate() - 90)
+            prevStart.setDate(currentStart.getDate() - 90)
+            daysMultiplier = 90
+            break
         case "quarter":
+            setStartOfDay(currentStart)
             const currentQuarter = Math.floor(now.getMonth() / 3)
-            const prevQuarterStartMonth = (currentQuarter - 1) * 3
-            if (prevQuarterStartMonth < 0) {
-                start.setFullYear(now.getFullYear() - 1)
-                start.setMonth(9)
-                start.setDate(1)
-            } else {
-                start.setMonth(prevQuarterStartMonth)
-                start.setDate(1)
-            }
-            return start.toISOString()
+            const quarterStartMonth = currentQuarter * 3
+            currentStart.setMonth(quarterStartMonth)
+            currentStart.setDate(1)
+            prevStart.setMonth(quarterStartMonth - 3)
+            prevStart.setDate(1)
+            daysMultiplier = 90 // Approx
+            break
         default:
-            return start.toISOString()
+            setStartOfDay(currentStart)
+            prevStart.setDate(currentStart.getDate() - 1)
+            daysMultiplier = 1
     }
+
+    return {
+        currentStart: currentStart.toISOString(),
+        prevStart: prevStart.toISOString(),
+        daysMultiplier
+    }
+}
+
+const ComparisonText = ({ current, previous, type = "neutral", prefix = "" }: { current: number, previous: number, type?: "inverse" | "neutral", prefix?: string }) => {
+    if (previous === 0) return <Text size="small" className="text-ui-fg-muted mt-1">No previous data</Text>
+
+    const diff = current - previous
+    const percentage = previous !== 0 ? (diff / previous) * 100 : 0
+    const isPositive = diff > 0
+    const isNeutral = diff === 0
+
+    let colorClass = isPositive ? "text-green-600" : "text-red-600"
+    let arrowIcon = isPositive ? <ArrowUpRightMini /> : <ArrowUpRightMini className="scale-y-[-1]" />
+    let word = isPositive ? "Up" : "Down"
+
+    if (type === "inverse") {
+        colorClass = isPositive ? "text-red-600" : "text-green-600"
+    }
+
+    if (isNeutral) {
+        return <Text size="small" className="text-ui-fg-muted mt-1">Same as previous period</Text>
+    }
+
+    const absDiff = Math.abs(diff)
+    const displayDiff = prefix ?
+        new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(absDiff) :
+        absDiff
+
+    return (
+        <div className={clx("flex items-center gap-1 mt-1 font-medium", colorClass)}>
+            {arrowIcon}
+            <Text size="small" className="leading-none">
+                {word} {displayDiff} ({Math.abs(percentage).toFixed(0)}%)
+            </Text>
+        </div>
+    )
 }
 
 const ProfitsPage = () => {
     const [range, setRange] = useState("today")
+    const [includeAds, setIncludeAds] = useState(true) // <--- STATE FOR CHECKBOX
     const [currentPage, setCurrentPage] = useState(0)
 
-    const startDate = getDateRange(range)
+    const { currentStart, prevStart, daysMultiplier } = getRangeParams(range)
 
     useMemo(() => {
         setCurrentPage(0)
     }, [range])
 
     // 1. Fetch Orders
-    const { data: orders, isLoading } = useQuery({
+    const { data: allOrders, isLoading } = useQuery({
         queryFn: async () => {
             const { orders } = await sdk.client.fetch<{ orders: Order[] }>("/admin/orders", {
                 query: {
-                    created_at: { $gt: startDate },
-                    limit: 1000,
+                    created_at: { $gt: prevStart },
+                    limit: 2000,
                     fields: "id,display_id,created_at,total,currency_code,items.unit_price,items.quantity,items.variant.product.title,items.variant.product.categories.id,items.variant.product.metadata,payment_status",
                 },
             })
             return orders.filter((o) => o.payment_status === "captured")
         },
-        queryKey: ["profits-page", range],
+        queryKey: ["profits-page", range, prevStart],
     })
 
-    // 2. Calculate Financials & Prepare Rows
-    const financials = useMemo(() => {
-        if (!orders) return { revenue: 0, cogs: 0, profit: 0, margin: 0, count: 0, rows: [] }
+    // 2. Process Data
+    const { currentStats, prevStats, rows } = useMemo(() => {
+        const emptyStats = { revenue: 0, cogs: 0, profit: 0, margin: 0, count: 0, adSpend: 0 }
+        if (!allOrders) return { currentStats: emptyStats, prevStats: emptyStats, rows: [] }
 
-        let totalRevenue = 0
-        let totalCogs = 0
+        const thresholdDate = new Date(currentStart).getTime()
+        const currentPeriodOrders: Order[] = []
+        const prevPeriodOrders: Order[] = []
 
-        const rows = orders.map(order => {
-            // FIX: Initialize revenue to 0 instead of order.total
-            // This ensures we only count ITEM revenue, excluding shipping/tax
-            let orderRevenue = 0
-            let orderCogs = 0
+        allOrders.forEach(order => {
+            const orderTime = new Date(order.created_at).getTime()
 
-            order.items.forEach(item => {
-                const product = item.variant?.product
-                const categories = product?.categories || []
-                const metadata = product?.metadata || {}
-                const qty = item.quantity
-
-                // 1. Revenue Calculation (Item Price * Qty)
-                orderRevenue += item.unit_price * qty
-
-                // 2. COGS Calculation
-                let unitCost = 0
-                const isFixedCost = categories.some(cat => FIXED_COST_CATEGORIES.includes(cat.id))
-
-                if (isFixedCost) {
-                    unitCost = FIXED_COST_AMOUNT
-                } else if (metadata.cogs) {
-                    unitCost = Number(metadata.cogs) || 0
+            if (range === "yesterday") {
+                const today00 = new Date().setHours(0, 0, 0, 0)
+                if (orderTime >= thresholdDate && orderTime < today00) {
+                    currentPeriodOrders.push(order)
+                } else if (orderTime >= new Date(prevStart).getTime() && orderTime < thresholdDate) {
+                    prevPeriodOrders.push(order)
                 }
-
-                orderCogs += unitCost * qty
-            })
-
-            const orderProfit = orderRevenue - orderCogs
-            const orderMargin = orderRevenue > 0 ? (orderProfit / orderRevenue) * 100 : 0
-
-            totalRevenue += orderRevenue
-            totalCogs += orderCogs
-
-            return {
-                ...order,
-                // Override the total with item-only revenue for the table display
-                itemRevenue: orderRevenue,
-                cogs: orderCogs,
-                profit: orderProfit,
-                margin: orderMargin
+            } else {
+                if (orderTime >= thresholdDate) {
+                    currentPeriodOrders.push(order)
+                } else {
+                    prevPeriodOrders.push(order)
+                }
             }
         })
 
-        // Sort by newest first
-        rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+        const calculateStats = (orders: Order[]) => {
+            let rev = 0, cost = 0
 
-        const totalProfit = totalRevenue - totalCogs
-        const totalMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0
+            const processedRows = orders.map(order => {
+                let orderRev = 0
+                let orderCost = 0
 
-        return {
-            revenue: totalRevenue,
-            cogs: totalCogs,
-            profit: totalProfit,
-            margin: totalMargin,
-            count: orders.length,
-            rows
+                order.items.forEach(item => {
+                    const qty = item.quantity
+                    orderRev += item.unit_price * qty
+
+                    const cats = item.variant?.product?.categories || []
+                    const meta = item.variant?.product?.metadata || {}
+                    let unitCost = 0
+                    if (cats.some(c => FIXED_COST_CATEGORIES.includes(c.id))) {
+                        unitCost = FIXED_COST_AMOUNT
+                    } else {
+                        unitCost = Number(meta.cogs) || 0
+                    }
+                    orderCost += unitCost * qty
+                })
+                rev += orderRev
+                cost += orderCost
+
+                return {
+                    ...order,
+                    itemRevenue: orderRev,
+                    cogs: orderCost,
+                    profit: orderRev - orderCost,
+                    margin: orderRev > 0 ? ((orderRev - orderCost) / orderRev) * 100 : 0
+                }
+            })
+
+            // --- DYNAMIC AD SPEND LOGIC ---
+            // Only calculate if Checkbox is TRUE
+            const totalAdSpend = includeAds ? (daysMultiplier * DAILY_AD_SPEND) : 0
+
+            // Deduct Ad Spend from Profit
+            const profit = rev - cost - totalAdSpend
+
+            const margin = rev > 0 ? (profit / rev) * 100 : 0
+
+            return {
+                stats: { revenue: rev, cogs: cost, profit, margin, count: orders.length, adSpend: totalAdSpend },
+                rows: processedRows
+            }
         }
-    }, [orders])
 
-    // 3. Handle Pagination
-    const pageCount = Math.ceil(financials.rows.length / ITEMS_PER_PAGE)
-    const paginatedRows = financials.rows.slice(
-        currentPage * ITEMS_PER_PAGE,
-        (currentPage + 1) * ITEMS_PER_PAGE
-    )
+        const curr = calculateStats(currentPeriodOrders)
+        const prev = calculateStats(prevPeriodOrders)
+        curr.rows.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 
+        return { currentStats: curr.stats, prevStats: prev.stats, rows: curr.rows }
+    }, [allOrders, range, currentStart, prevStart, daysMultiplier, includeAds]) // Added includeAds to dependencies
+
+    // 3. Pagination
+    const pageCount = Math.ceil(rows.length / ITEMS_PER_PAGE)
+    const paginatedRows = rows.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE)
     const canNext = currentPage < pageCount - 1
     const canPrev = currentPage > 0
 
-    // Helper
     const formatMoney = (amount: number) => {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
@@ -204,78 +285,120 @@ const ProfitsPage = () => {
                     </Text>
                 </div>
 
-                <div className="w-[200px]">
-                    <Select value={range} onValueChange={setRange} disabled={isLoading}>
-                        <Select.Trigger>
-                            <Select.Value />
-                        </Select.Trigger>
-                        <Select.Content>
-                            <Select.Item value="24hours">Last 24 Hours</Select.Item>
-                            <Select.Item value="today">Today</Select.Item>
-                            <Select.Item value="7days">Last 7 Days</Select.Item>
-                            <Select.Item value="30days">Last 30 Days</Select.Item>
-                            <Select.Item value="month">This Month (MTD)</Select.Item>
-                            <Select.Item value="3months">Last 3 Months</Select.Item>
-                            <Select.Item value="quarter">Last Quarter</Select.Item>
-                        </Select.Content>
-                    </Select>
+                <div className="flex items-center gap-6">
+                    {/* CHECKBOX for Ads */}
+                    <div className="flex items-center gap-2">
+                        <Checkbox
+                            id="ads-toggle"
+                            checked={includeAds}
+                            onCheckedChange={(val) => setIncludeAds(val === true)}
+                        />
+                        <Label htmlFor="ads-toggle" className="text-small text-ui-fg-subtle cursor-pointer select-none">
+                            Include Ads Spend
+                        </Label>
+                    </div>
+
+                    {/* Range Select */}
+                    <div className="w-[200px]">
+                        <Select value={range} onValueChange={setRange} disabled={isLoading}>
+                            <Select.Trigger>
+                                <Select.Value />
+                            </Select.Trigger>
+                            <Select.Content>
+                                <Select.Item value="24hours">Last 24 Hours</Select.Item>
+                                <Select.Item value="today">Today</Select.Item>
+                                <Select.Item value="yesterday">Yesterday</Select.Item>
+                                <Select.Item value="7days">Last 7 Days</Select.Item>
+                                <Select.Item value="30days">Last 30 Days</Select.Item>
+                                <Select.Item value="month">This Month (MTD)</Select.Item>
+                                <Select.Item value="3months">Last 3 Months</Select.Item>
+                                <Select.Item value="quarter">Last Quarter</Select.Item>
+                            </Select.Content>
+                        </Select>
+                    </div>
                 </div>
             </div>
 
             {/* --- SUMMARY CARDS --- */}
-            <div className="grid grid-cols-1 md:grid-cols-4 divide-y md:divide-y-0 md:divide-x divide-ui-border-base border-b border-ui-border-base bg-ui-bg-base">
+            <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-ui-border-base border-b border-ui-border-base bg-ui-bg-base">
                 {/* Orders */}
-                <div className="p-6 flex flex-col gap-2 h-[100px] justify-center">
-                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Orders</Text>
-                    {isLoading ? (
-                        <div className="h-7 w-16 bg-ui-bg-subtle animate-pulse rounded" />
-                    ) : (
-                        <div className="flex items-center gap-2">
-                            <ReceiptPercent className="text-ui-fg-muted" />
-                            <Heading level="h2">{financials.count}</Heading>
-                        </div>
+                <div className="p-6 flex flex-col justify-center h-[120px]">
+                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Orders</Text>
+                    {isLoading ? <div className="h-6 w-16 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            <Heading level="h2">{currentStats.count}</Heading>
+                            <ComparisonText current={currentStats.count} previous={prevStats.count} />
+                        </>
                     )}
                 </div>
 
                 {/* Revenue */}
-                <div className="p-6 flex flex-col gap-2 h-[100px] justify-center">
-                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Item Revenue</Text>
-                    {isLoading ? (
-                        <div className="h-7 w-24 bg-ui-bg-subtle animate-pulse rounded" />
-                    ) : (
-                        <Heading level="h2">{formatMoney(financials.revenue)}</Heading>
+                <div className="p-6 flex flex-col justify-center h-[120px]">
+                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Item Revenue</Text>
+                    {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            <Heading level="h2">{formatMoney(currentStats.revenue)}</Heading>
+                            <ComparisonText current={currentStats.revenue} previous={prevStats.revenue} prefix="₹" />
+                        </>
                     )}
                 </div>
 
                 {/* COGS */}
-                <div className="p-6 flex flex-col gap-2 h-[100px] justify-center">
-                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Total Cost</Text>
-                    {isLoading ? (
-                        <div className="h-7 w-24 bg-ui-bg-subtle animate-pulse rounded" />
-                    ) : (
-                        <Heading level="h2" className="text-ui-fg-muted">{formatMoney(financials.cogs)}</Heading>
+                <div className="p-6 flex flex-col justify-center h-[120px]">
+                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">COGS (Product)</Text>
+                    {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            <Heading level="h2" className="text-ui-fg-muted">{formatMoney(currentStats.cogs)}</Heading>
+                            <ComparisonText current={currentStats.cogs} previous={prevStats.cogs} type="inverse" prefix="₹" />
+                        </>
                     )}
                 </div>
 
-                {/* Profit */}
+                {/* Ads Spend */}
+                <div className="p-6 flex flex-col justify-center h-[120px]">
+                    <div className="flex items-center gap-1 mb-1">
+                        <Meta className="text-ui-fg-subtle" />
+                        <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Ads Spend</Text>
+                    </div>
+                    {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            {includeAds ? (
+                                <>
+                                    <Heading level="h2" className="text-ui-fg-muted">{formatMoney(currentStats.adSpend)}</Heading>
+                                    <Text size="xsmall" className="text-ui-fg-muted mt-1">
+                                        Fixed @ ₹{DAILY_AD_SPEND}/day
+                                    </Text>
+                                </>
+                            ) : (
+                                <>
+                                    <Heading level="h2" className="text-ui-fg-subtle/50">Excluded</Heading>
+                                    <Text size="xsmall" className="text-ui-fg-subtle/50 mt-1">
+                                        Enable to calculate
+                                    </Text>
+                                </>
+                            )}
+                        </>
+                    )}
+                </div>
+
+                {/* Net Profit */}
                 <div className={clx(
-                    "p-6 flex flex-col gap-2 h-[100px] justify-center",
-                    !isLoading && financials.profit > 0 ? "bg-green-50/10" : ""
+                    "p-6 flex flex-col justify-center h-[120px]",
+                    !isLoading && currentStats.profit > 0 ? "bg-green-50/10" : "bg-red-50/10"
                 )}>
-                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Net Profit</Text>
-                    {isLoading ? (
-                        <div className="flex gap-2">
-                            <div className="h-7 w-24 bg-ui-bg-subtle animate-pulse rounded" />
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-3">
-                            <Heading level="h2" className={financials.profit >= 0 ? "text-green-600" : "text-red-600"}>
-                                {formatMoney(financials.profit)}
-                            </Heading>
-                            <StatusBadge color={financials.profit > 0 ? "green" : "red"}>
-                                {financials.margin.toFixed(1)}%
-                            </StatusBadge>
-                        </div>
+                    <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Net Profit</Text>
+                    {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            <div className="flex items-center gap-3">
+                                <Heading level="h2" className={currentStats.profit >= 0 ? "text-green-600" : "text-red-600"}>
+                                    {formatMoney(currentStats.profit)}
+                                </Heading>
+                                <StatusBadge color={currentStats.profit > 0 ? "green" : "red"}>
+                                    {currentStats.margin.toFixed(0)}%
+                                </StatusBadge>
+                            </div>
+                            <ComparisonText current={currentStats.profit} previous={prevStats.profit} prefix="₹" />
+                        </>
                     )}
                 </div>
             </div>
@@ -290,9 +413,9 @@ const ProfitsPage = () => {
                                     <Table.HeaderCell>Order</Table.HeaderCell>
                                     <Table.HeaderCell>Date</Table.HeaderCell>
                                     <Table.HeaderCell className="text-right">Item Revenue</Table.HeaderCell>
-                                    <Table.HeaderCell className="text-right">Cost</Table.HeaderCell>
-                                    <Table.HeaderCell className="text-right">Profit</Table.HeaderCell>
-                                    <Table.HeaderCell className="text-right">Margin</Table.HeaderCell>
+                                    <Table.HeaderCell className="text-right">Product Cost</Table.HeaderCell>
+                                    <Table.HeaderCell className="text-right">Order Profit</Table.HeaderCell>
+                                    <Table.HeaderCell className="text-right">Order Margin</Table.HeaderCell>
                                 </Table.Row>
                             </Table.Header>
                             <Table.Body>
@@ -318,7 +441,6 @@ const ProfitsPage = () => {
                                         <Table.Row key={row.id} className="cursor-pointer hover:bg-ui-bg-base-hover" onClick={() => window.location.assign(`/app/orders/${row.id}`)}>
                                             <Table.Cell><Text weight="plus" size="small">#{row.display_id}</Text></Table.Cell>
                                             <Table.Cell><Text size="small" className="text-ui-fg-subtle">{new Date(row.created_at).toLocaleString()}</Text></Table.Cell>
-                                            {/* Update: Show itemRevenue instead of total */}
                                             <Table.Cell className="text-right">{formatMoney(row.itemRevenue)}</Table.Cell>
                                             <Table.Cell className="text-right text-ui-fg-subtle">{formatMoney(row.cogs)}</Table.Cell>
                                             <Table.Cell className="text-right"><Text weight="plus" className={row.profit >= 0 ? "text-green-600" : "text-red-600"}>{formatMoney(row.profit)}</Text></Table.Cell>
@@ -330,10 +452,9 @@ const ProfitsPage = () => {
                         </Table>
                     </div>
 
-                    {/* Footer / Pagination Controls */}
                     <div className="flex items-center justify-between px-4 py-3 border-t border-ui-border-base bg-ui-bg-base">
                         <Text size="small" className="text-ui-fg-subtle">
-                            Showing {Math.min(paginatedRows.length, ITEMS_PER_PAGE)} of {financials.rows.length} orders
+                            Showing {Math.min(paginatedRows.length, ITEMS_PER_PAGE)} of {rows.length} orders
                         </Text>
                         <div className="flex items-center gap-2">
                             <IconButton
