@@ -24,12 +24,9 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
             "display_id",
             "created_at",
             "currency_code",
-            // Payment info lives here in V2
             "payment_collections.status",
-            // Items
             "items.unit_price",
             "items.quantity",
-            // Product Data for COGS
             "items.variant.product.id",
             "items.variant.product.metadata",
             "items.variant.product.categories.id"
@@ -45,38 +42,36 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         }
     });
 
-    // 2. Perform Calculations & Filter for "Captured"
+    // 2. Perform Calculations
     let totalRevenue = 0;
     let totalCogs = 0;
+    let totalQuantity = 0; // 🆕 Added counter
     let count = 0;
 
     const rows = [];
 
     for (const order of orders) {
-        // FILTER: Check if any payment collection is 'captured'
-        // In V2, an order can have multiple payment collections.
-        // We consider it paid if at least one is 'captured' or 'completed'
         const isPaid = order.payment_collections?.some((pc: any) =>
             pc.status === "captured" || pc.status === "completed"
         );
 
-        if (!isPaid) continue; // Skip unpaid orders
+        if (!isPaid) continue;
 
         count++;
         let orderRevenue = 0;
         let orderCogs = 0;
 
-        // Loop items
         if (order.items) {
             for (const item of order.items) {
                 const qty = item.quantity;
                 const unitPrice = item.unit_price;
 
+                // 🆕 Track Quantity
+                totalQuantity += qty;
+
                 orderRevenue += unitPrice * qty;
 
-                // COGS Logic
                 let unitCost = 0;
-                // Safe check for product existence
                 if (item.variant?.product) {
                     const product = item.variant.product;
                     const categories = product.categories || [];
@@ -112,7 +107,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
         });
     }
 
-    // Sort Descending (Newest first)
+    // Sort Descending
     rows.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
 
     res.json({
@@ -120,6 +115,7 @@ export async function GET(req: MedusaRequest, res: MedusaResponse) {
             revenue: totalRevenue,
             cogs: totalCogs,
             count: count,
+            quantity: totalQuantity, // 🆕 Return in response
         },
         rows: rows
     });

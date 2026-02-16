@@ -1,6 +1,6 @@
 import { defineRouteConfig } from "@medusajs/admin-sdk"
 import { Container, Heading, Text, StatusBadge, Table, clx, Select, IconButton, Checkbox, Label, Input } from "@medusajs/ui"
-import { CurrencyDollarSolid, ChevronLeft, ChevronRight, ArrowUpRightMini, ArrowDownRightMini, Meta } from "@medusajs/icons"
+import { CurrencyDollarSolid, ChevronLeft, ChevronRight, ArrowUpRightMini, ArrowDownRightMini, Meta, ShoppingBag } from "@medusajs/icons" // Added ShoppingBag icon
 import { useQuery } from "@tanstack/react-query"
 import { sdk } from "../../lib/sdk"
 import { useMemo, useState } from "react"
@@ -10,7 +10,6 @@ const ITEMS_PER_PAGE = 15
 const DAILY_AD_SPEND = 500
 
 // --- HELPERS ---
-// This function stays outside the component
 const getRangeParams = (range: string, customStart?: string, customEnd?: string) => {
     const now = new Date()
     const currentStart = new Date()
@@ -122,9 +121,6 @@ const ProfitsPage = () => {
     const [customStart, setCustomStart] = useState<string>("")
     const [customEnd, setCustomEnd] = useState<string>("")
 
-    // --- CRITICAL FIX: MEMOIZE DATES ---
-    // This ensures 'now' is only calculated ONCE when 'range' changes.
-    // Without this, 'now' updates every milliseconds on every render, causing infinite refetch loops.
     const { currentStart, currentEnd, prevStart, daysMultiplier } = useMemo(() => {
         return getRangeParams(range, customStart, customEnd)
     }, [range, customStart, customEnd])
@@ -138,7 +134,7 @@ const ProfitsPage = () => {
                 query: { startDate: currentStart, endDate: currentEnd }
             })
         },
-        queryKey: ["profit-analytics", currentStart, currentEnd], // Stable keys now
+        queryKey: ["profit-analytics", currentStart, currentEnd],
         enabled: range !== "custom" || (!!customStart && !!customEnd)
     })
 
@@ -149,7 +145,7 @@ const ProfitsPage = () => {
                 query: { startDate: prevStart, endDate: currentStart }
             })
         },
-        queryKey: ["profit-analytics-prev", prevStart, currentStart], // Stable keys now
+        queryKey: ["profit-analytics-prev", prevStart, currentStart],
         enabled: range !== "custom" || (!!customStart && !!customEnd)
     })
 
@@ -157,8 +153,9 @@ const ProfitsPage = () => {
 
     // 3. Merge & Calculate
     const finalStats = useMemo(() => {
-        const curr = currentData?.stats || { revenue: 0, cogs: 0, count: 0 };
-        const prev = prevData?.stats || { revenue: 0, cogs: 0, count: 0 };
+        // 🆕 Add default quantity: 0
+        const curr = currentData?.stats || { revenue: 0, cogs: 0, count: 0, quantity: 0 };
+        const prev = prevData?.stats || { revenue: 0, cogs: 0, count: 0, quantity: 0 };
         const rows = currentData?.rows || [];
 
         const totalAdSpend = includeAds ? (daysMultiplier * DAILY_AD_SPEND) : 0;
@@ -175,7 +172,6 @@ const ProfitsPage = () => {
         }
     }, [currentData, prevData, includeAds, daysMultiplier])
 
-    // 4. Pagination
     const pageCount = Math.ceil(finalStats.rows.length / ITEMS_PER_PAGE)
     const paginatedRows = finalStats.rows.slice(currentPage * ITEMS_PER_PAGE, (currentPage + 1) * ITEMS_PER_PAGE)
     const canNext = currentPage < pageCount - 1
@@ -222,8 +218,9 @@ const ProfitsPage = () => {
                 </div>
             </div>
 
-            {/* SUMMARY CARDS */}
-            <div className="grid grid-cols-1 md:grid-cols-5 divide-y md:divide-y-0 md:divide-x divide-ui-border-base border-b border-ui-border-base bg-ui-bg-base">
+            {/* SUMMARY CARDS - Updated Grid to 6 columns */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 divide-y md:divide-y-0 md:divide-x divide-ui-border-base border-b border-ui-border-base bg-ui-bg-base">
+                {/* 1. Orders */}
                 <div className="p-6 flex flex-col justify-center h-[120px]">
                     <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Orders</Text>
                     {isLoading ? <div className="h-6 w-16 bg-ui-bg-subtle animate-pulse rounded" /> : (
@@ -233,6 +230,19 @@ const ProfitsPage = () => {
                         </>
                     )}
                 </div>
+
+                {/* 2. Units Sold (NEW) */}
+                <div className="p-6 flex flex-col justify-center h-[120px]">
+                    <div className="flex items-center gap-1 mb-1"><ShoppingBag className="text-ui-fg-subtle" /><Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Units Sold</Text></div>
+                    {isLoading ? <div className="h-6 w-16 bg-ui-bg-subtle animate-pulse rounded" /> : (
+                        <>
+                            <Heading level="h2">{finalStats.current.quantity}</Heading>
+                            <ComparisonText current={finalStats.current.quantity} previous={finalStats.prev.quantity} />
+                        </>
+                    )}
+                </div>
+
+                {/* 3. Revenue */}
                 <div className="p-6 flex flex-col justify-center h-[120px]">
                     <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Item Revenue</Text>
                     {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
@@ -242,6 +252,8 @@ const ProfitsPage = () => {
                         </>
                     )}
                 </div>
+
+                {/* 4. COGS */}
                 <div className="p-6 flex flex-col justify-center h-[120px]">
                     <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">COGS</Text>
                     {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
@@ -251,6 +263,8 @@ const ProfitsPage = () => {
                         </>
                     )}
                 </div>
+
+                {/* 5. Ads Spend */}
                 <div className="p-6 flex flex-col justify-center h-[120px]">
                     <div className="flex items-center gap-1 mb-1"><Meta className="text-ui-fg-subtle" /><Text size="small" weight="plus" className="text-ui-fg-subtle uppercase">Ads Spend</Text></div>
                     {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
@@ -260,6 +274,8 @@ const ProfitsPage = () => {
                         </>
                     )}
                 </div>
+
+                {/* 6. Net Profit */}
                 <div className={clx("p-6 flex flex-col justify-center h-[120px]", !isLoading && finalStats.current.profit > 0 ? "bg-green-50/10" : "bg-red-50/10")}>
                     <Text size="small" weight="plus" className="text-ui-fg-subtle uppercase mb-1">Net Profit</Text>
                     {isLoading ? <div className="h-6 w-24 bg-ui-bg-subtle animate-pulse rounded" /> : (
