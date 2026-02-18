@@ -149,7 +149,8 @@ export async function POST(req: MedusaRequest, res: MedusaResponse) {
             await customerModule.updateCustomers(medusaCustomerId, {
                 metadata: {
                     club_expiry: subscriptionEntity.current_end,
-                    club_sub_status: "active"
+                    club_sub_status: "active",
+                    club_subscription_id: subscriptionEntity.id
                 }
             });
 
