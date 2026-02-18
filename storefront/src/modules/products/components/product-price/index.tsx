@@ -2,16 +2,13 @@ import { clx } from "@medusajs/ui"
 
 import { getProductPrice } from "@lib/util/get-product-price"
 import { HttpTypes } from "@medusajs/types"
-import ClubUI from "@modules/club/ui"
 
 export default function ProductPrice({
   product,
   variant,
-  isClubMember
 }: {
   product: HttpTypes.StoreProduct
   variant?: HttpTypes.StoreProductVariant
-  isClubMember: boolean
 }) {
   const { cheapestPrice, variantPrice } = getProductPrice({
     product,
@@ -37,7 +34,7 @@ export default function ProductPrice({
           data-testid="product-price"
           data-value={selectedPrice.calculated_price_number}
         >
-          {selectedPrice.calculated_price} {isClubMember && <ClubUI label="CLUB Price" />}
+          {selectedPrice.calculated_price}
         </span>
       </span>
       {selectedPrice.price_type === "sale" && (
