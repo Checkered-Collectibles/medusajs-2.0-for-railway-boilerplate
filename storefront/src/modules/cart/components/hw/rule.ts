@@ -28,9 +28,9 @@ export type HotWheelsRuleResult = {
 export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
-    const isMainlineRuleEnabled = false
+    const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = false
-    const isSilverRuleEnabled = false
+    const isSilverRuleEnabled = true
 
     // ⚙️ QUANTITY LIMITS
     const MAX_ITEMS_ALLOWED = 100

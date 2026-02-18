@@ -2,6 +2,10 @@
 
 import { useRef, useEffect } from "react"
 import gsap from "gsap"
+import { ScrollTrigger } from "gsap/ScrollTrigger"
+
+// Register the plugin
+gsap.registerPlugin(ScrollTrigger)
 
 type Props = {
     label?: string
@@ -15,7 +19,16 @@ export default function ClubUI({ label = "CLUB" }: Props) {
 
     useEffect(() => {
         const ctx = gsap.context(() => {
-            const tl = gsap.timeline()
+            const tl = gsap.timeline({
+                // 🟢 SCROLL TRIGGER CONFIGURATION
+                scrollTrigger: {
+                    trigger: containerRef.current,
+                    start: "top 90%", // Starts when top of element hits 90% down the viewport
+                    toggleActions: "play none none none", // Play once when entering
+                    // Options: "onEnter onLeave onEnterBack onLeaveBack"
+                    // Use "play none none reverse" if you want it to reverse when scrolling up
+                }
+            })
 
             // 1. Initial State
             // Container: Invisible
@@ -46,7 +59,6 @@ export default function ClubUI({ label = "CLUB" }: Props) {
             })
 
             // 4. Squares Slam (Diagonal impact)
-            // Starts before the text finish revealing ("-=0.3") for overlapping momentum
             tl.to(topLeftRef.current, {
                 x: 0,
                 y: 0,
@@ -61,7 +73,7 @@ export default function ClubUI({ label = "CLUB" }: Props) {
                 opacity: 1,
                 duration: 0.4,
                 ease: "back.out(2)"
-            }, "<") // Sync with top-left square
+            }, "<")
 
         }, containerRef)
 
@@ -71,11 +83,9 @@ export default function ClubUI({ label = "CLUB" }: Props) {
     return (
         <div
             ref={containerRef}
-            className="py-0.5 px-1.5 h-fit rounded-none bg-black text-white relative group/club text-xs w-fit select-none"
+            // Added opacity-0 here to prevent flash of unstyled content before JS loads
+            className="opacity-0 py-0.5 px-1.5 h-fit rounded-none bg-black text-white relative group/club text-xs w-fit select-none"
         >
-            {/* Text Wrapper 
-                Added 'inline-block' so clip-path works correctly on the span 
-            */}
             <span ref={textRef} className="inline-block relative font-normal tracking-wide">
                 {label}
             </span>
