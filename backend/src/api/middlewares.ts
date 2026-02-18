@@ -1,13 +1,17 @@
-import cors from "cors"
-import { defineMiddlewares, validateAndTransformQuery } from "@medusajs/framework/http"
-import { parseCorsOrigins } from "@medusajs/framework/utils"
+import cors from "cors";
+import {
+    defineMiddlewares,
+    validateAndTransformQuery,
+} from "@medusajs/framework/http";
+import { parseCorsOrigins } from "@medusajs/framework/utils";
 import type {
     MedusaNextFunction,
     MedusaRequest,
     MedusaResponse,
-} from "@medusajs/framework/http"
-import { ConfigModule } from "@medusajs/framework/types"
-import { z } from "zod"
+} from "@medusajs/framework/http";
+import { ConfigModule } from "@medusajs/framework/types";
+import { z } from "zod";
+import { authenticate } from "@medusajs/medusa";
 
 export default defineMiddlewares({
     routes: [
@@ -17,17 +21,19 @@ export default defineMiddlewares({
          * ===========================
          */
         {
+            matcher: "/store/customers/me/groups",
+            middlewares: [authenticate("customer", ["session", "bearer"])],
+        },
+        {
             matcher: "/public*",
             middlewares: [
                 (req: MedusaRequest, res: MedusaResponse, next: MedusaNextFunction) => {
-                    const configModule: ConfigModule = req.scope.resolve("configModule")
+                    const configModule: ConfigModule = req.scope.resolve("configModule");
 
                     return cors({
-                        origin: parseCorsOrigins(
-                            configModule.projectConfig.http.storeCors
-                        ),
+                        origin: parseCorsOrigins(configModule.projectConfig.http.storeCors),
                         credentials: false,
-                    })(req, res, next)
+                    })(req, res, next);
                 },
             ],
         },
@@ -46,9 +52,9 @@ export default defineMiddlewares({
                         currency_code: z.string(),
                         country_code: z.string(),
                     }),
-                    {}
+                    {},
                 ),
             ],
         },
     ],
-})
+});
