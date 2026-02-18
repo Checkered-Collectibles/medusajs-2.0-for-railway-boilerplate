@@ -46,12 +46,12 @@ export default async function Nav() {
                 </LocalizedClientLink>
               )}
 
-              <LocalizedClientLink
+              {/* <LocalizedClientLink
                 className=""
                 href="/club"
                 data-testid="nav-club-link"
               ><ClubUI label={isClubMember ? "CLUB (active)" : "CLUB"} />
-              </LocalizedClientLink>
+              </LocalizedClientLink> */}
 
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
