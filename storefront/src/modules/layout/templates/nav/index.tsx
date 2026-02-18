@@ -45,14 +45,14 @@ export default async function Nav() {
                   Search
                 </LocalizedClientLink>
               )}
-              {isClubMember &&
-                <LocalizedClientLink
-                  className=""
-                  href="/club"
-                  data-testid="nav-club-link"
-                ><ClubUI label="CLUB" />
-                </LocalizedClientLink>
-              }
+
+              <LocalizedClientLink
+                className=""
+                href="/club"
+                data-testid="nav-club-link"
+              ><ClubUI label={isClubMember ? "CLUB (active)" : "CLUB"} />
+              </LocalizedClientLink>
+
               <LocalizedClientLink
                 className="hover:text-ui-fg-base"
                 href="/account"
