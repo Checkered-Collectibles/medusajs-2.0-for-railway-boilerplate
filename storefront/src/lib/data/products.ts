@@ -1,23 +1,39 @@
+"use server"
+
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { cache } from "react"
 import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
+import { getAuthHeaders } from "./cookies"
+
+// --- Helper: Safe Auth Headers ---
+// Fixes "cookies called outside request scope" during build time
+const getSafeAuthHeaders = () => {
+  try {
+    return getAuthHeaders()
+  } catch (error) {
+    // This happens during build/SSG when there is no request/cookies.
+    // We return empty headers so the build generates default (non-member) pricing.
+    return {}
+  }
+}
 
 // --- Helper: Filter Out-of-Stock Products ---
 const filterInStock = (products: HttpTypes.StoreProduct[]) => {
   return products.filter((p) => {
     if (!p.variants || p.variants.length === 0) return false
     return p.variants.some((v) => {
+      // @ts-ignore
       if (!v.manage_inventory) return true
+      // @ts-ignore
       if (v.allow_backorder) return true
+      // @ts-ignore
       return (v.inventory_quantity || 0) > 0
     })
   })
 }
-
-// ... [getProductsById and getProductByHandle remain unchanged] ...
 
 export const getProductsById = cache(async function ({
   ids,
@@ -33,7 +49,10 @@ export const getProductsById = cache(async function ({
         region_id: regionId,
         fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
       },
-      { next: { tags: ["products"] } }
+      {
+        ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+        next: { tags: ["products"] }
+      }
     )
     .then(({ products }) => products)
 })
@@ -49,7 +68,10 @@ export const getProductByHandle = cache(async function (
         region_id: regionId,
         fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
       },
-      { next: { tags: ["products"] } }
+      {
+        ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+        next: { tags: ["products"] }
+      }
     )
     .then(({ products }) => products[0])
 })
@@ -62,12 +84,12 @@ export const getProductsList = cache(async function ({
   countryCode,
 }: {
   pageParam?: number
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  queryParams?: HttpTypes.StoreProductListParams
   countryCode: string
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  queryParams?: HttpTypes.StoreProductListParams
 }> {
   const region = await getRegion(countryCode)
 
@@ -96,7 +118,10 @@ export const getProductsList = cache(async function ({
   }
 
   return sdk.store.product
-    .list(baseQuery, { next: { tags: ["products"] } })
+    .list(baseQuery, {
+      ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+      next: { tags: ["products"] }
+    })
     .then(({ products, count }) => {
       const nextPage = count > offset + limit ? validPageParam + 1 : null
 
@@ -115,30 +140,30 @@ export const getProductsList = cache(async function ({
 export const getProductsListWithSort = cache(async function ({
   page = 1,
   queryParams,
-  sortBy = "-updated_at",
+  sortBy = "created_at",
   countryCode,
-  inStock = false, // 👈 New Parameter
+  inStock = false,
 }: {
   page?: number
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  queryParams?: HttpTypes.StoreProductListParams
   sortBy?: SortOptions
   countryCode: string
-  inStock?: boolean // 👈 New Type Definition
+  inStock?: boolean
 }): Promise<{
   response: { products: HttpTypes.StoreProduct[]; count: number }
   nextPage: number | null
-  queryParams?: HttpTypes.FindParams & HttpTypes.StoreProductParams
+  queryParams?: HttpTypes.StoreProductListParams
 }> {
   const limit = queryParams?.limit || 12
 
-  // 1. Fetch large batch
+  // 1. Fetch large batch (Auth handled via safe wrapper inside getProductsList)
   const {
     response: { products },
   } = await getProductsList({
     pageParam: 1,
     queryParams: {
       ...queryParams,
-      limit: 500,
+      limit: 100,
     },
     countryCode,
   })
@@ -150,7 +175,7 @@ export const getProductsListWithSort = cache(async function ({
     processedProducts = filterInStock(processedProducts)
   }
 
-  // 3. Sort: Always sort based on the selected sortBy key
+  // 3. Sort
   const sortedProducts = sortProducts(processedProducts, sortBy)
 
   // 4. Paginate
