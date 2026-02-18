@@ -47,7 +47,7 @@ export const getProductsById = cache(async function ({
       {
         id: ids,
         region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+        fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
       },
       {
         ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
@@ -66,7 +66,7 @@ export const getProductByHandle = cache(async function (
       {
         handle,
         region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+        fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
       },
       {
         ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
@@ -140,7 +140,7 @@ export const getProductsList = cache(async function ({
 export const getProductsListWithSort = cache(async function ({
   page = 1,
   queryParams,
-  sortBy = "created_at",
+  sortBy = "-created_at",
   countryCode,
   inStock = false,
 }: {

@@ -18,6 +18,7 @@ import ShippingCountdown from "@modules/checkout/templates/shipping-countdown"
 import Socials from "./socials"
 // ✅ Import the hook
 import { useAddToCart } from "@lib/hooks/use-add-to-cart"
+import Link from "next/link"
 
 type ProductActionsProps = {
   product: HttpTypes.StoreProduct
@@ -73,7 +74,6 @@ export default function ProductActions({
       [title]: value,
     }))
   }
-
   // check if the selected variant is in stock
   const inStock = useMemo(() => {
     if (selectedVariant && !selectedVariant.manage_inventory) {
@@ -191,6 +191,32 @@ export default function ProductActions({
               ? "Out of stock"
               : "Add to cart"}
         </Button>
+        {!isClubMember && (
+          <>
+            {/* 1. Mainlines: Show Discount Price */}
+            {product?.categories?.some((c) => c.id === "pcat_01KC3X8VFE8G7XBNYMVC1RSYEK") && (
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full h-10 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+              >
+                <Link href="/club">Buy at ₹179</Link>
+              </Button>
+            )}
+
+            {/* 2. Premiums: Show Free Shipping */}
+            {product?.categories?.some((c) => c.id === "pcat_01KD8CKD5Y31RHVWR8FNRVD78J") && (
+              <Button
+                asChild
+                variant="secondary"
+                className="w-full h-10 bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100"
+              >
+                <Link href="/club">Get Free Shipping</Link>
+              </Button>
+            )}
+          </>
+        )}
+
         {!inStock && <Socials />}
         {inStock && <ShippingCountdown className="mt-2" />}
         {/* Trust & scarcity points */}

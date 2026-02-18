@@ -5,6 +5,7 @@ import { useRazorpay } from "react-razorpay"
 import { Button } from "@medusajs/ui"
 import { initiateSubscription } from "@lib/data/club"
 import { StoreCustomer } from "@medusajs/types"
+import { redirect } from "next/navigation"
 
 // 👇 1. Define the correct shape for Subscription Options
 interface RazorpaySubscriptionOptions {
@@ -27,7 +28,7 @@ interface RazorpaySubscriptionOptions {
 type Props = {
     variantId: string
     price: number
-    customer: StoreCustomer
+    customer: StoreCustomer | null
 }
 
 export default function SubscribeButton({ variantId, price, customer }: Props) {
@@ -36,6 +37,7 @@ export default function SubscribeButton({ variantId, price, customer }: Props) {
 
     const handleSubscribe = async () => {
         setLoading(true)
+        if (!customer) redirect('/account?nextPath=/club')
 
         try {
             // 2. Server Action
@@ -52,12 +54,12 @@ export default function SubscribeButton({ variantId, price, customer }: Props) {
                 key: key_id,
                 subscription_id: subscription_id,
                 name: "Checkered Club",
-                description: "VIP Membership Access",
+                description: "Diecast Store Membership Access",
                 image: "https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/logo-notext2.png",
 
                 handler: (response: any) => {
                     // Success: Redirect
-                    window.location.href = "/account/club-welcome?status=success"
+                    window.location.href = "/store?inStock=true&club=true"
                 },
 
                 theme: {

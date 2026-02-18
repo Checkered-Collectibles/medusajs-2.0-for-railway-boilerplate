@@ -3,12 +3,14 @@ import Script from "next/script"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import StoreTemplate from "@modules/store/templates"
 import { getProductsList } from "@lib/data/products"
+import SubscriptionSuccessModal from "@modules/club/success"
 
 type Params = {
   searchParams: Promise<{
     sortBy?: SortOptions
     page?: string
     inStock?: string
+    club?: string
   }>
   params: Promise<{
     countryCode: string
@@ -18,7 +20,7 @@ type Params = {
 // 1. SWITCH TO DYNAMIC METADATA GENERATION
 export async function generateMetadata({ searchParams, params }: Params): Promise<Metadata> {
   const { countryCode } = await params
-  const { page } = await searchParams
+  const { page, club } = await searchParams
 
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "https://checkered.in"
 
@@ -106,6 +108,7 @@ export default async function StorePage({ searchParams, params }: Params) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <SubscriptionSuccessModal />
       <StoreTemplate
         sortBy={sortBy}
         page={page}

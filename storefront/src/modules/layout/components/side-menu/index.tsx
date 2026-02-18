@@ -16,6 +16,7 @@ const SideMenuItems = {
   Store: "/store",
   Search: "/search",
   Cart: "/cart",
+  "Club (MRP Hot Wheels)": "/club",
   "Your Orders": "/account?nextPath=/account/orders",
 }
 

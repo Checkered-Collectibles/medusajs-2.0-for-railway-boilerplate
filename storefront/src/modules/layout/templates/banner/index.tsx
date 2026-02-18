@@ -64,11 +64,12 @@ export default function Banner() {
             {/* 3. POST DROP: Standard Message */}
             {isPostDrop && (
                 <Link
-                    href="/store"
+                    href="/club"
                     className="flex flex-wrap items-center justify-center gap-x-2 text-xs sm:text-sm font-medium text-yellow-300 hover:text-yellow-200 transition-colors"
                 >
-                    <span className="uppercase tracking-wide text-white">
-                        FREE SHIPPING ABOVE ₹4000
+                    <span className="tracking-wide text-white">
+                        {/* FREE SHIPPING ABOVE ₹4000 */}
+                        Join the Club & get Hot Wheels at MRP 🫨
                     </span>
                 </Link>
             )}

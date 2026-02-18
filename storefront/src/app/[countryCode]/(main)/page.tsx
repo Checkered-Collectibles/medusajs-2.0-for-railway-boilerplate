@@ -6,6 +6,7 @@ import Hero from "@modules/home/components/hero"
 import { getCollectionsWithProducts } from "@lib/data/collections"
 import { getRegion } from "@lib/data/regions"
 import FeaturedCategories from "@modules/home/components/featured-categories"
+import ClubCTA from "@modules/home/components/club-cta"
 
 export const metadata: Metadata = {
   // 🏆 SEO TITLE: Targets "Hot Wheels Cars" (165k vol) + "Buy Online India" (High Intent)
@@ -113,6 +114,7 @@ export default async function Home({
           <FeaturedProducts collections={collections} region={region} />
         </ul>
       </div>
+      <ClubCTA />
     </>
   )
 }
