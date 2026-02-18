@@ -7,7 +7,7 @@ import { z } from "zod";
 
 // 🗺️ MAP MEDUSA VARIANTS TO RAZORPAY PLAN IDs
 const VARIANT_TO_PLAN_MAP: Record<string, string> = {
-    "variant_01KHR931ZR25860TWEJQT0ADYE": "plan_SHcyGJ6NoaKOun", // monthly og: plan_SHbbVebsDdPvwO
+    "variant_01KHR931ZR25860TWEJQT0ADYE": "plan_SHddv0LAawWVvp", // monthly og: plan_SHbbVebsDdPvwO
     "variant_01KHR931ZS4MKQ9HFR1SNP1FBE": "plan_SHbPhHGmng2NCN", // quaterly
     "variant_01KHR931ZS42SV2PNB4ZXVZ2DA": "plan_SHaofsImsfcNNi", // yearly
 };

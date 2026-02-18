@@ -7,7 +7,7 @@ const RAZORPAY_WEBHOOK_SECRET = process.env.RAZORPAY_WEBHOOK_SECRET!;
 const CLUB_GROUP_ID = "cusgroup_01KHQVQYE2RX2JNZFZ4PYY6RPJ";
 
 const PLAN_VARIANT_MAP: Record<string, string> = {
-    "plan_SHcyGJ6NoaKOun": "variant_01KHR931ZR25860TWEJQT0ADYE", // monthly og: plan_SHbbVebsDdPvwO
+    "plan_SHddv0LAawWVvp": "variant_01KHR931ZR25860TWEJQT0ADYE", // monthly og: plan_SHbbVebsDdPvwO
     "plan_SHbPhHGmng2NCN": "variant_01KHR931ZS4MKQ9HFR1SNP1FBE", // quaterly
     "plan_SHaofsImsfcNNi": "variant_01KHR931ZS42SV2PNB4ZXVZ2DA", // yearly
 };
