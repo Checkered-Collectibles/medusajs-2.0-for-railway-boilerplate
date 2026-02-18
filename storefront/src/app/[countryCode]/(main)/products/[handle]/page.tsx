@@ -6,6 +6,7 @@ import { getRegion, listRegions } from "@lib/data/regions"
 import { getProductByHandle, getProductsList } from "@lib/data/products"
 import Script from "next/script"
 import { ViewContentTracker } from "@modules/products/components/meta-pixel"
+import { checkClubMember } from "@lib/data/club"
 
 
 type Props = {
@@ -225,13 +226,14 @@ export default async function ProductPage({ params }: Props) {
       }
     },
   }
-
+  const isClubMember = await checkClubMember()
   return (
     <>
       <ProductTemplate
         product={pricedProduct}
         region={region}
         countryCode={params.countryCode}
+        isClubMember={isClubMember}
       />
 
       {/* 👇 2. Render the tracker here */}

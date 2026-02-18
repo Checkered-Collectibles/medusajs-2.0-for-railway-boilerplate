@@ -7,12 +7,12 @@ import CartButton from "@modules/layout/components/cart-button"
 import SideMenu from "@modules/layout/components/side-menu"
 import Image from "next/image"
 import LogoImage from "@images/logo.png";
-import { getCustomer } from "@lib/data/customer"
+import { checkClubMember } from "@lib/data/club"
+import ClubUI from "@modules/club/ui"
 
 export default async function Nav() {
   const regions = await listRegions().then((regions: StoreRegion[]) => regions)
-  // const customer = await getCustomer().catch(() => null)
-  const isClubMember = false
+  const isClubMember = await checkClubMember()
   return (
     <div className="sticky top-0 inset-x-0 z-50 group">
       <header className="relative h-16 mx-auto border-b duration-200 bg-white border-ui-border-base">
@@ -47,13 +47,10 @@ export default async function Nav() {
               )}
               {isClubMember &&
                 <LocalizedClientLink
-                  className="py-0.5 px-1.5 bg-black text-white relative group/club"
+                  className=""
                   href="/club"
                   data-testid="nav-club-link"
-                >
-                  <span className="">CLUB</span>
-                  <div className="h-1.5 w-1.5 bg-black absolute -top-1.5 -left-1.5 duration-150 group-hover/club:h-2 group-hover/club:w-2" />
-                  <div className="h-1 w-1 bg-white absolute bottom-0 right-0 duration-150 group-hover/club:w-1.5 group-hover/club:h-1.5" />
+                ><ClubUI label="CLUB" />
                 </LocalizedClientLink>
               }
               <LocalizedClientLink

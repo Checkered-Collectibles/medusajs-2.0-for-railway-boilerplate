@@ -23,6 +23,7 @@ type ProductActionsProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   disabled?: boolean
+  isClubMember: boolean
 }
 
 const optionsAsKeymap = (variantOptions: any) => {
@@ -38,6 +39,7 @@ export default function ProductActions({
   product,
   region,
   disabled,
+  isClubMember
 }: ProductActionsProps) {
   const [options, setOptions] = useState<Record<string, string | undefined>>({})
   const countryCode = useParams().countryCode as string
@@ -158,7 +160,7 @@ export default function ProductActions({
           )}
         </div>
         <div className="flex justify-between gap-3 items-center">
-          <ProductPrice product={product} variant={selectedVariant} />
+          <ProductPrice product={product} variant={selectedVariant} isClubMember={isClubMember} />
           {/* Stock display */}
           {stockLabel && (
             <div

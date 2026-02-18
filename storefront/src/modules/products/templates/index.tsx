@@ -19,10 +19,12 @@ type ProductTemplateProps = {
   product: HttpTypes.StoreProduct
   region: HttpTypes.StoreRegion
   countryCode: string
+  isClubMember: boolean
 }
 
 const ProductTemplate: React.FC<ProductTemplateProps> = ({
   product,
+  isClubMember,
   region,
   countryCode,
 }) => {
@@ -49,13 +51,14 @@ const ProductTemplate: React.FC<ProductTemplateProps> = ({
           <Suspense
             fallback={
               <ProductActions
+                isClubMember={isClubMember}
                 disabled={true}
                 product={product}
                 region={region}
               />
             }
           >
-            <ProductActionsWrapper id={product.id} region={region} />
+            <ProductActionsWrapper id={product.id} region={region} isClubMember={isClubMember} />
           </Suspense>
         </div>
       </div>

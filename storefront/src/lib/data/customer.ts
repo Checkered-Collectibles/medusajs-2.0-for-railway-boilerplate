@@ -14,6 +14,22 @@ export const getCustomer = cache(async function () {
     .then(({ customer }) => customer)
     .catch(() => null)
 })
+export const getCustomerGroups = async () => {
+  const headers = {
+    ...(getAuthHeaders()),
+  }
+
+  return sdk.client
+    .fetch<{ groups: any[] }>( // adjust type to your actual group DTO if you have it
+      `/store/customers/me/groups`,
+      {
+        method: "GET",
+        headers,
+      }
+    )
+    .then(({ groups }) => groups)
+    .catch(() => null)
+}
 export const getLoyaltyPoints = async () => {
   const headers = {
     ...(getAuthHeaders()),
