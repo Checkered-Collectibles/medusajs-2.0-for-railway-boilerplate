@@ -53,7 +53,7 @@ export const RazorpayPaymentButton = ({
             remember_customer: true,
 
 
-            image: "https://checkered.in/images/logo.png",
+            image: "https://checkered-assets.sgp1.cdn.digitaloceanspaces.com/manual-uploads/logo-notext2.png",
             notes: {
                 session_id: session.id,
                 cart_id: cart.id,
