@@ -74,7 +74,7 @@ export async function getFantasyProducts(
         region_id: region.id,
         category_id: [FANTASY_CATEGORY_ID],
         is_giftcard: false,
-        limit: 24, // 1. Fetch more to account for OOS items filtering
+        limit: 50, // 1. Fetch more to account for OOS items filtering
     }
 
     const { response } = await getProductsList({
