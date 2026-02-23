@@ -6,7 +6,7 @@ import HeroGraphic from "./graphic";
 
 const Hero = () => {
   return (
-    <div className="md:p-0 p-0 bg-white h-[calc(100vh-6rem)] md:min-h-[62rem] min-h-[62rem] relative">
+    <div className="md:p-0 p-0 bg-white h-[calc(100vh-6rem)] md:min-h-[62rem] min-h-[62rem] relative overflow-hidden">
       <div className="content-container w-full flex flex-col gap-y-10 -bg-ui-bg-subtle md:pt-32 pt-16 overflow-hidden">
         <div className="inset-0 z-10 flex flex-col justify-start items-center text-center gap-6">
           <span className="px-2">
@@ -18,7 +18,7 @@ const Hero = () => {
               level="h1"
               className="sm:text-4xl text-3xl leading-10 text-ui-fg-base font-thin"
             >
-              REMEMBER THE THRILL.
+              OWN THE LEGENDS.
               {/* <br className="sm:hidden block" /> */}
               {/* <Image
                 src={HWImage}
@@ -37,7 +37,7 @@ const Hero = () => {
               level="h2"
               className="sm:text-3xl text-2xl leading-10 text-ui-fg-subtle font-normal mt-2"
             >
-              From Dreams to Desktop.
+              From the Track to Your Desktop.
             </Heading>
             <p className="flex flex-wrap gap-2 items-center justify-center mt-3">
               Fuel your passion with the best<Image

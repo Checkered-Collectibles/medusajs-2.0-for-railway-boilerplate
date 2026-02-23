@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import HeroImage from "@images/hero/kickedout.png";
+import HeroImage from "@images/hero/mazda.jpg";
 // import HeroImage2 from "@images/bugatti-hero.png";
 import EuroSpeed from "@images/euro-speed.png";
 import ExoticEnvy from "@images/exotic-envy.jpg";
