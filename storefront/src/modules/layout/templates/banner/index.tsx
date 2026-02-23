@@ -7,7 +7,7 @@ import Countdown from "./countdown"
  * UPDATED: 2026 E Case Restock
  * Start: Feb 21, 2026 @ 8:00 PM IST
  */
-const DROP_DATE_IST = "2026-02-21T20:00:00+05:30"
+const DROP_DATE_IST = "2026-02-23T20:00:00+05:30"
 // How long the "LIVE" banner stays active
 const HYPE_DURATION_MS = 48 * 60 * 60 * 1000 // 48 Hours
 
@@ -29,7 +29,7 @@ export default function Banner() {
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium flex items-center justify-center gap-x-2">
                     <span className="uppercase tracking-wide text-yellow-300">
-                        ⭐️ 2026 E Case Restock
+                        ⭐️ HW Premium F1 2025
                     </span>
                     <span className="text-white/70">Drops in:</span>
                     <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded text-white font-mono">
@@ -41,11 +41,11 @@ export default function Banner() {
             {/* 2. LIVE DROP: Count down to END (48h Window) */}
             {isDropLive && (
                 <Link
-                    href="/store"
+                    href="/collections/hot-wheels-premium-f1-2025"
                     className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
-                        🚨 <span className="text-yellow-300">2026 E CASE IS LIVE!</span>
+                        🚨 <span className="text-yellow-300">HW Premium F1 2025 IS LIVE!</span>
                     </span>
 
                     {/* <div className="flex items-center gap-2">
