@@ -69,7 +69,7 @@ export default async function ProductPreview({
               alt={`${brand.name} logo`}
               width={50}
               height={40}
-              className="h-10 w-auto object-contain drop-shadow-md" // Optimized sizing & shadow
+              className="h-10 w-auto object-contain drop-shadow-md group-hover/item:drop-shadow-xl group-hover/item:scale-150 group-hover/item:-translate-x-5 group-hover/item:-translate-y-5 duration-200" // Optimized sizing & shadow
             />
           </div>
         )}

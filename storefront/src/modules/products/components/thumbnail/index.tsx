@@ -68,7 +68,7 @@ const ImageOrPlaceholder = ({
       fill
       src={image}
       alt="Thumbnail"
-      className="absolute inset-0 object-cover object-center w-full"
+      className="absolute inset-0 object-cover object-center w-full group-hover/item:scale-105 duration-200"
       draggable={false}
       quality={75}
       // ✅ LOGIC: Use custom sizes if provided, otherwise fallback to defaults
