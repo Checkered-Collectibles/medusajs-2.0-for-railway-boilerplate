@@ -2,7 +2,6 @@ import { sdk } from "@lib/config"
 import { cache } from "react"
 import { getProductsList } from "./products"
 import { HttpTypes } from "@medusajs/types"
-import { ACCESSORIES_CATEGORY_ID } from "@modules/cart/components/hw/rule"
 
 export const retrieveCollection = cache(async function (id: string) {
   return sdk.store.collection
@@ -52,16 +51,30 @@ export const getCollectionsWithProducts = cache(
           queryParams: {
             // ensure we scope to this collection only
             collection_id: [collection.id],
-            // max 6 products
-            limit: 6,
-            // make sort explicit, even though getProductsList defaults to this
+            // Fetch a larger buffer so we have enough items left after filtering out-of-stock ones
+            limit: 50,
             order: "-updated_at",
           },
         })
 
+        // Filter products to only include those in stock
+        const inStockProducts = response.products.filter((product) => {
+          if (!product.variants || product.variants.length === 0) return false
+
+          // A product is considered in stock if AT LEAST ONE of its variants is available
+          return product.variants.some((variant: any) => {
+            return (
+              variant.manage_inventory === false ||
+              variant.allow_backorder === true ||
+              (variant.inventory_quantity && variant.inventory_quantity > 0)
+            )
+          })
+        })
+
         return {
           ...collection,
-          products: response.products,
+          // Enforce the max limit of 6 products after the filter
+          products: inStockProducts.slice(0, 6),
         } as HttpTypes.StoreCollection
       })
     )

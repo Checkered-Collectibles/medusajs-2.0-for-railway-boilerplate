@@ -14,7 +14,7 @@ type RefinementListProps = {
 
 const RefinementList = ({
   sortBy,
-  inStock = false, // 👈 2. Destructure with default
+  inStock = true, // 👈 2. Destructure with default
   'data-testid': dataTestId
 }: RefinementListProps) => {
   const router = useRouter()

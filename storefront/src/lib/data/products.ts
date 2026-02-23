@@ -142,7 +142,7 @@ export const getProductsListWithSort = cache(async function ({
   queryParams,
   sortBy = "created_at",
   countryCode,
-  inStock = false,
+  inStock = true,
 }: {
   page?: number
   queryParams?: HttpTypes.StoreProductListParams

@@ -21,7 +21,7 @@ const StoreTemplate = ({
   const sort = sortBy || "-created_at"
 
   // Convert string "true" to boolean for UI components
-  const isStockFilterChecked = inStock === "true"
+  const isStockFilterChecked = (inStock ?? "true") === "true"
 
   return (
     <div

@@ -61,7 +61,7 @@ export default async function PaginatedProducts({
   }
 
   // Convert string query param to boolean
-  const isStockFilterEnabled = inStock === "true"
+  const isStockFilterEnabled = (inStock ?? "true") === "true"
   const {
     response: { products, count },
   } = await getProductsListWithSort({

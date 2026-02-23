@@ -23,7 +23,7 @@ export default function CollectionTemplate({
   const sort = sortBy || "-created_at"
 
   // Convert string param to boolean for the UI Checkbox
-  const isStockFilterChecked = inStock === "true"
+  const isStockFilterChecked = (inStock ?? "true") === "true"
 
   return (
     <div className="flex flex-col small:flex-row small:items-start py-6 content-container">

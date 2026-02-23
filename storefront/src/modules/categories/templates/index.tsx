@@ -28,7 +28,7 @@ export default function CategoryTemplate({
   if (!category || !countryCode) return notFound()
 
   // Convert string param to boolean for the UI Checkbox
-  const isStockFilterChecked = inStock === "true"
+  const isStockFilterChecked = (inStock ?? "true") === "true"
 
   return (
     <div

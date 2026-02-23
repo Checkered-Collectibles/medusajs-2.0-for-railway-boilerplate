@@ -26,7 +26,7 @@ const SearchResultsTemplate = ({
   const pageNumber = page ? parseInt(page) : 1
 
   // Convert string param to boolean for UI
-  const isStockFilterChecked = inStock === "true"
+  const isStockFilterChecked = (inStock ?? "true") === "true"
 
   return (
     <>
