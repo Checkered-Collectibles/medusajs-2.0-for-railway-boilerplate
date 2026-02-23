@@ -72,8 +72,7 @@ export default async function PaginatedProducts({
     inStock: isStockFilterEnabled, // 👈 Pass boolean to fetcher
   })
   const totalPages = Math.ceil(count / PRODUCT_LIMIT)
-
-  return (
+  if (products.length > 0) return (
     <>
       <ul
         className="grid grid-cols-2 w-full small:grid-cols-3 medium:grid-cols-4 gap-x-6 gap-y-6"
@@ -95,5 +94,18 @@ export default async function PaginatedProducts({
         />
       )}
     </>
+  )
+  else return (
+    <div className="w-full flex flex-col items-center justify-center py-24 px-4 text-center bg-gray-50 border border-dashed border-gray-200 rounded-2xl">
+      <div className="text-5xl mb-4 grayscale opacity-50">
+        🏁
+      </div>
+      <h3 className="text-xl font-bold text-gray-900 mb-2">
+        The Pegs are Empty!
+      </h3>
+      <p className="text-gray-500 max-w-md mb-6 text-sm leading-relaxed">
+        Faster collectors beat you to the finish line. Every model in this lineup has been snatched up. We're currently in the pit lane hunting for restocks.
+      </p>
+    </div>
   )
 }
