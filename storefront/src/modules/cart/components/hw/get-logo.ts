@@ -70,17 +70,24 @@ export function getBrandLogoFromTitle(
 
         const brandName = normalize(name)
 
-        // Extra guard: avoid matching super-short brand names accidentally
-        if (brandName.length < 3) continue
+        // Skip if normalization resulted in an empty string
+        if (!brandName) continue
 
-        if (normalizedTitle.includes(brandName)) {
+        // Use word boundaries (\b) to ensure we match exact words, not substrings.
+        // This prevents "ram" from matching inside "moneygram"
+        const brandRegex = new RegExp(`\\b${brandName}\\b`)
+
+        if (brandRegex.test(normalizedTitle)) {
             return { name, uri, slug: brand.slug }
         }
 
         // Optional: also match on slug (helps for cases like "mercedes benz" vs "mercedes-benz")
         const slugName = normalize(brand.slug)
-        if (slugName && normalizedTitle.includes(slugName)) {
-            return { name, uri, slug: brand.slug }
+        if (slugName) {
+            const slugRegex = new RegExp(`\\b${slugName}\\b`)
+            if (slugRegex.test(normalizedTitle)) {
+                return { name, uri, slug: brand.slug }
+            }
         }
     }
 
