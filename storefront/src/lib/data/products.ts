@@ -140,7 +140,7 @@ export const getProductsList = cache(async function ({
 export const getProductsListWithSort = cache(async function ({
   page = 1,
   queryParams,
-  sortBy = "created_at",
+  sortBy = "-created_at",
   countryCode,
   inStock = true,
 }: {
