@@ -6,7 +6,7 @@ import { HttpTypes } from "@medusajs/types"
 import { omit } from "lodash"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
-import { getAuthHeaders, getCartId, removeCartId, setCartId } from "./cookies"
+import { getCartId, removeCartId, setCartId } from "./cookies"
 import { getProductsById } from "./products"
 import { getRegion } from "./regions"
 import { addCustomerAddress } from "./customer"
@@ -25,7 +25,7 @@ export async function retrieveCart(id?: string) {
         // expand items and their products (including tags)
         fields: "+items.*, +items.product.*, +items.product.tags.*",
       },
-      { next: { tags: ["cart"] }, ...(await getAuthHeaders()) }
+      { next: { tags: ["cart"] }, ...(await getSafeAuthHeaders()) }
     )
     .then(({ cart }) => cart)
     .catch(() => {
@@ -54,7 +54,7 @@ export async function getOrSetCart(countryCode: string) {
 
   // Attach cart to logged-in customer so customer_id is set
   if (cart && !cart.customer_id) {
-    const authHeaders = await getAuthHeaders()
+    const authHeaders = (await getSafeAuthHeaders())
     const isLoggedIn = authHeaders && Object.keys(authHeaders).length > 0
 
     if (isLoggedIn) {
@@ -78,7 +78,7 @@ export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   }
 
   return sdk.store.cart
-    .update(cartId, data, {}, (await getAuthHeaders()))
+    .update(cartId, data, {}, (await getSafeAuthHeaders()))
     .then(({ cart }) => {
       revalidateTag("cart")
       return cart
@@ -112,7 +112,7 @@ export async function addToCart({
         quantity,
       },
       {},
-      (await getAuthHeaders())
+      (await getSafeAuthHeaders())
     )
     .then(() => {
       revalidateTag("cart")
@@ -137,7 +137,7 @@ export async function updateLineItem({
   }
 
   await sdk.store.cart
-    .updateLineItem(cartId, lineId, { quantity }, {}, (await getAuthHeaders()))
+    .updateLineItem(cartId, lineId, { quantity }, {}, (await getSafeAuthHeaders()))
     .then(() => {
       revalidateTag("cart")
     })
@@ -222,7 +222,7 @@ export async function setShippingMethod({
       cartId,
       { option_id: shippingMethodId },
       {},
-      (await getAuthHeaders())
+      (await getSafeAuthHeaders())
     )
     .then(() => {
       revalidateTag("cart")
@@ -302,7 +302,7 @@ export async function initiatePaymentSession(
     data?: Record<string, unknown>
   }
 ) {
-  const headers = await getAuthHeaders()
+  const headers = (await getSafeAuthHeaders())
   let paymentCollectionId = cart.payment_collection?.id
 
   // ---------------------------------------------------------
@@ -430,6 +430,7 @@ export async function submitPromotionForm(
 // TODO: Pass a POJO instead of a form entity here
 // Add this import if you haven't already
 import { getCustomer } from "@lib/data/customer"
+import { getSafeAuthHeaders } from "@lib/util/safeheaders"
 
 export async function setAddresses(currentState: unknown, formData: FormData) {
   const customer = await getCustomer().catch(() => null)
@@ -526,7 +527,7 @@ export async function placeOrder() {
   }
 
   const cartRes = await sdk.store.cart
-    .complete(cartId, {}, (await getAuthHeaders()))
+    .complete(cartId, {}, (await getSafeAuthHeaders()))
     .then((cartRes) => {
       revalidateTag("cart")
       return cartRes
@@ -556,7 +557,7 @@ export async function deleteCartCompletely(cartId?: string) {
   try {
     // Preferred: delete cart in Medusa (if supported by your Medusa version)
     // Many versions expose: sdk.store.cart.delete(cartId, config?, headers?)
-    await (sdk.store.cart as any).delete(id, {}, (await getAuthHeaders()))
+    await (sdk.store.cart as any).delete(id, {}, (await getSafeAuthHeaders()))
 
     // Clear local cart reference
     removeCartId()
@@ -600,7 +601,7 @@ export async function updateRegion(countryCode: string, currentPath: string) {
 export async function applyLoyaltyPointsOnCart() {
   const cartId = await getCartId()
   const headers = {
-    ...(await getAuthHeaders()),
+    ...(await getSafeAuthHeaders()),
   }
 
   return await sdk.client.fetch<{
@@ -620,7 +621,7 @@ export async function applyLoyaltyPointsOnCart() {
 export async function removeLoyaltyPointsOnCart() {
   const cartId = await getCartId()
   const headers = {
-    ...(await getAuthHeaders()),
+    ...(await getSafeAuthHeaders()),
   }
   // const next = {
   //   ...(await getCacheOptions("carts")),

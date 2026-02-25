@@ -6,17 +6,18 @@ import { HttpTypes } from "@medusajs/types"
 import { revalidateTag } from "next/cache"
 import { redirect } from "next/navigation"
 import { cache } from "react"
-import { getAuthHeaders, removeAuthToken, removeCartId, setAuthToken } from "./cookies"
+import { removeAuthToken, removeCartId, setAuthToken } from "./cookies"
+import { getSafeAuthHeaders } from "@lib/util/safeheaders"
 
 export const getCustomer = cache(async function () {
   return await sdk.store.customer
-    .retrieve({}, { next: { tags: ["customer"] }, ...(await getAuthHeaders()) })
+    .retrieve({}, { next: { tags: ["customer"] }, ...(await getSafeAuthHeaders()) })
     .then(({ customer }) => customer)
     .catch(() => null)
 })
 export const getCustomerGroups = async () => {
   const headers = {
-    ...(await getAuthHeaders()),
+    ...(await getSafeAuthHeaders()),
   }
 
   return sdk.client
@@ -32,7 +33,7 @@ export const getCustomerGroups = async () => {
 }
 export const getLoyaltyPoints = async () => {
   const headers = {
-    ...(await getAuthHeaders()),
+    ...(await getSafeAuthHeaders()),
   }
 
   return sdk.client.fetch<{ points: number }>(
@@ -106,7 +107,7 @@ export const updateCustomer = cache(async function (
   body: HttpTypes.StoreUpdateCustomer
 ) {
   const updateRes = await sdk.store.customer
-    .update(body, {}, (await getAuthHeaders()))
+    .update(body, {}, (await getSafeAuthHeaders()))
     .then(({ customer }) => customer)
     .catch(medusaError)
 
@@ -198,7 +199,7 @@ export const addCustomerAddress = async (
   }
 
   return sdk.store.customer
-    .createAddress(address, {}, (await getAuthHeaders()))
+    .createAddress(address, {}, (await getSafeAuthHeaders()))
     .then(({ customer }) => {
       revalidateTag("customer")
       return { success: true, error: null }
@@ -212,7 +213,7 @@ export const deleteCustomerAddress = async (
   addressId: string
 ): Promise<void> => {
   await sdk.store.customer
-    .deleteAddress(addressId, (await getAuthHeaders()))
+    .deleteAddress(addressId, (await getSafeAuthHeaders()))
     .then(() => {
       revalidateTag("customer")
       return { success: true, error: null }
@@ -242,7 +243,7 @@ export const updateCustomerAddress = async (
   }
 
   return sdk.store.customer
-    .updateAddress(addressId, address, {}, (await getAuthHeaders()))
+    .updateAddress(addressId, address, {}, (await getSafeAuthHeaders()))
     .then(() => {
       revalidateTag("customer")
       return { success: true, error: null }

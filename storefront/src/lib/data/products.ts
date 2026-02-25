@@ -7,18 +7,9 @@ import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
 import { getAuthHeaders } from "./cookies"
+import { getSafeAuthHeaders } from "@lib/util/safeheaders"
 
-// --- Helper: Safe Auth Headers ---
-// Fixes "cookies called outside request scope" during build time
-const getSafeAuthHeaders = () => {
-  try {
-    return getAuthHeaders()
-  } catch (error) {
-    // This happens during build/SSG when there is no request/cookies.
-    // We return empty headers so the build generates default (non-member) pricing.
-    return {}
-  }
-}
+
 
 // --- Helper: Filter Out-of-Stock Products ---
 const filterInStock = (products: HttpTypes.StoreProduct[]) => {
@@ -50,7 +41,7 @@ export const getProductsById = cache(async function ({
         fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
       },
       {
-        ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+        ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
         next: { tags: ["products"] }
       }
     )
@@ -69,7 +60,7 @@ export const getProductByHandle = cache(async function (
         fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
       },
       {
-        ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+        ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
         next: { tags: ["products"] }
       }
     )
@@ -119,7 +110,7 @@ export const getProductsList = cache(async function ({
 
   return sdk.store.product
     .list(baseQuery, {
-      ...getSafeAuthHeaders(), // 👈 Use Safe Wrapper
+      ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
       next: { tags: ["products"] }
     })
     .then(({ products, count }) => {

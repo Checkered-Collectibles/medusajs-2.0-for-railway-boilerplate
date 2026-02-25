@@ -3,14 +3,14 @@
 import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { cache } from "react"
-import { getAuthHeaders } from "./cookies"
+import { getSafeAuthHeaders } from "@lib/util/safeheaders"
 
 export const retrieveOrder = cache(async function (id: string) {
   return sdk.store.order
     .retrieve(
       id,
       { fields: "*payment_collections.payments,*fulfillments.labels", },
-      { next: { tags: ["order"] }, ...(await getAuthHeaders()) }
+      { next: { tags: ["order"] }, ...(await getSafeAuthHeaders()) }
     )
     .then(({ order }) => order)
     .catch((err) => medusaError(err))
@@ -21,7 +21,7 @@ export const listOrders = cache(async function (
   offset: number = 0
 ) {
   return sdk.store.order
-    .list({ limit, offset, order: "-created_at" }, { next: { tags: ["order"] }, ...(await getAuthHeaders()) })
+    .list({ limit, offset, order: "-created_at" }, { next: { tags: ["order"] }, ...(await getSafeAuthHeaders()) })
     .then(({ orders }) => orders)
     .catch((err) => medusaError(err))
 })
