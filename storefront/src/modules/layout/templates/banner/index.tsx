@@ -7,7 +7,7 @@ import Countdown from "./countdown"
  * UPDATED: 2026 E Case Restock
  * Start: Feb 21, 2026 @ 8:00 PM IST
  */
-const DROP_DATE_IST = "2026-02-25T04:00:00+05:30"
+const DROP_DATE_IST = "2026-02-25T18:00:00+05:30"
 // How long the "LIVE" banner stays active
 const HYPE_DURATION_MS = 24 * 60 * 60 * 1000 // 48 Hours
 
@@ -48,12 +48,12 @@ export default function Banner() {
                         🔥 <span className="text-yellow-300">No Fantasy Rule IS LIVE!</span>
                     </span>
 
-                    {/* <div className="flex items-center gap-2">
-                        <span className="text-white/70 font-normal normal-case">Hype ends in:</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-white/70 font-normal normal-case">Ends in:</span>
                         <span className="bg-red-600 text-white px-2 py-0.5 rounded font-mono">
                             <Countdown targetDate={hypeEndDate} size="sm" />
                         </span>
-                    </div> */}
+                    </div>
 
                     <span className="hidden sm:inline bg-white/10 text-white px-2 py-0.5 rounded text-xs font-medium tracking-wider">
                         SHOP NOW &rarr;
