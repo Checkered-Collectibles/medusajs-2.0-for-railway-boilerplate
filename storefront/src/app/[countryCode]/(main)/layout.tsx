@@ -11,10 +11,11 @@ export const metadata: Metadata = {
   metadataBase: new URL("https://checkered.in"),
 
   // 🧠 OPTIMIZED TITLE
-  title: {
-    template: "%s | Checkered Collectibles", // ✅ Un-commented this so sub-pages work automatically
-    default: "Buy Hot Wheels Cars Online India | Checkered Collectibles", // Fallback title
-  },
+  title: "Buy Hot Wheels Cars Online India | Checkered Collectibles",
+  // title: {
+  //   template: "%s | Checkered Collectibles", // ✅ Un-commented this so sub-pages work automatically
+  //   default: "Buy Hot Wheels Cars Online India | Checkered Collectibles", // Fallback title
+  // },
 
   // 📝 OPTIMIZED DESCRIPTION
   description:
