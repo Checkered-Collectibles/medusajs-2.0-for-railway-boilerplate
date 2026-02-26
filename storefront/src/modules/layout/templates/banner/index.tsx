@@ -7,9 +7,9 @@ import Countdown from "./countdown"
  * UPDATED: 2026 E Case Restock
  * Start: Feb 21, 2026 @ 8:00 PM IST
  */
-const DROP_DATE_IST = "2026-02-25T19:00:00+05:30"
+const DROP_DATE_IST = "2026-02-26T19:00:00+05:30"
 // How long the "LIVE" banner stays active
-const HYPE_DURATION_MS = 24 * 60 * 60 * 1000 // 24 Hours
+const HYPE_DURATION_MS = 6 * 60 * 60 * 1000 // 24 Hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
