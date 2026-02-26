@@ -28,7 +28,7 @@ export type HotWheelsRuleResult = {
 export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
-    const isMainlineRuleEnabled = false
+    const isMainlineRuleEnabled = true
     const isPremiumRuleEnabled = false
     const isSilverRuleEnabled = true
 
