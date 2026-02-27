@@ -18,7 +18,7 @@ const StoreTemplate = ({
   inStock?: string // 👈 2. Define type (URL params are strings)
 }) => {
   const pageNumber = page ? parseInt(page) : 1
-  const sort = sortBy || "-created_at"
+  const sort = sortBy || "-updated_at"
 
   // Convert string "true" to boolean for UI components
   const isStockFilterChecked = (inStock ?? "true") === "true"
