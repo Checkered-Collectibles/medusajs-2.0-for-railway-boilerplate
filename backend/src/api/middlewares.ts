@@ -21,10 +21,6 @@ export default defineMiddlewares({
          * ===========================
          */
         {
-            matcher: "/store/customers/me/track*",
-            middlewares: [authenticate("customer", ["session", "bearer"])],
-        },
-        {
             matcher: "/store/customers/me/groups",
             middlewares: [authenticate("customer", ["session", "bearer"])],
         },

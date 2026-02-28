@@ -14,6 +14,23 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
     return formatted.slice(0, 1).toUpperCase() + formatted.slice(1)
   }
 
+  // Get the latest fulfillment (by created_at)
+  const latestFulfillment = order.fulfillments?.length
+    ? [...order.fulfillments].sort(
+      (a, b) =>
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    )[0]
+    : undefined
+
+  // From that fulfillment, get the latest label (if any)
+  const latestLabel =
+    latestFulfillment?.labels && latestFulfillment.labels.length > 0
+      ? latestFulfillment.labels[latestFulfillment.labels.length - 1]
+      : undefined
+
+  const trackingNumber = latestLabel?.tracking_number
+  const trackingUrl = latestLabel?.tracking_url
+
   return (
     <div>
       <Text>
@@ -61,7 +78,7 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
               </span>
             </Text>
 
-            {/* {trackingNumber && (
+            {trackingNumber && (
               <div className="flex flex-wrap items-center gap-2 mt-1">
                 <span className="text-ui-fg-subtle">Tracking:</span>
                 <span className="font-mono text-ui-fg-base">
@@ -83,7 +100,7 @@ const OrderDetails = ({ order, showStatus }: OrderDetailsProps) => {
                   </Link>
                 )}
               </div>
-            )} */}
+            )}
           </>
         )}
       </div>
