@@ -1,6 +1,6 @@
 export default function Contact() {
     return (
-        <main className="flex max-w-7xl mx-auto min-h-screen items-center justify-center px-2">
+        <main className="flex max-w-7xl mx-auto min-h-[80vh] items-center justify-center px-2">
             <div className="text-center max-w-md">
                 <h1 className="text-2xl font-semibold mb-4">Contact Support</h1>
 
@@ -17,6 +17,18 @@ export default function Contact() {
                         hello@checkered.in
                     </a>
                 </p>
+                <p className="">Or</p>
+                <p className="text-gray-800">
+                    Message us on {" "}
+                    <a
+                        target="_blank"
+                        href="https://wa.me/918471092205"
+                        className="text-blue-600 hover:underline"
+                    >
+                        Whatsapp
+                    </a>
+                </p>
+
             </div>
         </main>
     )
