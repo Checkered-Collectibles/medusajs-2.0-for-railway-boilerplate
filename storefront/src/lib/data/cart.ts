@@ -11,50 +11,26 @@ import { getProductsById } from "./products"
 import { getRegion } from "./regions"
 import { addCustomerAddress } from "./customer"
 
-
-/**
- * SHARED SECURITY HELPER
- * Verifies that if a cart has a customer_id, it matches the current requester.
- */
-async function validateCartOwnership(cart: HttpTypes.StoreCart) {
-  if (!cart.customer_id) return true // Guest carts are open to anyone with the ID
-
-  const authHeaders = await getSafeAuthHeaders()
-  const customerRes = await sdk.store.customer.retrieve({}, authHeaders).catch(() => null)
-
-  if (!customerRes || cart.customer_id !== customerRes.customer.id) {
-    return false // Ownership mismatch
-  }
-  return true
-}
-
 export async function retrieveCart(id?: string) {
   const cartId = id || await getCartId()
 
-  if (!cartId) return null
-
-  const headers = await getSafeAuthHeaders()
-
-  try {
-    const { cart } = await sdk.store.cart.retrieve(
-      cartId,
-      {
-        fields: "+items.*, +items.product.*, +items.product.tags.*",
-      },
-      { next: { tags: ["cart"] }, ...headers }
-    )
-
-    // Security Check
-    const isOwner = await validateCartOwnership(cart)
-    if (!isOwner) {
-      console.warn(`Unauthorized access attempt to cart: ${cartId}`)
-      return null
-    }
-
-    return cart
-  } catch (error) {
+  if (!cartId) {
     return null
   }
+
+  return await sdk.store.cart
+    .retrieve(
+      cartId,
+      {
+        // expand items and their products (including tags)
+        fields: "+items.*, +items.product.*, +items.product.tags.*",
+      },
+      { next: { tags: ["cart"] }, ...(await getSafeAuthHeaders()) }
+    )
+    .then(({ cart }) => cart)
+    .catch(() => {
+      return null
+    })
 }
 
 export async function getOrSetCart(countryCode: string) {
@@ -63,32 +39,31 @@ export async function getOrSetCart(countryCode: string) {
 
   if (!region) throw new Error(`Region not found for country code: ${countryCode}`)
 
-  const headers = await getSafeAuthHeaders()
-
   if (!cart) {
-    const cartResp = await sdk.store.cart.create({ region_id: region.id }, {}, headers)
+    const cartResp = await sdk.store.cart.create({ region_id: region.id })
     cart = cartResp.cart
     setCartId(cart.id)
     revalidateTag("cart")
   }
-
-  // Sync region
+  // keep region in sync
   if (cart && cart.region_id !== region.id) {
-    await sdk.store.cart.update(cart.id, { region_id: region.id }, {}, headers)
+    await sdk.store.cart.update(cart.id, { region_id: region.id })
     revalidateTag("cart")
     cart = await retrieveCart()
   }
 
-  // Securely transfer guest cart to logged-in user
+  // Attach cart to logged-in customer so customer_id is set
   if (cart && !cart.customer_id) {
-    const isLoggedIn = headers && Object.keys(headers).length > 0
+    const authHeaders = (await getSafeAuthHeaders())
+    const isLoggedIn = authHeaders && Object.keys(authHeaders).length > 0
+
     if (isLoggedIn) {
       try {
-        await sdk.store.cart.transferCart(cart.id, {}, headers)
+        await sdk.store.cart.transferCart(cart.id, {}, authHeaders)
         revalidateTag("cart")
         cart = await retrieveCart()
-      } catch (e) {
-        console.error("Cart transfer failed", e)
+      } catch {
+        // ignore; cart can remain guest if session isn't valid
       }
     }
   }
@@ -98,15 +73,12 @@ export async function getOrSetCart(countryCode: string) {
 
 export async function updateCart(data: HttpTypes.StoreUpdateCart) {
   const cartId = await getCartId()
-  if (!cartId) throw new Error("Cart not found")
-
-  const headers = await getSafeAuthHeaders()
-  const cart = await retrieveCart(cartId) // Ownership check included here
-
-  if (!cart) throw new Error("Unauthorized cart update")
+  if (!cartId) {
+    throw new Error("No existing cart found, please create one before updating")
+  }
 
   return sdk.store.cart
-    .update(cartId, data, {}, headers)
+    .update(cartId, data, {}, (await getSafeAuthHeaders()))
     .then(({ cart }) => {
       revalidateTag("cart")
       return cart
@@ -123,17 +95,24 @@ export async function addToCart({
   quantity: number
   countryCode: string
 }) {
-  const cart = await getOrSetCart(countryCode)
-  if (!cart) throw new Error("Error retrieving or creating cart")
+  if (!variantId) {
+    throw new Error("Missing variant ID when adding to cart")
+  }
 
-  const headers = await getSafeAuthHeaders()
+  const cart = await getOrSetCart(countryCode)
+  if (!cart) {
+    throw new Error("Error retrieving or creating cart")
+  }
 
   await sdk.store.cart
     .createLineItem(
       cart.id,
-      { variant_id: variantId, quantity },
+      {
+        variant_id: variantId,
+        quantity,
+      },
       {},
-      headers
+      (await getSafeAuthHeaders())
     )
     .then(() => {
       revalidateTag("cart")
@@ -148,27 +127,40 @@ export async function updateLineItem({
   lineId: string
   quantity: number
 }) {
-  const cartId = await getCartId()
-  if (!cartId) throw new Error("Cart not found")
+  if (!lineId) {
+    throw new Error("Missing lineItem ID when updating line item")
+  }
 
-  const headers = await getSafeAuthHeaders()
+  const cartId = await getCartId()
+  if (!cartId) {
+    throw new Error("Missing cart ID when updating line item")
+  }
 
   await sdk.store.cart
-    .updateLineItem(cartId, lineId, { quantity }, {}, headers)
-    .then(() => revalidateTag("cart"))
+    .updateLineItem(cartId, lineId, { quantity }, {}, (await getSafeAuthHeaders()))
+    .then(() => {
+      revalidateTag("cart")
+    })
     .catch(medusaError)
 }
 
 export async function deleteLineItem(lineId: string) {
-  const cartId = await getCartId()
-  if (!cartId) throw new Error("Cart not found")
+  if (!lineId) {
+    throw new Error("Missing lineItem ID when deleting line item")
+  }
 
-  const headers = await getSafeAuthHeaders()
+  const cartId = await getCartId()
+  if (!cartId) {
+    throw new Error("Missing cart ID when deleting line item")
+  }
 
   await sdk.store.cart
-    .deleteLineItem(cartId, lineId, {}, headers)
-    .then(() => revalidateTag("cart"))
+    .deleteLineItem(cartId, lineId)
+    .then(() => {
+      revalidateTag("cart")
+    })
     .catch(medusaError)
+  revalidateTag("cart")
 }
 
 export async function enrichLineItems(
