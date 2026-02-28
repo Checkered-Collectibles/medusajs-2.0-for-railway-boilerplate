@@ -2,7 +2,6 @@ class ShiprocketClient {
     private cachedToken: string | null = null
     private tokenExpiry: number | null = null
 
-    // --- Smart Auth Token Fetcher ---
     async getToken(): Promise<string> {
         if (this.cachedToken && this.tokenExpiry && Date.now() < this.tokenExpiry) {
             return this.cachedToken;
@@ -21,23 +20,26 @@ class ShiprocketClient {
             body: JSON.stringify({ email, password }),
         })
 
-        const data = await response.json()
-
-        if (!response.ok || !data.token) {
-            throw new Error(`Shiprocket Login Failed: ${data.message || "Unknown Error"}`)
+        // --- FIXED LOGIC ---
+        if (!response.ok) {
+            const errorText = await response.text()
+            console.error("Shiprocket Auth HTML Error:", errorText)
+            throw new Error(`Shiprocket Login Failed with status ${response.status}`)
         }
 
-        // Cache the new token for 24 hours
+        const data = await response.json()
+
+        if (!data.token) {
+            throw new Error(`Shiprocket Auth Success but no token found: ${JSON.stringify(data)}`)
+        }
+
         this.cachedToken = data.token
         this.tokenExpiry = Date.now() + (24 * 60 * 60 * 1000)
-
         return this.cachedToken
     }
 
     async trackByAwb(awb: string) {
         const token = await this.getToken()
-
-        // Direct endpoint for AWB tracking
         const url = `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awb}`
 
         const response = await fetch(url, {
@@ -48,15 +50,15 @@ class ShiprocketClient {
             }
         })
 
-        const trackData = await response.json()
-
+        // --- FIXED LOGIC ---
         if (!response.ok) {
-            throw new Error(`Shiprocket AWB Tracking Failed: ${trackData.message || "Unknown error"}`)
+            const errorText = await response.text()
+            console.error("Shiprocket Tracking HTML Error:", errorText)
+            throw new Error(`Shiprocket AWB Tracking Failed with status ${response.status}`)
         }
 
-        return trackData
+        return await response.json()
     }
 }
 
-// Export a single instance so the token cache is shared across your entire backend
 export const shiprocketClient = new ShiprocketClient()
