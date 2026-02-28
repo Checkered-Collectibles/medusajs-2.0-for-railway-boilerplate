@@ -34,7 +34,7 @@ export default async function Footer() {
 
             {/* 🧠 SEO: Text contains "Buy Hot Wheels" + "India" keywords */}
             <Text className="txt-small text-ui-fg-subtle">
-              Join the revolution against scalpers. The best place to <strong>buy Hot Wheels online in India</strong> at fair prices.
+              The best place to <strong>buy Hot Wheels online in India</strong> at fair prices.
             </Text>
 
             {/* 🧠 SEO: Semantic Address Tag for Local Ranking */}
