@@ -38,7 +38,6 @@ export const getTrackingDetails = cache(async function (awb: string): Promise<Tr
     }
   )
     .then((res) => {
-      console.log(JSON.stringify(res.tracking))
       return res.tracking
     })
     .catch((err) => {
