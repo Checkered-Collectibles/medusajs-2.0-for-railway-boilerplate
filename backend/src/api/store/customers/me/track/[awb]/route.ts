@@ -30,6 +30,7 @@ export async function GET(
         })
 
     } catch (error: any) {
+        console.log(error)
         return res.status(500).json({
             success: false,
             message: error.message || "Internal server error during tracking fetch."
