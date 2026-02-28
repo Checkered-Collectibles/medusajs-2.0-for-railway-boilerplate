@@ -11,20 +11,19 @@ type GetTrackingInput = {
     channel_id?: string
 }
 
-export const getShiprocketTrackingStep = createStep(
-    "get-shiprocket-tracking",
-    async (input: GetTrackingInput) => {
-        // We use our standalone client directly! No DI container resolution needed.
-        const trackingData = await shiprocketClient.trackByOrderId(input.order_id, input.channel_id)
-
+export const getShiprocketAwbTrackingStep = createStep(
+    "get-shiprocket-awb-tracking",
+    async (awb: string) => {
+        // Use the new AWB method
+        const trackingData = await shiprocketClient.trackByAwb(awb)
         return new StepResponse(trackingData)
     }
 )
 
-export const trackShiprocketOrderWorkflow = createWorkflow(
-    "track-shiprocket-order",
-    function (input: GetTrackingInput) {
-        const trackingData = getShiprocketTrackingStep(input)
+export const trackShiprocketAwbWorkflow = createWorkflow(
+    "track-shiprocket-awb",
+    function (input: { awb: string }) {
+        const trackingData = getShiprocketAwbTrackingStep(input.awb)
         return new WorkflowResponse(trackingData)
     }
 )

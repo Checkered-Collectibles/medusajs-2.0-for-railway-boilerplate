@@ -4,6 +4,7 @@ import { sdk } from "@lib/config"
 import medusaError from "@lib/util/medusa-error"
 import { cache } from "react"
 import { getSafeAuthHeaders } from "@lib/util/safeheaders"
+import { TrackingAPIResult, TrackingData } from "types/shipment"
 
 export const retrieveOrder = cache(async function (id: string) {
   return sdk.store.order
@@ -24,4 +25,24 @@ export const listOrders = cache(async function (
     .list({ limit, offset, order: "-created_at" }, { next: { tags: ["order"] }, ...(await getSafeAuthHeaders()) })
     .then(({ orders }) => orders)
     .catch((err) => medusaError(err))
+})
+
+export const getTrackingDetails = cache(async function (awb: string): Promise<TrackingData | null> {
+  const headers = await getSafeAuthHeaders()
+
+  return sdk.client.fetch<TrackingAPIResult>(
+    `/store/customers/me/track/${awb}`,
+    {
+      method: "GET",
+      headers,
+    }
+  )
+    .then((res) => {
+      console.log(JSON.stringify(res.tracking))
+      return res.tracking
+    })
+    .catch((err) => {
+      console.error("Tracking Fetch Error:", err)
+      return null
+    })
 })

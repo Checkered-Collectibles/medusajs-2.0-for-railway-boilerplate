@@ -34,14 +34,11 @@ class ShiprocketClient {
         return this.cachedToken
     }
 
-    // --- Tracking Method ---
-    async trackByOrderId(orderId: string, channelId?: string) {
+    async trackByAwb(awb: string) {
         const token = await this.getToken()
 
-        let url = `https://apiv2.shiprocket.in/v1/external/courier/track?order_id=${orderId}`
-        if (channelId) {
-            url += `&channel_id=${channelId}`
-        }
+        // Direct endpoint for AWB tracking
+        const url = `https://apiv2.shiprocket.in/v1/external/courier/track/awb/${awb}`
 
         const response = await fetch(url, {
             method: "GET",
@@ -54,7 +51,7 @@ class ShiprocketClient {
         const trackData = await response.json()
 
         if (!response.ok) {
-            throw new Error(`Shiprocket Tracking Failed: ${trackData.message || "Unknown error"}`)
+            throw new Error(`Shiprocket AWB Tracking Failed: ${trackData.message || "Unknown error"}`)
         }
 
         return trackData

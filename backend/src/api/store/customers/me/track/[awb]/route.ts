@@ -1,15 +1,11 @@
 import { AuthenticatedMedusaRequest, MedusaResponse } from "@medusajs/framework/http"
-import { trackShiprocketOrderWorkflow } from "../../../../../../workflows/shiprocket-tracking"
+import { trackShiprocketAwbWorkflow } from "../../../../../../workflows/shiprocket-tracking"
 
 export async function GET(
     req: AuthenticatedMedusaRequest,
     res: MedusaResponse
 ) {
-    // Grab the order_id from the URL path
-    const { order_id } = req.params
-
-    // Optionally grab channel_id from the query parameters (e.g., ?channel_id=12345)
-    const channel_id = req.query.channel_id as string | undefined
+    const { awb } = req.params
 
     // 1. Security Check: Verify customer is logged in
     const customerId = req.auth_context?.actor_id
@@ -23,11 +19,8 @@ export async function GET(
 
     try {
         // 2. Execute the Workflow
-        const { result } = await trackShiprocketOrderWorkflow(req.scope).run({
-            input: {
-                order_id: order_id,
-                channel_id: channel_id
-            }
+        const { result } = await trackShiprocketAwbWorkflow(req.scope).run({
+            input: { awb }
         })
 
         // 3. Return the tracking result

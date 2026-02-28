@@ -13,17 +13,8 @@ type Props = {
 
 const Login = ({ setCurrentView }: Props) => {
 
-  // ⬇️ Wrapper to force email to lowercase
-  const loginWithNormalization = async (currentState: any, formData: FormData) => {
-    const email = formData.get("email")
-    if (email) {
-      formData.set("email", email.toString().toLowerCase())
-    }
-    return login(currentState, formData)
-  }
-
-  // ⬇️ Use the wrapper here instead of the raw 'login'
-  const [message, formAction] = useActionState(loginWithNormalization, null)
+  // Pass the server action directly! No wrapper needed.
+  const [message, formAction] = useActionState(login, null)
 
   return (
     <div

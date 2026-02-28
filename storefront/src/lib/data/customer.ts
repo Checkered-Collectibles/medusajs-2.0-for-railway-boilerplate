@@ -157,16 +157,24 @@ export async function signup(_currentState: unknown, formData: FormData) {
 }
 
 export async function login(_currentState: unknown, formData: FormData) {
-  const email = formData.get("email") as string
+  // 1. Grab and normalize the email
+  let email = formData.get("email") as string
+  if (email) {
+    email = email.toLowerCase()
+  }
+
   const password = formData.get("password") as string
 
   try {
-    await sdk.auth
-      .login("customer", "emailpass", { email, password })
-      .then((token) => {
-        setAuthToken(typeof token === 'string' ? token : token.location)
-        revalidateTag("customer")
-      })
+    // 2. Await the login response directly
+    const token = await sdk.auth.login("customer", "emailpass", { email, password })
+
+    // 3. CRITICAL: You must AWAIT the setAuthToken function!
+    await setAuthToken(typeof token === 'string' ? token : token.location)
+
+    // 4. Revalidate cache
+    revalidateTag("customer")
+
   } catch (error: any) {
     return error.toString()
   }
