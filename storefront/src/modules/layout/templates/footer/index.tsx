@@ -163,10 +163,11 @@ export default async function Footer() {
           </div>
           <div className="flex flex-wrap gap-3">
             <LocalizedClientLink href="/contact"><Text className="text-xs hover:text-ui-fg-base">Contact Us</Text></LocalizedClientLink>
-            <LocalizedClientLink href="/terms-and-conditions"><Text className="text-xs hover:text-ui-fg-base">Terms</Text></LocalizedClientLink>
-            <LocalizedClientLink href="/privacy-policy"><Text className="text-xs hover:text-ui-fg-base">Privacy</Text></LocalizedClientLink>
-            <LocalizedClientLink href="/shipping-policy"><Text className="text-xs hover:text-ui-fg-base">Shipping</Text></LocalizedClientLink>
-            <LocalizedClientLink href="/cancellation-and-refund-policy"><Text className="text-xs hover:text-ui-fg-base">Refunds</Text></LocalizedClientLink>
+            <LocalizedClientLink href="/legal"><Text className="text-xs hover:text-ui-fg-base">Legal</Text></LocalizedClientLink>
+            <LocalizedClientLink href="/legal/terms-and-conditions"><Text className="text-xs hover:text-ui-fg-base">Terms</Text></LocalizedClientLink>
+            <LocalizedClientLink href="/legal/privacy-policy"><Text className="text-xs hover:text-ui-fg-base">Privacy</Text></LocalizedClientLink>
+            <LocalizedClientLink href="/legal/shipping-policy"><Text className="text-xs hover:text-ui-fg-base">Shipping</Text></LocalizedClientLink>
+            <LocalizedClientLink href="/legal/cancellation-and-refund"><Text className="text-xs hover:text-ui-fg-base">Refunds</Text></LocalizedClientLink>
           </div>
         </div>
       </div>
