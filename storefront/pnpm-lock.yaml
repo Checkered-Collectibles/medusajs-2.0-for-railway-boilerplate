@@ -21,6 +21,9 @@ importers:
       '@avto-dev/vehicle-logotypes':
         specifier: ^2.11.1
         version: 2.11.1
+      '@fortedigital/nextjs-cache-handler':
+        specifier: ^3.0.1
+        version: 3.0.1(@redis/client@5.11.0)(next@15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@gsap/react':
         specifier: ^2.1.2
         version: 2.1.2(gsap@3.14.1)(react@18.3.1)
@@ -45,9 +48,6 @@ importers:
       '@meilisearch/instant-meilisearch':
         specifier: ^0.7.1
         version: 0.7.1
-      '@neshca/cache-handler':
-        specifier: ^1.9.0
-        version: 1.9.0(next@15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redis@5.11.0)
       '@next/third-parties':
         specifier: ^16.0.10
         version: 16.0.10(next@15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(react@18.3.1)
@@ -427,6 +427,17 @@ packages:
   '@formatjs/intl-localematcher@0.5.9':
     resolution: {integrity: sha512-8zkGu/sv5euxbjfZ/xmklqLyDGQSxsLqg8XOq88JW3cmJtzhCP8EtSJXlaKZnVO4beEaoiT9wj4eIoCQ9smwxA==}
 
+  '@fortedigital/nextjs-cache-handler@3.0.1':
+    resolution: {integrity: sha512-VfMbDNrp6ioioDCKyiEPYJ0rSCDkCKxRRXGPUEYU4DA9AlX4XPAzWghBTA5U0Yz03XnqrcmDiV9sBH6UydkGbQ==}
+    engines: {node: '>=22.0.0'}
+    peerDependencies:
+      '@redis/client': '>= 5.8.3'
+      ioredis: '>= 5.0.0'
+      next: '>=16.1.5'
+    peerDependenciesMeta:
+      ioredis:
+        optional: true
+
   '@gsap/react@2.1.2':
     resolution: {integrity: sha512-JqliybO1837UcgH2hVOM4VO+38APk3ECNrsuSM4MuXp+rbf+/2IG2K1YJiqfTcXQHH7XlA0m3ykniFYstfq0Iw==}
     peerDependencies:
@@ -680,12 +691,6 @@ packages:
 
   '@meilisearch/instant-meilisearch@0.7.1':
     resolution: {integrity: sha512-bUGiGO/da915Y9Dmu2n5fTMFvSlJHC6ABOcL7056OiBSCU1Bx1EvVEkzYmTxac3lqIoIpxZU5t0WXiPeikrg4g==}
-
-  '@neshca/cache-handler@1.9.0':
-    resolution: {integrity: sha512-dh0x4pdjDKvPRfZF5DZb8TtOUkbBfeTodOUdQsHDuv0oiuqQ3p7GLx38f6bPn8Sa4he8HsWo+rM4S20ZRqr7pA==}
-    peerDependencies:
-      next: '>= 13.5.1 < 15'
-      redis: '>= 4.6'
 
   '@next/env@15.5.12':
     resolution: {integrity: sha512-pUvdJN1on574wQHjaBfNGDt9Mz5utDSZFsIIQkMzPgNS8ZvT4H2mwOrOIClwsQOb6EGx5M76/CZr6G8i6pSpLg==}
@@ -2092,6 +2097,11 @@ packages:
     peerDependencies:
       '@redis/client': ^5.11.0
 
+  '@rollup/rollup-linux-x64-gnu@4.59.0':
+    resolution: {integrity: sha512-3AHmtQq/ppNuUspKAlvA8HtLybkDflkMuLK4DPo77DfthRb71V84/c4MlWJXixZz4uruIH4uaa07IqoAkG64fg==}
+    cpu: [x64]
+    os: [linux]
+
   '@rtsao/scc@1.1.0':
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
@@ -3323,11 +3333,12 @@ packages:
     resolution: {integrity: sha512-lyuxPGr/Wfhrlem2CL/UcnUc1zcqKAImBDzukY7Y5F/yQiNdko6+fRLevlw1HgMySw7f611UIY408EtxRSoK3Q==}
     hasBin: true
 
-  lru-cache@10.4.3:
-    resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
-
   lru-cache@11.2.4:
     resolution: {integrity: sha512-B5Y16Jr9LB9dHVkh6ZevG+vAbOsNOYCX+sXvFWFu7B3Iz5mijW3zdbMyhsh8ANd2mSWBYdJgnqi+mL7/LrOPYg==}
+    engines: {node: 20 || >=22}
+
+  lru-cache@11.2.6:
+    resolution: {integrity: sha512-ESL2CrkS/2wTPfuend7Zhkzo2u0daGJ/A2VucJOgQ/C48S/zB8MMeMHSGKYpXhIjbPxfuezITkaBH1wqv00DDQ==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -3522,6 +3533,10 @@ packages:
   p-limit@3.1.0:
     resolution: {integrity: sha512-TYOanM3wGwNGsZN2cVTYPArw454xnXj5qmWF1bEoAc4+cU/ol7GVh7odevjp1FNHduHc3KZMcFduxU5Xc6uJRQ==}
     engines: {node: '>=10'}
+
+  p-limit@7.3.0:
+    resolution: {integrity: sha512-7cIXg/Z0M5WZRblrsOla88S4wAK+zOQQWeBYfV3qJuJXMr+LnbYjaadrFaS0JILfEDPVqHyKnZ1Z/1d6J9VVUw==}
+    engines: {node: '>=20'}
 
   p-locate@4.1.0:
     resolution: {integrity: sha512-R79ZZ/0wAxKGu3oYMlz8jy/kbhsNrS7SKZ7PxEHBgJ5+F2mtFW2fK2cOtBh1cHYkQsbzFV7I+EoRKe6Yt0oK7A==}
@@ -4405,6 +4420,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  yocto-queue@1.2.2:
+    resolution: {integrity: sha512-4LCcse/U2MHZ63HAJVE+v71o7yOdIe4cZ70Wpf8D/IyjDKYQLV5GD46B+hSTjJsvV5PztjvHoU580EftxjDZFQ==}
+    engines: {node: '>=12.20'}
+
 snapshots:
 
   '@algolia/cache-browser-local-storage@4.24.0':
@@ -4722,6 +4741,16 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
+  '@fortedigital/nextjs-cache-handler@3.0.1(@redis/client@5.11.0)(next@15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))':
+    dependencies:
+      '@redis/client': 5.11.0
+      cluster-key-slot: 1.1.2
+      lru-cache: 11.2.6
+      next: 15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      p-limit: 7.3.0
+    optionalDependencies:
+      '@rollup/rollup-linux-x64-gnu': 4.59.0
+
   '@gsap/react@2.1.2(gsap@3.14.1)(react@18.3.1)':
     dependencies:
       gsap: 3.14.1
@@ -4951,13 +4980,6 @@ snapshots:
       meilisearch: 0.25.1
     transitivePeerDependencies:
       - encoding
-
-  '@neshca/cache-handler@1.9.0(next@15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(redis@5.11.0)':
-    dependencies:
-      cluster-key-slot: 1.1.2
-      lru-cache: 10.4.3
-      next: 15.5.12(@babel/core@7.26.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
-      redis: 5.11.0
 
   '@next/env@15.5.12': {}
 
@@ -6790,6 +6812,9 @@ snapshots:
     dependencies:
       '@redis/client': 5.11.0
 
+  '@rollup/rollup-linux-x64-gnu@4.59.0':
+    optional: true
+
   '@rtsao/scc@1.1.0': {}
 
   '@rushstack/eslint-patch@1.10.4': {}
@@ -8227,9 +8252,9 @@ snapshots:
     dependencies:
       js-tokens: 4.0.0
 
-  lru-cache@10.4.3: {}
-
   lru-cache@11.2.4: {}
+
+  lru-cache@11.2.6: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -8426,6 +8451,10 @@ snapshots:
   p-limit@3.1.0:
     dependencies:
       yocto-queue: 0.1.0
+
+  p-limit@7.3.0:
+    dependencies:
+      yocto-queue: 1.2.2
 
   p-locate@4.1.0:
     dependencies:
@@ -9519,3 +9548,5 @@ snapshots:
   yaml@2.6.1: {}
 
   yocto-queue@0.1.0: {}
+
+  yocto-queue@1.2.2: {}

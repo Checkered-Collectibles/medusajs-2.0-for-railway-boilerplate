@@ -8,7 +8,7 @@ checkEnvVariables()
 const nextConfig = {
   cacheHandler:
     process.env.NODE_ENV === "production"
-      ? require.resolve("./cache-handler.cjs")
+      ? require.resolve("./cache-handler.mjs")
       : undefined,
   staticPageGenerationTimeout: 180,
   reactStrictMode: true,

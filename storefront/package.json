@@ -39,6 +39,7 @@
   },
   "dependencies": {
     "@avto-dev/vehicle-logotypes": "^2.11.1",
+    "@fortedigital/nextjs-cache-handler": "^3.0.1",
     "@gsap/react": "^2.1.2",
     "@headlessui/react": "^1.6.1",
     "@hookform/error-message": "^2.0.0",
@@ -47,7 +48,6 @@
     "@medusajs/types": "^2.13.1",
     "@medusajs/ui": "preview",
     "@meilisearch/instant-meilisearch": "^0.7.1",
-    "@neshca/cache-handler": "^1.9.0",
     "@next/third-parties": "^16.0.10",
     "@paypal/paypal-js": "^5.0.6",
     "@paypal/react-paypal-js": "^7.8.1",
