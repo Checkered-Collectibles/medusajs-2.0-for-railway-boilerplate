@@ -73,6 +73,7 @@
     "react-jwt": "^2.0.0",
     "react-razorpay": "^3.0.1",
     "react-use": "^17.6.0",
+    "redis": "^5.11.0",
     "server-only": "^0.0.1",
     "tailwindcss-radix": "^2.8.0",
     "webpack": "^5"
