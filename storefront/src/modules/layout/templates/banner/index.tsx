@@ -7,9 +7,9 @@ import Countdown from "./countdown"
  * UPDATED: 2026 E Case Restock
  * Start: Feb 21, 2026 @ 8:00 PM IST
  */
-const DROP_DATE_IST = "2026-02-27T17:00:00+05:30"
+const DROP_DATE_IST = "2026-03-03T23:00:00+05:30"
 // How long the "LIVE" banner stays active
-const HYPE_DURATION_MS = 48 * 60 * 60 * 1000 // 24 Hours
+const HYPE_DURATION_MS = 72 * 60 * 60 * 1000 // 24 Hours
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -41,11 +41,11 @@ export default function Banner() {
             {/* 2. LIVE DROP: Count down to END (48h Window) */}
             {isDropLive && (
                 <Link
-                    href="/collections/hot-wheels-mainline-n-case-2025"
+                    href="/collections/mrp-mystery-hot-wheels"
                     className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
-                        📦 <span className="text-yellow-300">2025 N CASE Restocked!</span>
+                        ⭐️ <span className="text-yellow-300">MRP Hot Wheels</span>
                     </span>
 
                     {/* <div className="flex items-center gap-2">
@@ -55,7 +55,7 @@ export default function Banner() {
                         </span>
                     </div> */}
 
-                    <span className="hidden sm:inline bg-white/10 text-white px-2 py-0.5 rounded text-xs font-medium tracking-wider">
+                    <span className="bg-white/10 text-white px-2 py-0.5 rounded text-xs font-medium tracking-wider">
                         SHOP NOW &rarr;
                     </span>
                 </Link>
