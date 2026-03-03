@@ -37,7 +37,7 @@ CacheHandler.onCreation(async () => {
 
       redisCache = createRedisCache({
         client,
-        keyPrefix: `next-shared-cache-${process.env.RAILWAY_REPLICA_ID}:`,
+        keyPrefix: `storefront-cache-v1:`,
         // timeout for the Redis client operations like `get` and `set`
         // after this timeout, the operation will be considered failed and the `localCache` will be used
         timeoutMs: 5000,
