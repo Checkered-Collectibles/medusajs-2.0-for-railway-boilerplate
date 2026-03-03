@@ -17,7 +17,7 @@ const AccountLayout: React.FC<AccountLayoutProps> = ({
   return (
     <div className="flex-1" data-testid="account-page">
       <div className="flex-1 content-container h-full max-w-5xl mx-auto bg-white flex flex-col">
-        <div className="flex justify-center items-center w-full min-h-[calc(100vh-7rem)] py-16">
+        <div className={`flex ${customer ? 'justify-between min-h-[calc(100vh-16rem)] small:flex-row flex-col' : 'justify-center min-h-[calc(100vh-7rem)]'} gap-x-20 gap-y-12 items-start w-full py-16`}>
           <div>{customer && <AccountNav customer={customer} />}</div>
           <div className="flex-1">{children}</div>
         </div>
