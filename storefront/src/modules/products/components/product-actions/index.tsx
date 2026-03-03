@@ -105,7 +105,7 @@ export default function ProductActions({
     if (qty > 0) {
       const lowStock = qty <= 3
       return {
-        text: lowStock ? `Only ${qty} left` : `In stock (${qty} available)`,
+        text: lowStock ? `Only ${qty} left` : `In stock`,
         tone: lowStock ? ("warning" as const) : ("success" as const),
       }
     }
