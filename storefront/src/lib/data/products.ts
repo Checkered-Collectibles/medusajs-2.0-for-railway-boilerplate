@@ -1,15 +1,9 @@
-"use server"
-
-import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { cache } from "react"
 import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
-import { getAuthHeaders } from "./cookies"
-import { getSafeAuthHeaders } from "@lib/util/safeheaders"
-
-
+import { medusaFetch } from "@lib/medusa"
 
 // --- Helper: Filter Out-of-Stock Products ---
 const filterInStock = (products: HttpTypes.StoreProduct[]) => {
@@ -26,50 +20,61 @@ const filterInStock = (products: HttpTypes.StoreProduct[]) => {
   })
 }
 
+// --- Fetch Product(s) by IDs ---
 export const getProductsById = cache(async function ({
   ids,
   regionId,
 }: {
   ids: string[]
   regionId: string
-}) {
-  return sdk.store.product
-    .list(
+}): Promise<HttpTypes.StoreProduct[]> {
+  try {
+    const data = await medusaFetch<{ products: HttpTypes.StoreProduct[] }>(
+      "/store/products",
       {
-        id: ids,
-        region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
-      },
-      {
-        ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
-        next: { tags: ["products"] }
+        query: {
+          region_id: regionId,
+          id: ids, // medusaFetch automatically converts this to id[]=1&id[]=2
+          fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+        },
+        cache: "force-cache",
+        tags: ["products"],
       }
     )
-    .then(({ products }) => products)
+    return data.products
+  } catch (error) {
+    console.error("Failed to fetch products by IDs:", error)
+    return []
+  }
 })
 
+// --- Fetch Product by Handle ---
 export const getProductByHandle = cache(async function (
   handle: string,
   regionId: string
-) {
-  return sdk.store.product
-    .list(
+): Promise<HttpTypes.StoreProduct | null> {
+  try {
+    const data = await medusaFetch<{ products: HttpTypes.StoreProduct[] }>(
+      "/store/products",
       {
-        handle,
-        region_id: regionId,
-        fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
-      },
-      {
-        ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
-        next: { tags: ["products"] }
+        query: {
+          region_id: regionId,
+          handle: handle,
+          fields: "*variants.calculated_price,+variants.inventory_quantity,+metadata",
+        },
+        cache: "force-cache",
+        tags: ["products"],
       }
     )
-    .then(({ products }) => products[0])
+    return data.products[0] || null
+  } catch (error) {
+    console.error(`Failed to fetch product with handle ${handle}:`, error)
+    return null
+  }
 })
 
-
-// --- Base Fetcher ---
-export const getProductsList = cache(async function ({
+// --- Base Fetcher (List) ---
+export async function getProductsList({
   pageParam = 1,
   queryParams,
   countryCode,
@@ -82,50 +87,47 @@ export const getProductsList = cache(async function ({
   nextPage: number | null
   queryParams?: HttpTypes.StoreProductListParams
 }> {
+  // 1. Get the Region
   const region = await getRegion(countryCode)
+  if (!region) return { response: { products: [], count: 0 }, nextPage: null }
 
-  if (!region) {
-    return {
-      response: { products: [], count: 0 },
-      nextPage: null,
-    }
-  }
-
+  // 2. Setup Pagination
   const limit = Number(queryParams?.limit ?? 12)
-  const validPageParam = Math.max(pageParam, 1)
-  const offset = (validPageParam - 1) * limit
+  const offset = (Math.max(pageParam, 1) - 1) * limit
 
-  const baseQuery: HttpTypes.StoreProductListParams = {
+  // 3. Prepare Query Object
+  const query = {
+    region_id: region.id,
     limit,
     offset,
-    region_id: region.id,
-    fields:
-      "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
-    ...queryParams,
+    fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
+    order: queryParams?.order || "-updated_at",
+    category_id: queryParams?.category_id, // medusaFetch handles both strings and arrays
   }
 
-  if (!baseQuery.order) {
-    baseQuery.order = "-updated_at"
+  try {
+    // 4. Clean, type-safe, perfectly cached fetch!
+    const data = await medusaFetch<{
+      products: HttpTypes.StoreProduct[]
+      count: number
+    }>("/store/products", {
+      query,
+      cache: "force-cache", // Forces Next.js 15 to cache it globally
+      tags: ["products"],
+    })
+
+    const nextPage = data.count > offset + limit ? pageParam + 1 : null
+
+    return {
+      response: { products: data.products, count: data.count },
+      nextPage,
+      queryParams,
+    }
+  } catch (error) {
+    console.error("Failed to fetch products list:", error)
+    return { response: { products: [], count: 0 }, nextPage: null }
   }
-
-  return sdk.store.product
-    .list(baseQuery, {
-      ...(await getSafeAuthHeaders()), // 👈 Use Safe Wrapper
-      next: { tags: ["products"] }
-    })
-    .then(({ products, count }) => {
-      const nextPage = count > offset + limit ? validPageParam + 1 : null
-
-      return {
-        response: {
-          products,
-          count,
-        },
-        nextPage,
-        queryParams: baseQuery,
-      }
-    })
-})
+}
 
 // --- Sorted & Filtered Fetcher ---
 export const getProductsListWithSort = cache(async function ({
@@ -147,7 +149,7 @@ export const getProductsListWithSort = cache(async function ({
 }> {
   const limit = queryParams?.limit || 12
 
-  // 1. Fetch large batch (Auth handled via safe wrapper inside getProductsList)
+  // 1. Fetch large batch (Using the natively cached getProductsList)
   const {
     response: { products },
   } = await getProductsList({

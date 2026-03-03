@@ -84,6 +84,11 @@ const nextConfig = {
   serverRuntimeConfig: {
     port: process.env.PORT || 3000,
   },
+  logging: {
+    fetches: {
+      fullUrl: true,
+    },
+  },
 }
 
 module.exports = nextConfig

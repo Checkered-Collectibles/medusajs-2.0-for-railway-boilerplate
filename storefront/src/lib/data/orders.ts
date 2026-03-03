@@ -88,8 +88,6 @@ export const retrieveOrder = cache(async function (id: string) {
   const customer = await getCustomer()
   if (!customer) return null;
 
-  console.log(customer.id, order.customer_id)
-
   // 4. Validate ownership
   // If the order exists but the customer_id doesn't match, block access
   if (order && order.customer_id !== customer.id) {

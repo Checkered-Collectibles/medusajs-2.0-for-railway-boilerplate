@@ -87,7 +87,7 @@ export async function updatePassword(
     const loginToken = await sdk.auth.login("customer", "emailpass", { email, password })
 
     setAuthToken(typeof loginToken === "string" ? loginToken : loginToken.location)
-
+    sdk.client.clearToken()
     revalidateTag("customer")
 
     // 3) Redirect to account page
@@ -133,6 +133,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
       email: customerForm.email,
       password: password,
     })
+    sdk.client.clearToken()
 
     const customHeaders = { authorization: `Bearer ${token}` }
 
@@ -148,7 +149,7 @@ export async function signup(_currentState: unknown, formData: FormData) {
     })
 
     setAuthToken(typeof loginToken === 'string' ? loginToken : loginToken.location)
-
+    sdk.client.clearToken()
     revalidateTag("customer")
     return createdCustomer
   } catch (error: any) {
@@ -157,31 +158,27 @@ export async function signup(_currentState: unknown, formData: FormData) {
 }
 
 export async function login(_currentState: unknown, formData: FormData) {
-  // 1. Grab and normalize the email
   let email = formData.get("email") as string
-  if (email) {
-    email = email.toLowerCase()
-  }
-
+  if (email) email = email.toLowerCase()
   const password = formData.get("password") as string
 
   try {
-    // 2. Await the login response directly
     const token = await sdk.auth.login("customer", "emailpass", { email, password })
 
-    // 3. CRITICAL: You must AWAIT the setAuthToken function!
+    // Save to browser cookie
     await setAuthToken(typeof token === 'string' ? token : token.location)
 
-    // 4. Revalidate cache
-    revalidateTag("customer")
+    // 🚨 IMMEDIATELY CLEAR GLOBAL SDK MEMORY
+    sdk.client.clearToken()
 
+    revalidateTag("customer")
   } catch (error: any) {
     return error.toString()
   }
 }
-
 export async function signout(countryCode: string) {
   await sdk.auth.logout()
+  sdk.client.clearToken() // Just to be safe
   removeAuthToken()
   removeCartId()
   revalidateTag("auth")

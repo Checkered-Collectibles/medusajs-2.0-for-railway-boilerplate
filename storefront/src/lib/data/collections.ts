@@ -1,39 +1,72 @@
-import { sdk } from "@lib/config"
 import { cache } from "react"
 import { getProductsList } from "./products"
 import { HttpTypes } from "@medusajs/types"
+import { medusaFetch } from "@lib/medusa"
 
-export const retrieveCollection = cache(async function (id: string) {
-  return sdk.store.collection
-    .retrieve(id, {}, { next: { tags: ["collections"] } })
-    .then(({ collection }) => collection)
+export const retrieveCollection = cache(async function (
+  id: string
+): Promise<HttpTypes.StoreCollection | null> {
+  try {
+    const data = await medusaFetch<{ collection: HttpTypes.StoreCollection }>(
+      `/store/collections/${id}`,
+      {
+        cache: "force-cache",
+        tags: ["collections"],
+      }
+    )
+    return data.collection
+  } catch (error) {
+    console.error(`Failed to retrieve collection ${id}:`, error)
+    return null
+  }
 })
 
 export const getCollectionsList = cache(async function (
   offset: number = 0,
   limit: number = 100
 ): Promise<{ collections: HttpTypes.StoreCollection[]; count: number }> {
-  return sdk.store.collection
-    .list({ limit, offset: 0, order: "-updated_at" }, { next: { tags: ["collections"] } })
-    .then(({ collections }) => {
-      // 👇 Filter out the specific collection here
-      const filteredCollections = collections.filter(
-        (c) => c.id !== "pcol_01KGMKT09MFDGC6YQEHXYNKV09" // ACCESSORY COLLECTION ID
-      )
-
-      return {
-        collections: filteredCollections,
-        count: filteredCollections.length
-      }
+  try {
+    const data = await medusaFetch<{
+      collections: HttpTypes.StoreCollection[]
+      count: number
+    }>("/store/collections", {
+      query: { limit, offset: 0, order: "-updated_at" }, // Kept your hardcoded offset: 0
+      cache: "force-cache",
+      tags: ["collections"],
     })
+
+    // 👇 Filter out the specific collection here
+    const filteredCollections = data.collections.filter(
+      (c) => c.id !== "pcol_01KGMKT09MFDGC6YQEHXYNKV09" // ACCESSORY COLLECTION ID
+    )
+
+    return {
+      collections: filteredCollections,
+      count: filteredCollections.length,
+    }
+  } catch (error) {
+    console.error("Failed to fetch collections list:", error)
+    return { collections: [], count: 0 }
+  }
 })
 
 export const getCollectionByHandle = cache(async function (
   handle: string
-): Promise<HttpTypes.StoreCollection> {
-  return sdk.store.collection
-    .list({ handle }, { next: { tags: ["collections"] } })
-    .then(({ collections }) => collections[0])
+): Promise<HttpTypes.StoreCollection | null> {
+  try {
+    const data = await medusaFetch<{ collections: HttpTypes.StoreCollection[] }>(
+      "/store/collections",
+      {
+        query: { handle },
+        cache: "force-cache",
+        tags: ["collections"],
+      }
+    )
+    return data.collections[0] || null
+  } catch (error) {
+    console.error(`Failed to fetch collection by handle ${handle}:`, error)
+    return null
+  }
 })
 
 export const getCollectionsWithProducts = cache(
@@ -46,6 +79,7 @@ export const getCollectionsWithProducts = cache(
 
     const collectionsWithProducts = await Promise.all(
       collections.map(async (collection) => {
+        // getProductsList is already utilizing the stateless fetch now!
         const { response } = await getProductsList({
           countryCode,
           queryParams: {
