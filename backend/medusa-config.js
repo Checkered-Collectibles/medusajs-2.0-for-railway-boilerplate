@@ -123,7 +123,23 @@ const modules = [
         },
       ]
     : []),
-
+  {
+    resolve: "@medusajs/medusa/caching",
+    options: {
+      providers: [
+        {
+          resolve: "@medusajs/caching-redis",
+          id: "caching-redis",
+          // Optional, makes this the default caching provider
+          is_default: true,
+          options: {
+            redisUrl: process.env.REDIS_URL,
+            // more options...
+          },
+        },
+      ],
+    },
+  },
   /**
    * Payments (Razorpay)
    */
@@ -374,6 +390,9 @@ const plugins = [
  * Export config
  */
 export default defineConfig({
+  featureFlags: {
+    caching: true,
+  },
   projectConfig: {
     databaseUrl: DATABASE_URL,
     databaseLogging: false,
