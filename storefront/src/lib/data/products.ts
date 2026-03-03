@@ -1,9 +1,16 @@
+"use server"
+
+import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { cache } from "react"
 import { getRegion } from "./regions"
 import { SortOptions } from "@modules/store/components/refinement-list/sort-products"
 import { sortProducts } from "@lib/util/sort-products"
+import { getAuthHeaders } from "./cookies"
+import { getSafeAuthHeaders } from "@lib/util/safeheaders"
 import { medusaFetch } from "@lib/medusa"
+
+
 
 // --- Helper: Filter Out-of-Stock Products ---
 const filterInStock = (products: HttpTypes.StoreProduct[]) => {
@@ -73,10 +80,11 @@ export const getProductByHandle = cache(async function (
   }
 })
 
+
 // --- Base Fetcher (List) ---
 export async function getProductsList({
   pageParam = 1,
-  queryParams,
+  queryParams, // This receives the query params from the URL or server context
   countryCode,
 }: {
   pageParam?: number
@@ -96,13 +104,31 @@ export async function getProductsList({
   const offset = (Math.max(pageParam, 1) - 1) * limit
 
   // 3. Prepare Query Object
-  const query = {
+  const query: any = {
     region_id: region.id,
     limit,
     offset,
     fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
     order: queryParams?.order || "-updated_at",
-    category_id: queryParams?.category_id, // medusaFetch handles both strings and arrays
+  }
+
+  // Handle category_id array
+  if (queryParams?.category_id) {
+    query.category_id = Array.isArray(queryParams.category_id)
+      ? queryParams.category_id
+      : [queryParams.category_id]
+  }
+
+  // 👇 ADDED: Handle collection_id array correctly
+  if (queryParams?.collection_id) {
+    query.collection_id = Array.isArray(queryParams.collection_id)
+      ? queryParams.collection_id
+      : [queryParams.collection_id]
+  }
+
+  // Also pass through any other search parameters if needed (like 'q' for search)
+  if (queryParams?.q) {
+    query.q = queryParams.q
   }
 
   try {
@@ -149,7 +175,7 @@ export const getProductsListWithSort = cache(async function ({
 }> {
   const limit = queryParams?.limit || 12
 
-  // 1. Fetch large batch (Using the natively cached getProductsList)
+  // 1. Fetch large batch (Auth handled via safe wrapper inside getProductsList)
   const {
     response: { products },
   } = await getProductsList({
