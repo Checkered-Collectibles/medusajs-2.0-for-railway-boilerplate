@@ -1,19 +1,19 @@
 "use server"
 
 import { HttpTypes } from "@medusajs/types"
-import { getProductsList } from "@lib/data/products"
 import { getRegion } from "@lib/data/regions"
 import { search } from "@modules/search/actions"
+import { filterInStock } from "@lib/data/products"
+import { medusaFetch } from "@lib/medusa"
 
 // 🚫 BLOCKLIST
-// Expanded to include generic descriptors so matches rely on real Brand/Model names
 const IGNORED_TERMS = new Set([
     // Brands/Series
     "hot", "wheels", "matchbox", "majorette", "premium", "mainline",
     "diecast", "scale", "1:64", "car", "vehicle", "edition", "series",
     "hw", "mattel", "rlc", "treasure", "hunt", "super", "boulevard",
     "culture", "team", "transport", "replacers", "retro", "entertainment",
-    // Generic Adjectives (Crucial to avoid "Custom Ford" matching "Custom Chevy")
+    // Generic Adjectives
     "custom", "concept", "factory", "tuned", "race", "racing", "spec",
     "mod", "modern", "classics", "vintage", "exotic", "sport", "gran",
     "turismo", "forza", "fast", "furious", "long", "short", "card",
@@ -25,7 +25,7 @@ function shuffleArray<T>(array: T[]): T[] {
     const arr = [...array]
     for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+        [arr[i], arr[j]] = [arr[j], arr[i]]
     }
     return arr
 }
@@ -57,75 +57,91 @@ export async function getRelatedProducts({
 
     const currentId = product.id
     const currentTokens = getTitleTokens(product.title)
-
-    // Create query for search (e.g., "nissan skyline gtr")
     const query = Array.from(currentTokens).join(" ")
+
+    let poolProducts: HttpTypes.StoreProduct[] = []
+    const collectionId = product.collection_id
+    const categoryId = product.categories?.[product.categories.length - 1]?.id
 
     // -------------------------------------------------------
     // A. FETCH CONTEXT POOL (Same Collection/Category)
     // -------------------------------------------------------
-    let poolProducts: HttpTypes.StoreProduct[] = []
-
-    const collectionId = product.collection_id
-    const categoryId = product.categories?.[product.categories.length - 1]?.id
-
     if (collectionId || categoryId) {
         try {
-            const { response } = await getProductsList({
-                queryParams: {
-                    region_id: region.id,
-                    collection_id: collectionId ? [collectionId] : undefined,
-                    category_id: !collectionId && categoryId ? [categoryId] : undefined,
-                    limit: limit * 2, // Fetch enough to find matches, but prioritize search later
-                    is_giftcard: false,
-                },
-                countryCode
-            })
-            poolProducts = response.products ?? []
+            const queryParams: any = {
+                region_id: region.id,
+                limit: limit * 4, // Higher fetch to account for out-of-stock items being removed
+                is_giftcard: false,
+                fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
+            }
+
+            if (collectionId) {
+                queryParams.collection_id = [collectionId]
+            } else if (categoryId) {
+                queryParams.category_id = [categoryId]
+            }
+
+            const data = await medusaFetch<{ products: HttpTypes.StoreProduct[] }>(
+                "/store/products",
+                {
+                    query: queryParams,
+                    cache: "force-cache",
+                    tags: ["products"],
+                }
+            )
+
+            // Immediately filter to ensure only in-stock items are added to the pool
+            poolProducts = filterInStock(data.products ?? [])
         } catch (e) {
             console.error("Related products fetch failed", e)
         }
     }
 
     // -------------------------------------------------------
-    // B. FETCH SEARCH RESULTS (Cross-Collection Brand Matches)
+    // B. FETCH SEARCH RESULTS (Cross-Collection Matches via Meilisearch)
     // -------------------------------------------------------
-    // 🔥 CHANGE: We increase search limit to match the requested limit (8).
-    // If we find 8 other "Porsches" from different collections, we prefer those
-    // over random cars from the current collection.
     let searchProducts: HttpTypes.StoreProduct[] = []
 
     if (query) {
-        const hits = await search(query)
-        const poolIds = new Set(poolProducts.map(p => p.id))
+        try {
+            const hits = await search(query)
+            const poolIds = new Set(poolProducts.map(p => p.id))
 
-        const searchIds = hits
-            .map((h: any) => h?.id ?? h?.objectID)
-            .filter((id: string) => id && id !== currentId && !poolIds.has(id))
-            .slice(0, limit) // Allow filling the ENTIRE list with search results if they are relevant
+            const searchIds = hits
+                .map((h: any) => h?.id ?? h?.objectID)
+                .filter((id: string) => id && id !== currentId && !poolIds.has(id))
+                .slice(0, limit * 4) // Fetch a wide buffer
 
-        if (searchIds.length > 0) {
-            const { response } = await getProductsList({
-                queryParams: { region_id: region.id, id: searchIds },
-                countryCode
-            })
-            searchProducts = response.products ?? []
+            if (searchIds.length > 0) {
+                const data = await medusaFetch<{ products: HttpTypes.StoreProduct[] }>(
+                    "/store/products",
+                    {
+                        query: {
+                            region_id: region.id,
+                            id: searchIds,
+                            fields: "*variants.calculated_price,+variants.inventory_quantity,+variants.manage_inventory,+metadata,+categories.*",
+                        },
+                        cache: "force-cache",
+                        tags: ["products"],
+                    }
+                )
+                // Immediately filter to ensure only in-stock items
+                searchProducts = filterInStock(data.products ?? [])
+            }
+        } catch (e) {
+            console.error("Related products search/fetch failed", e)
         }
     }
 
     // -------------------------------------------------------
     // C. STRICT PRIORITIZATION LOGIC
     // -------------------------------------------------------
-
-    // Helper: Strong Match Check
     const isBrandMatch = (p: HttpTypes.StoreProduct) => {
         if (p.id === currentId) return false
         const otherTokens = getTitleTokens(p.title)
-
-        // Array conversion to fix iteration error
         const tokenArray = Array.from(currentTokens)
 
-        // If they share ANY core token (e.g. "nissan"), it's a brand match
+        // Strong brand check
         for (const token of tokenArray) {
             if (otherTokens.has(token)) return true
         }
@@ -135,8 +151,8 @@ export async function getRelatedProducts({
     // 1. Extract "Same Brand" items from the Collection Pool
     const collectionBrandMatches = poolProducts.filter(p => isBrandMatch(p))
 
-    // 2. Search results are inherently "Same Brand" (Meili relevance), so we treat them as Top Tier
-    const searchBrandMatches = searchProducts.filter(p => p.id !== currentId)
+    // 2. Extract "Same Brand" items from the Search Pool
+    const searchBrandMatches = searchProducts.filter(p => isBrandMatch(p))
 
     // 3. Extract "Random Fillers" (Same Collection, Different Brand)
     const collectionFillers = poolProducts.filter(p => p.id !== currentId && !isBrandMatch(p))
@@ -146,12 +162,10 @@ export async function getRelatedProducts({
     // -------------------------------------------------------
 
     // Tier 1: ALL Brand Matches (Collection + Search)
-    // We shuffle them together so you get a mix of "Same Collection Porsches" and "Other Porsches"
     const tier1 = shuffleArray([...collectionBrandMatches, ...searchBrandMatches])
 
-    // Tier 2: Fillers (Only used if we don't have enough brand matches)
+    // Tier 2: Fillers 
     const tier2 = shuffleArray(collectionFillers)
 
-    // Combine: Fill Tier 1 first, then use Tier 2 to reach the limit
     return [...tier1, ...tier2].slice(0, limit)
 }

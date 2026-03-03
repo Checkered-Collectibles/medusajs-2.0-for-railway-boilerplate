@@ -1,5 +1,3 @@
-"use server"
-
 import { sdk } from "@lib/config"
 import { HttpTypes } from "@medusajs/types"
 import { cache } from "react"
@@ -13,7 +11,7 @@ import { medusaFetch } from "@lib/medusa"
 
 
 // --- Helper: Filter Out-of-Stock Products ---
-const filterInStock = (products: HttpTypes.StoreProduct[]) => {
+export const filterInStock = (products: HttpTypes.StoreProduct[]) => {
   return products.filter((p) => {
     if (!p.variants || p.variants.length === 0) return false
     return p.variants.some((v) => {
