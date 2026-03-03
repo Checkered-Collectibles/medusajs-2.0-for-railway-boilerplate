@@ -6,6 +6,10 @@ checkEnvVariables()
  * @type {import('next').NextConfig}
  */
 const nextConfig = {
+  cacheHandler:
+    process.env.NODE_ENV === "production"
+      ? require.resolve("./cache-handler.cjs")
+      : undefined,
   staticPageGenerationTimeout: 180,
   reactStrictMode: true,
   eslint: {
