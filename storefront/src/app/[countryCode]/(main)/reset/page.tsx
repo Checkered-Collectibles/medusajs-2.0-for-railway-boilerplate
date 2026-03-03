@@ -16,7 +16,7 @@ export default function ResetPasswordPage({ params, searchParams }: PageProps) {
     }
 
     return (
-        <main className="mx-auto px-2 flex flex-col items-center">
+        <main className="mx-auto px-2 flex flex-col items-center justify-center min-h-[calc(100vh-8rem)]">
             <ResetPasswordForm
                 countryCode={params.countryCode}
                 token={token}

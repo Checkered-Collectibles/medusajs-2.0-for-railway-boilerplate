@@ -13,38 +13,15 @@ import { Checkbox } from "@medusajs/ui"
 // 1. TYPO CHECKER UTILITY
 // ------------------------------------
 const commonDomains = [
-  "gmail.com",
-  "yahoo.com",
-  "hotmail.com",
-  "outlook.com",
-  "icloud.com",
-  "rediffmail.com", // Popular in India
+  "gmail.com", "yahoo.com", "hotmail.com", "outlook.com", "icloud.com", "rediffmail.com",
 ]
 
 const suggestEmail = (email: string): string | null => {
   if (!email || !email.includes("@")) return null
-
   const [user, domain] = email.split("@")
   if (!domain) return null
-
-  // Check for exact match (if valid, return null)
   if (commonDomains.includes(domain)) return null
 
-  // Find close match (simple Levenshtein-like logic or simpler check)
-  for (const common of commonDomains) {
-    // If the domain is very similar (e.g. gamil vs gmail)
-    // We check if it starts with the same letter and has similar length
-    if (
-      domain !== common &&
-      Math.abs(domain.length - common.length) <= 2 &&
-      (domain.includes(common.replace(".com", "")) || common.includes(domain.replace(".com", "")))
-    ) {
-      // This is a basic check. For production, libraries like 'mailcheck' are more robust.
-      // But for specifically "gamil", "yaho", etc, we can hardcode specific maps:
-    }
-  }
-
-  // Hardcoded map for most common Indian typos
   const typoMap: Record<string, string> = {
     "gamil.com": "gmail.com",
     "gmial.com": "gmail.com",
@@ -59,17 +36,14 @@ const suggestEmail = (email: string): string | null => {
   if (typoMap[domain]) {
     return `${user}@${typoMap[domain]}`
   }
-
   return null
 }
-
 
 type Props = {
   setCurrentView: (view: LOGIN_VIEW) => void
 }
 
 const Register = ({ setCurrentView }: Props) => {
-  // 2. State for Email Suggestion
   const [emailInput, setEmailInput] = useState("")
   const [suggestion, setSuggestion] = useState<string | null>(null)
 
@@ -87,19 +61,16 @@ const Register = ({ setCurrentView }: Props) => {
   }
 
   const signupWithFlag = async (currentState: any, formData: FormData) => {
-    // ⬇️ Force email to lowercase before sending to backend
     const email = formData.get("email")
     if (email) {
       formData.set("email", email.toString().toLowerCase())
     }
-
     const result = await signup(currentState, formData)
     const isSuccess = typeof result !== "string"
 
     if (isSuccess && typeof window !== "undefined") {
       sessionStorage.setItem("new_registration", "true")
     }
-
     return result
   }
 
@@ -107,34 +78,35 @@ const Register = ({ setCurrentView }: Props) => {
 
   return (
     <div
-      className="max-w-sm flex flex-col items-center"
+      className="max-w-sm w-full flex flex-col items-center"
       data-testid="register-page"
     >
-      <h1 className="text-large-semi uppercase mb-6">
-        Become a Checkered Store Member
+      <h1 className="text-large-semi uppercase mb-2">
+        Become a Member
       </h1>
-      <p className="text-center text-base-regular text-ui-fg-base mb-4">
-        Create your Checkered Member profile, and get access to an enhanced
-        shopping experience.
+      <p className="text-center text-base-regular text-ui-fg-subtle mb-8">
+        Create your Checkered profile to access drops and manage your collection.
       </p>
-      <form className="w-full flex flex-col" action={formAction}>
-        <div className="flex flex-col w-full gap-y-2">
-          <Input
-            label="First name"
-            name="first_name"
-            required
-            autoComplete="given-name"
-            data-testid="first-name-input"
-          />
-          <Input
-            label="Last name"
-            name="last_name"
-            required
-            autoComplete="family-name"
-            data-testid="last-name-input"
-          />
 
-          {/* 3. MODIFIED EMAIL INPUT */}
+      <form className="w-full flex flex-col" action={formAction}>
+        <div className="flex flex-col w-full gap-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Input
+              label="First name"
+              name="first_name"
+              required
+              autoComplete="given-name"
+              data-testid="first-name-input"
+            />
+            <Input
+              label="Last name"
+              name="last_name"
+              required
+              autoComplete="family-name"
+              data-testid="last-name-input"
+            />
+          </div>
+
           <div>
             <Input
               label="Email"
@@ -144,20 +116,17 @@ const Register = ({ setCurrentView }: Props) => {
               autoComplete="email"
               data-testid="email-input"
               value={emailInput}
-              onChange={handleEmailChange} // Hook up the change handler
+              onChange={handleEmailChange}
             />
-            {/* 4. SUGGESTION ALERT */}
             {suggestion && (
-              <div
-                className="mt-1 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 flex items-center justify-between animate-in fade-in slide-in-from-top-1"
-              >
-                <span>Did you mean <strong>{suggestion}</strong>?</span>
+              <div className="mt-2 p-2.5 bg-yellow-50 border border-yellow-200 rounded-lg text-xs text-yellow-800 flex items-center justify-between animate-in fade-in slide-in-from-top-1">
+                <span>Did you mean <strong className="font-semibold">{suggestion}</strong>?</span>
                 <button
                   type="button"
                   onClick={applySuggestion}
-                  className="bg-yellow-100 hover:bg-yellow-200 text-yellow-900 px-2 py-0.5 rounded font-bold ml-2 transition-colors"
+                  className="bg-yellow-200 hover:bg-yellow-300 text-yellow-900 px-3 py-1 rounded-md font-bold transition-colors shadow-sm"
                 >
-                  Yes, fix it
+                  Fix it
                 </button>
               </div>
             )}
@@ -182,7 +151,7 @@ const Register = ({ setCurrentView }: Props) => {
         </div>
 
         {/* MARKETING CHECKBOX */}
-        <div className="group/input flex items-start space-x-3 mt-4 bg-green-50/50 p-2 rounded-md border border-green-200/60 overflow-hidden relative cursor-pointer hover:bg-green-50 transition-colors">
+        <div className="group/input flex items-start space-x-3 mt-6 bg-green-50/50 p-3 rounded-xl border border-green-200/60 overflow-hidden relative cursor-pointer hover:bg-green-50 transition-colors shadow-sm">
           <div className="flex items-center h-5 mt-0.5">
             <Checkbox
               id="marketing_opt_in"
@@ -204,37 +173,41 @@ const Register = ({ setCurrentView }: Props) => {
 
         <ErrorMessage error={message} data-testid="register-error" />
 
-        <span className="text-center text-ui-fg-base text-small-regular mt-6">
-          By creating an account, you agree to Checkered Collectibles&apos;{" "}
+        <span className="text-center text-ui-fg-subtle text-xs mt-6 px-4">
+          By creating an account, you agree to our{" "}
           <LocalizedClientLink
             href="/legal/privacy-policy"
-            className="underline"
+            className="underline hover:text-ui-fg-base"
           >
             Privacy Policy
           </LocalizedClientLink>{" "}
           and{" "}
           <LocalizedClientLink
             href="/legal/terms-and-conditions"
-            className="underline"
+            className="underline hover:text-ui-fg-base"
           >
             Terms of Use
           </LocalizedClientLink>
           .
         </span>
+
         <SubmitButton className="w-full mt-6" data-testid="register-button">
-          Join
+          Create Account
         </SubmitButton>
       </form>
-      <span className="text-center text-ui-fg-base text-small-regular mt-6">
-        Already a member?{" "}
-        <button
-          onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
-          className="underline"
-        >
-          Sign in
-        </button>
-        .
-      </span>
+
+      <div className="w-full flex justify-center mt-8 pt-6 border-t border-ui-border-base">
+        <span className="text-ui-fg-base text-sm">
+          Already a member?{" "}
+          <button
+            type="button"
+            onClick={() => setCurrentView(LOGIN_VIEW.SIGN_IN)}
+            className="font-bold text-ui-fg-interactive hover:text-blue-600 underline underline-offset-4 transition-colors"
+          >
+            Sign in here
+          </button>
+        </span>
+      </div>
     </div>
   )
 }

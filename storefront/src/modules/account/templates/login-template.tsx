@@ -19,7 +19,7 @@ const LoginTemplate = () => {
   )
 
   return (
-    <div className="w-full flex justify-start px-8 py-8">
+    <div className="w-full flex justify-center px-8 py-8">
       {currentView === LOGIN_VIEW.SIGN_IN && (
         <Login setCurrentView={setCurrentView} />
       )}
