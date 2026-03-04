@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
         const eventType = body.type || ""
 
         // 3. Map the Medusa events to your Next.js Cache Tags
-        if (eventType.startsWith("product.")) {
+        if (eventType.startsWith("product.") || eventType.startsWith("order.")) {
             revalidateTag("products")
             return NextResponse.json({ revalidated: true, tag: "products", now: Date.now() })
         }
