@@ -10,18 +10,18 @@ export default async function productRevalidateHandler({
 
     try {
         // Ping your Next.js webhook
-        await fetch(`${storefrontUrl}/api/revalidate`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "x-revalidate-secret": secret,
-            },
-            body: JSON.stringify({
-                type: name, // e.g., "product.updated"
-                data: data,
-            }),
-        })
-        console.log(`Successfully pinged storefront to revalidate for event: ${name}`)
+        // await fetch(`${storefrontUrl}/api/revalidate`, {
+        //     method: "POST",
+        //     headers: {
+        //         "Content-Type": "application/json",
+        //         "x-revalidate-secret": secret,
+        //     },
+        //     body: JSON.stringify({
+        //         type: name, // e.g., "product.updated"
+        //         data: data,
+        //     }),
+        // })
+        // console.log(`Successfully pinged storefront to revalidate for event: ${name}`)
     } catch (error) {
         console.error("Failed to ping storefront for revalidation:", error)
     }

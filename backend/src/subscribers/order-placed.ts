@@ -1,15 +1,16 @@
 import { Modules } from '@medusajs/framework/utils'
+// import { INotificationModuleService, IOrderModuleService } from '@medusajs/framework/types'
 import { SubscriberArgs } from '@medusajs/medusa'
 import { EmailTemplates } from '../modules/email-notifications/templates'
 import { handleOrderPointsWorkflow } from '../workflows/handle-order-points'
-import { trackOrderPlacedWorkflow } from '../workflows/track-order-placed'
+import { trackOrderPlacedWorkflow } from '../workflows/track-order-placed' // Fix path if needed
 
 export default async function orderPlacedHandler({
-  event: { data, name }, // Extract 'name' here
+  event: { data },
   container,
 }: SubscriberArgs<any>) {
 
-  // 1. Run standard order workflows
+  // Fix: Pass container inside .run()
   await handleOrderPointsWorkflow(container).run({
     input: { order_id: data.id },
   })
@@ -18,31 +19,6 @@ export default async function orderPlacedHandler({
     input: { order_id: data.id },
   })
 
-  // ---------------------------------------------------------
-  // 2. QUICK-FIX REVALIDATION: Bust Next.js Cache on Order
-  // ---------------------------------------------------------
-  const storefrontUrl = process.env.STOREFRONT_URL || "https://checkered.in"
-  const secret = process.env.REVALIDATE_SECRET || "super_secret_string_12345"
-
-  try {
-    await fetch(`${storefrontUrl}/api/revalidate`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-revalidate-secret": secret,
-      },
-      body: JSON.stringify({
-        type: name || "order.placed",
-        data: data,
-      }),
-    })
-    console.log(`Successfully pinged storefront to revalidate for event: ${name || "order.placed"}`)
-  } catch (error) {
-    console.error("Failed to ping storefront for revalidation on order placement:", error)
-  }
-  // ---------------------------------------------------------
-
-  // 3. Setup Email Notification
   const notificationModuleService = container.resolve(Modules.NOTIFICATION)
   const orderModuleService = container.resolve(Modules.ORDER)
 
@@ -50,8 +26,8 @@ export default async function orderPlacedHandler({
   const order = await orderModuleService.retrieveOrder(data.id, {
     relations: ['items', 'summary', 'shipping_address']
   })
-
-  // Handle missing shipping address
+  // 🛑 THE FIX: Handle missing shipping address
+  // Test orders often have no address, which causes the Template to crash
   const shippingAddress = order.shipping_address || {
     first_name: "Customer",
     last_name: "",
@@ -60,7 +36,6 @@ export default async function orderPlacedHandler({
     country_code: "",
     postal_code: ""
   }
-
   try {
     await notificationModuleService.createNotifications({
       to: order.email,
