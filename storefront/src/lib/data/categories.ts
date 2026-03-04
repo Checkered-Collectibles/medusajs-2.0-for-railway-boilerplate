@@ -12,7 +12,8 @@ export const listCategories = cache(async function (): Promise<
     }>("/store/product-categories", {
       query: { fields: "+category_children" },
       cache: "force-cache",
-      tags: ["categories"],
+      // 👇 UPDATED: Base list tag
+      tags: ["categories:list"],
     })
     return data.product_categories
   } catch (error) {
@@ -40,7 +41,8 @@ export const getCategoriesList = cache(async function (
     }>("/store/product-categories", {
       query: { limit, offset },
       cache: "force-cache",
-      tags: ["categories"],
+      // 👇 UPDATED: Base list tag
+      tags: ["categories:list"],
     })
     return data
   } catch (error) {
@@ -59,16 +61,21 @@ export const getCategoryByHandle = cache(async function (
   limit: number
 }> {
   try {
+    // 👇 DYNAMIC TAGS: Map every handle in the array to its own cache tag
+    const fetchTags = [
+      "categories:list",
+      ...categoryHandle.map((h) => `category:handle:${h}`),
+    ]
+
     const data = await medusaFetch<{
       product_categories: HttpTypes.StoreProductCategory[]
       count: number
       offset: number
       limit: number
     }>("/store/product-categories", {
-      // medusaFetch natively handles arrays, turning them into handle[]=a&handle[]=b
       query: { handle: categoryHandle },
       cache: "force-cache",
-      tags: ["categories"],
+      tags: fetchTags, // 👈 UPDATED
     })
     return data
   } catch (error) {
@@ -87,16 +94,21 @@ export const getCategoryById = cache(async function (
   limit: number
 }> {
   try {
+    // 👇 DYNAMIC TAGS: Map every ID in the array to its own cache tag
+    const fetchTags = [
+      "categories:list",
+      ...categoryId.map((id) => `category:${id}`),
+    ]
+
     const data = await medusaFetch<{
       product_categories: HttpTypes.StoreProductCategory[]
       count: number
       offset: number
       limit: number
     }>("/store/product-categories", {
-      // No more @ts-ignore needed here either!
       query: { id: categoryId },
       cache: "force-cache",
-      tags: ["categories"],
+      tags: fetchTags, // 👈 UPDATED
     })
     return data
   } catch (error) {
