@@ -72,7 +72,7 @@ export const getRegion = cache(async function (
     // 4. Return the requested region (fallback to "us" if not found)
     const region = countryCode
       ? regionMap.get(countryCode)
-      : regionMap.get("in")
+      : regionMap.get("us")
 
     return region
   } catch (e: any) {

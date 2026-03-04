@@ -11,8 +11,7 @@ export const retrieveCollection = cache(async function (
       `/store/collections/${id}`,
       {
         cache: "force-cache",
-        // 👇 UPDATED: Tagged with the specific collection ID
-        tags: ["collections:list", `collection:${id}`],
+        tags: ["collections"],
       }
     )
     return data.collection
@@ -31,14 +30,14 @@ export const getCollectionsList = cache(async function (
       collections: HttpTypes.StoreCollection[]
       count: number
     }>("/store/collections", {
-      query: { limit, offset: 0, order: "-updated_at" },
+      query: { limit, offset: 0, order: "-updated_at" }, // Kept your hardcoded offset: 0
       cache: "force-cache",
-      // 👇 UPDATED: Base list tag for when you create/delete a whole collection
-      tags: ["collections:list"],
+      tags: ["collections"],
     })
 
+    // 👇 Filter out the specific collection here
     const filteredCollections = data.collections.filter(
-      (c) => c.id !== "pcol_01KGMKT09MFDGC6YQEHXYNKV09"
+      (c) => c.id !== "pcol_01KGMKT09MFDGC6YQEHXYNKV09" // ACCESSORY COLLECTION ID
     )
 
     return {
@@ -60,8 +59,7 @@ export const getCollectionByHandle = cache(async function (
       {
         query: { handle },
         cache: "force-cache",
-        // 👇 UPDATED: Tagged with the specific handle
-        tags: ["collections:list", `collection:handle:${handle}`],
+        tags: ["collections"],
       }
     )
     return data.collections[0] || null
@@ -81,21 +79,23 @@ export const getCollectionsWithProducts = cache(
 
     const collectionsWithProducts = await Promise.all(
       collections.map(async (collection) => {
-        // 💡 NOTE: No tag changes needed here! 
-        // getProductsList is already utilizing the new dynamic tags we just wrote,
-        // meaning this combined fetch automatically inherits `collection:${id}` cache rules.
+        // getProductsList is already utilizing the stateless fetch now!
         const { response } = await getProductsList({
           countryCode,
           queryParams: {
+            // ensure we scope to this collection only
             collection_id: [collection.id],
+            // Fetch a larger buffer so we have enough items left after filtering out-of-stock ones
             limit: 50,
             order: "-updated_at",
           },
         })
 
+        // Filter products to only include those in stock
         const inStockProducts = response.products.filter((product) => {
           if (!product.variants || product.variants.length === 0) return false
 
+          // A product is considered in stock if AT LEAST ONE of its variants is available
           return product.variants.some((variant: any) => {
             return (
               variant.manage_inventory === false ||
@@ -107,6 +107,7 @@ export const getCollectionsWithProducts = cache(
 
         return {
           ...collection,
+          // Enforce the max limit of 6 products after the filter
           products: inStockProducts.slice(0, 6),
         } as HttpTypes.StoreCollection
       })
