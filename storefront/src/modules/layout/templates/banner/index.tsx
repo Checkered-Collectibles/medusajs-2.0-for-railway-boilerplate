@@ -4,12 +4,12 @@ import Link from "next/link"
 import Countdown from "./countdown"
 
 /**
- * UPDATED: 2026 E Case Restock
- * Start: Feb 21, 2026 @ 8:00 PM IST
+ * UPDATED: 24-Hour Flash Sale - Fantasy Rule Reduced
+ * Start: Set this to your exact launch time!
  */
-const DROP_DATE_IST = "2026-03-03T23:00:00+05:30"
-// How long the "LIVE" banner stays active
-const HYPE_DURATION_MS = 72 * 60 * 60 * 1000 // 24 Hours
+const DROP_DATE_IST = "2026-03-04T15:00:00+05:30"
+// How long the "LIVE" banner stays active (Exactly 24 Hours)
+const HYPE_DURATION_MS = 24 * 60 * 60 * 1000
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -29,31 +29,30 @@ export default function Banner() {
             {isPreDrop && (
                 <div className="text-xs sm:text-sm opacity-90 font-medium flex items-center justify-center gap-x-2">
                     <span className="uppercase tracking-wide text-yellow-300">
-                        📦 2025 N CASE restocks in
+                        🚨 FANTASY RULE REDUCED IN:
                     </span>
-                    <span className="text-white/70">Drops in:</span>
                     <div className="flex items-center gap-1 bg-white/10 px-2 py-0.5 rounded text-white font-mono">
                         <Countdown targetDate={dropDate} size="sm" />
                     </div>
                 </div>
             )}
 
-            {/* 2. LIVE DROP: Count down to END (48h Window) */}
+            {/* 2. LIVE DROP: Count down to END (24h Window) */}
             {isDropLive && (
                 <Link
-                    href="/collections/mrp-mystery-hot-wheels"
+                    href="/store" // Update this if you have a specific collection page for the sale
                     className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
-                        ⭐️ <span className="text-yellow-300">MRP Hot Wheels</span>
+                        🔥 <span className="text-yellow-300">FANTASY RULE REDUCED!</span>
                     </span>
 
-                    {/* <div className="flex items-center gap-2">
-                        <span className="text-white/70 font-normal normal-case">Ends in:</span>
+                    <div className="flex items-center gap-2">
+                        <span className="text-white/70 font-normal normal-case">Sale ends in:</span>
                         <span className="bg-red-600 text-white px-2 py-0.5 rounded font-mono">
                             <Countdown targetDate={hypeEndDate} size="sm" />
                         </span>
-                    </div> */}
+                    </div>
 
                     <span className="bg-white/10 text-white px-2 py-0.5 rounded text-xs font-medium tracking-wider">
                         SHOP NOW &rarr;
