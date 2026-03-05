@@ -138,9 +138,9 @@ export async function evaluateHotWheelsRule(
     let missingFantasy = 0
 
     if (isMainlineRuleEnabled) {
-        const requiredForTier1 = tier1Count * 1
-        const requiredForTier2 = Math.floor(tier2Count * 0.5)
-        const requiredForTier3 = Math.floor(tier3Count * 0)
+        const requiredForTier1 = tier1Count * 2
+        const requiredForTier2 = tier2Count * 1
+        const requiredForTier3 = Math.floor(tier3Count * 0.5)
 
         const totalFantasyRequiredForLicensed = requiredForTier1 + requiredForTier2 + requiredForTier3
 
