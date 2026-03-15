@@ -7,9 +7,9 @@ import Countdown from "./countdown"
  * UPDATED: 24-Hour Flash Sale - Fantasy Rule Reduced
  * Start: Set this to your exact launch time!
  */
-const DROP_DATE_IST = "2026-03-04T15:00:00+05:30"
+const DROP_DATE_IST = "2026-03-15T11:00:00+05:30"
 // How long the "LIVE" banner stays active (Exactly 24 Hours)
-const HYPE_DURATION_MS = 24 * 60 * 60 * 1000
+const HYPE_DURATION_MS = 48 * 60 * 60 * 1000
 
 export default function Banner() {
     const dropDate = new Date(DROP_DATE_IST)
@@ -44,7 +44,7 @@ export default function Banner() {
                     className="flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs sm:text-sm font-bold hover:opacity-90 transition-opacity"
                 >
                     <span className="uppercase tracking-wide">
-                        🔥 <span className="text-yellow-300">FANTASY RULE REDUCED!</span>
+                        🔥 <span className="text-yellow-300">Hot Wheels @ MRP</span>
                     </span>
 
                     <div className="flex items-center gap-2">
