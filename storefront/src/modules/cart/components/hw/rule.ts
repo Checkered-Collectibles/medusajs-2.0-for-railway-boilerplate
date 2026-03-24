@@ -28,7 +28,7 @@ export type HotWheelsRuleResult = {
 export async function evaluateHotWheelsRule(
     cart: HttpTypes.StoreCart | null
 ): Promise<HotWheelsRuleResult> {
-    const isMainlineRuleEnabled = true
+    const isMainlineRuleEnabled = false
     const isPremiumRuleEnabled = false
     const isSilverRuleEnabled = true
 
@@ -68,7 +68,7 @@ export async function evaluateHotWheelsRule(
 
             // 🚫 HARD RULE: Only Licensed cars are strictly limited to Qty 1
             if (isLicensed && quantity > 1) {
-                hasInvalidQuantity = true
+                // hasInvalidQuantity = true
             }
 
             if (isFantasy) {
